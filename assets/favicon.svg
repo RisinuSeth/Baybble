@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <mask id="transparent-gap">
+      <rect width="64" height="64" fill="white"/>
+      <circle cx="43" cy="43" r="17"
+        fill="none" stroke="black" stroke-width="4"/>
+    </mask>
+  </defs>
+  <g mask="url(#transparent-gap)">
+    <circle cx="24" cy="23" r="23" fill="#ffffff"/>
+    <circle cx="43" cy="43" r="17" fill="#ffffff"/>
+  </g>
+</svg>
