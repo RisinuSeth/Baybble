@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingBottom: 70, zIndex: 1 },
-  eyebrow: { color: '#6d63a3', fontFamily: 'Manrope', fontWeight: '800', fontSize: 11, letterSpacing: 2.1, textAlign: 'center' },
+  eyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 13, letterSpacing: 2.1, textAlign: 'center' },
   headline: { color: '#111018', fontFamily: 'Manrope', fontWeight: '800', letterSpacing: -2.4, textAlign: 'center', maxWidth: 820 },
   description: { color: '#393642', fontFamily: 'Manrope', fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 610, marginTop: 22, marginBottom: 38 },
   searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
