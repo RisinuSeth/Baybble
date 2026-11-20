@@ -62,7 +62,7 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
           <Text style={styles.brand}>Baybble</Text>
           <Pressable onPress={onClose}><Text style={styles.close}>✕</Text></Pressable>
         </View>
-        {userEmail ? <>
+        {userEmail && mode !== 'update' ? <>
           <Text style={styles.title}>Your account</Text>
           <Text style={styles.sub}>{userEmail}</Text>
           <Pressable style={styles.primary} onPress={signOut} disabled={busy}>
@@ -71,11 +71,11 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
         </> : <>
           <Text style={styles.title}>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset your password' : mode === 'update' ? 'Choose a new password' : 'Welcome back'}</Text>
           <Text style={styles.sub}>Sign in to keep your Baybble conversations synced.</Text>
-          <TextInput value={email} onChangeText={setEmail} placeholder="Email address" placeholderTextColor="#777" autoCapitalize="none" keyboardType="email-address" style={styles.input} />
+          {mode !== 'update' ? <TextInput value={email} onChangeText={setEmail} placeholder="Email address" placeholderTextColor="#777" autoCapitalize="none" keyboardType="email-address" style={styles.input} /> : null}
           {mode !== 'reset' ? <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="#777" secureTextEntry style={styles.input} /> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {notice ? <Text style={styles.notice}>{notice}</Text> : null}
-          <Pressable style={styles.primary} onPress={submit} disabled={busy || !email.trim() || (mode !== 'reset' && password.length < 6)}>
+          <Pressable style={styles.primary} onPress={submit} disabled={busy || (mode !== 'update' && !email.trim()) || (mode !== 'reset' && password.length < 6)}>
             {busy ? <ActivityIndicator color="#080808" /> : <Text style={styles.primaryText}>{mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : mode === 'update' ? 'Update password' : 'Log in'}</Text>}
           </Pressable>
           <View style={styles.links}>
