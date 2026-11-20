@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
@@ -105,25 +105,53 @@ export default function Home() {
       )}
 
       {!chatMode ? (
-        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
-            <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
-            <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
-              <Ionicons name="search-outline" size={25} color="#ffffff" style={styles.searchIcon} />
-              <TextInput
-                value={draft}
-                onChangeText={setDraft}
-                onFocus={openChat}
-                placeholder="What's on your mind?"
-                placeholderTextColor="#929292"
-                style={styles.input}
-                returnKeyType="send"
-                accessibilityLabel="Start a conversation with Baybble"
-              />
+        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 42 : 0, paddingBottom: compact ? 54 : 0, minHeight: compact ? 0 : 'calc(100vh - 92px)' as any }]}>
+          <View style={[styles.heroLayout, compact && styles.heroLayoutCompact]}>
+            <View style={styles.searchColumn}>
+              <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
+                <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
+                <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
+                  <Ionicons name="search-outline" size={25} color="#ffffff" style={styles.searchIcon} />
+                  <TextInput
+                    value={draft}
+                    onChangeText={setDraft}
+                    onFocus={openChat}
+                    placeholder="What's on your mind?"
+                    placeholderTextColor="#929292"
+                    style={styles.input}
+                    returnKeyType="send"
+                    accessibilityLabel="Start a conversation with Baybble"
+                  />
+                </View>
+              </Pressable>
+              <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
+              <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
             </View>
-          </Pressable>
-          <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
-          <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
+            <View style={[styles.announcementColumn, compact && styles.announcementColumnCompact]}>
+              <ImageBackground
+                source={{ uri: 'https://images.pexels.com/photos/29039015/pexels-photo-29039015.jpeg?cs=srgb&dl=pexels-steve-29039015.jpg&fm=jpg' }}
+                style={styles.announcementTile}
+                imageStyle={styles.announcementImage}
+                resizeMode="cover"
+                accessibilityLabel="Abstract gradient artwork from Pexels"
+              >
+                <View style={styles.announcementShade}>
+                  <Text style={styles.announcementTitle}>Baybble Updates</Text>
+                </View>
+              </ImageBackground>
+              <ImageBackground
+                source={{ uri: 'https://images.pexels.com/photos/34204383/pexels-photo-34204383.jpeg?cs=srgb&dl=pexels-steve-34204383.jpg&fm=jpg' }}
+                style={styles.announcementTile}
+                imageStyle={styles.announcementImage}
+                resizeMode="cover"
+                accessibilityLabel="Abstract 3D gradient artwork from Pexels"
+              >
+                <View style={styles.announcementShade}>
+                  <Text style={styles.announcementTitle}>Meet the Bay models</Text>
+                </View>
+              </ImageBackground>
+            </View>
+          </View>
         </Animated.View>
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
@@ -196,7 +224,17 @@ const styles = StyleSheet.create({
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808' },
+  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, paddingHorizontal: 42, backgroundColor: '#080808' },
+  heroLayout: { width: '100%', maxWidth: 1320, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 34 },
+  heroLayoutCompact: { flexDirection: 'column', gap: 34 },
+  searchColumn: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center' },
+  announcementColumn: { width: 330, gap: 14 },
+  announcementColumnCompact: { width: '100%', flexDirection: 'row', gap: 12 },
+  announcementTile: { width: '100%', height: 174, borderRadius: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717' },
+  announcementImage: { borderRadius: 13 },
+  announcementShade: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, backgroundColor: 'rgba(0,0,0,0.22)' },
+  announcementTitle: { color: '#ffffff', fontFamily: 'Arial Black', fontWeight: '900', fontSize: 21, letterSpacing: -0.7, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
+
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
