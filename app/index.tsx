@@ -6,6 +6,7 @@ const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
 export default function Home() {
   const { width } = useWindowDimensions();
   const [draft, setDraft] = useState('');
+  const [openFaq, setOpenFaq] = useState(-1);
   const compact = width < 760;
 
   return (
@@ -155,16 +156,20 @@ export default function Home() {
                   <Pressable key="0" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 0 ? -1 : 0)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Text style={styles.faqPlus}>{openFaq === 0 ? '−' : '+'}</Text></View>
             {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI language-learning companion designed around natural conversation. The goal is to help you practise expressing yourself in a friendly, low-pressure environment.</Text>}
-          </Pressable>\n          <Pressable key="1" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 1 ? -1 : 1)}>
+          </Pressable>
+          <Pressable key="1" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 1 ? -1 : 1)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Text style={styles.faqPlus}>{openFaq === 1 ? '−' : '+'}</Text></View>
             {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants to become more comfortable using another language, whether you're just beginning or already know the basics.</Text>}
-          </Pressable>\n          <Pressable key="2" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 2 ? -1 : 2)}>
+          </Pressable>
+          <Pressable key="2" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 2 ? -1 : 2)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Text style={styles.faqPlus}>{openFaq === 2 ? '−' : '+'}</Text></View>
             {openFaq === 2 && <Text style={styles.faqAnswer}>Not at all. You can begin with a greeting, ask a question, or choose a topic you enjoy. Getting started can be as simple as saying hello.</Text>}
-          </Pressable>\n          <Pressable key="3" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 3 ? -1 : 3)}>
+          </Pressable>
+          <Pressable key="3" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 3 ? -1 : 3)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Text style={styles.faqPlus}>{openFaq === 3 ? '−' : '+'}</Text></View>
             {openFaq === 3 && <Text style={styles.faqAnswer}>Baybble is conversation-first. Instead of making lessons and quizzes the centre of everything, it focuses on practising through relevant topics and conversations.</Text>}
-          </Pressable>\n          <Pressable key="4" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 4 ? -1 : 4)}>
+          </Pressable>
+          <Pressable key="4" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 4 ? -1 : 4)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Text style={styles.faqPlus}>{openFaq === 4 ? '−' : '+'}</Text></View>
             {openFaq === 4 && <Text style={styles.faqAnswer}>Baybble is being shaped to support learners of multiple languages. The launch language list will be announced as development progresses.</Text>}
           </Pressable>
