@@ -187,6 +187,7 @@ export default function Home() {
                 placeholderTextColor="#929292"
                 style={styles.input}
                 returnKeyType="send"
+                onSubmitEditing={sendMessage}
                 accessibilityLabel="Start a conversation with Baybble"
               />
             </View>
@@ -237,6 +238,14 @@ export default function Home() {
                   multiline
                   autoFocus
                   accessibilityLabel="Message Baybble"
+                  onKeyPress={(event: any) => {
+                    const key = event?.nativeEvent?.key ?? event?.key;
+                    const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
+                    if (key === 'Enter' && !shift) {
+                      event?.preventDefault?.();
+                      sendMessage();
+                    }
+                  }}
                   onSubmitEditing={sendMessage}
                 />
               </View>
