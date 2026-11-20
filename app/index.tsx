@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   introTitle: { color: '#17151f', fontFamily: 'Manrope', fontWeight: '800', fontSize: 32, letterSpacing: -1.2, textAlign: 'center' },
   introText: { color: '#5d5968', fontFamily: 'Manrope', fontSize: 15, lineHeight: 26, textAlign: 'center', maxWidth: 690, marginTop: 14 },
   contentSection: { width: '100%', paddingHorizontal: 28, paddingVertical: 88, alignItems: 'center' },
-  sectionEyebrow: { color: '#7467a5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 11, letterSpacing: 2, textAlign: 'center', marginBottom: 15 },
+  sectionEyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 13, letterSpacing: 2.1, textAlign: 'center', marginBottom: 15 },
   sectionTitle: { color: '#17151f', fontFamily: 'Manrope', fontWeight: '800', fontSize: 42, lineHeight: 50, letterSpacing: -1.8, textAlign: 'center', maxWidth: 760 },
   sectionBody: { color: '#625e6c', fontFamily: 'Manrope', fontSize: 15, fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 16, marginBottom: 40 },
   cardsRow: { width: '100%', maxWidth: 1120, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16 },
