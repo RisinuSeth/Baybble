@@ -74,9 +74,6 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
-          <View style={styles.searchHint}>
-            <Text style={styles.searchHintText}>↵</Text>
-          </View>
         </View>
         <Text style={styles.searchCaption}>Start with a hello. Bay will take it from there.</Text>
       </View>
@@ -111,7 +108,5 @@ const styles = StyleSheet.create({
   searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
   searchIcon: { color: '#61588d', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
   input: { flex: 1, minWidth: 0, color: '#17151f', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
-  searchHint: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#eeeaff', alignItems: 'center', justifyContent: 'center' },
-  searchHintText: { color: '#62599a', fontFamily: 'Manrope', fontSize: 18, fontWeight: '800' },
   searchCaption: { color: '#777281', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
 });
