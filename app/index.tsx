@@ -245,9 +245,6 @@ export default function Home() {
                   accessibilityLabel="Message Baybble"
                   onSubmitEditing={sendMessage}
                 />
-                <Pressable style={styles.sendButton} onPress={isSending ? stopGeneration : sendMessage} accessibilityRole="button" accessibilityLabel={isSending ? 'Stop generating' : 'Send message'}>
-                  <Ionicons name={isSending ? 'stop' : 'arrow-up'} size={20} color="#080808" />
-                </Pressable>
               </View>
             </View>
             <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
