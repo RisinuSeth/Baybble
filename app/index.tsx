@@ -302,7 +302,7 @@ export default function Home() {
             <View style={styles.chatUtilityRail}>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
                 <View style={styles.railIconSlot}>
-                  <Ionicons name="add" size={21} color="#eeeeee" />
+                  <Ionicons name="add-sharp" size={23} color="#eeeeee" />
                 </View>
                 <Text style={styles.railActionText}>New chat</Text>
               </Pressable>
