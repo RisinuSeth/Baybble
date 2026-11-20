@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navCentered: { position: 'absolute', left: '50%', transform: [{ translateX: -180 }] as any },
+  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center' },
   navLink: { paddingVertical: 10, paddingHorizontal: 3 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
