@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View
+  StyleSheet, Text, TextInput, useWindowDimensions, View
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold } from '@expo-google-fonts/manrope';
@@ -44,15 +44,6 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Clear message"
-            onPress={() => setDraft('')}
-            disabled={!draft.length}
-            style={({ pressed }) => [styles.clearButton, !draft.length && styles.clearButtonHidden, pressed && styles.buttonPressed]}
-          >
-            <Ionicons name="arrow-up" size={20} color="#ffffff" />
-          </Pressable>
         </View>
       </View>
     </View>
@@ -108,7 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#ffffff',
     paddingLeft: 25,
-    paddingRight: 10,
+    paddingRight: 25,
     shadowColor: '#000000',
     shadowOpacity: 0.055,
     shadowRadius: 22,
@@ -125,19 +116,4 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     outlineStyle: 'none' as any,
   },
-  clearButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#000000',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.14,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  clearButtonHidden: { opacity: 0.35 },
-  buttonPressed: { transform: [{ scale: 0.94 }], opacity: 0.82 },
 });
