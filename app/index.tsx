@@ -10,16 +10,47 @@ type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; upda
 type IconName = 'time' | 'add' | 'close' | 'edit' | 'delete' | 'check';
 
 function CustomIcon({ name, size = 18, color = '#ffffff' }: { name: IconName; size?: number; color?: string }) {
-  const paths: Record<IconName, string> = {
-    time: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    add: '<path d="M12 5v14M5 12h14"/>',
-    close: '<path d="m6 6 12 12M18 6 6 18"/>',
-    edit: '<path d="m15 5 4 4M4 20l4-.8L19 8a2.1 2.1 0 0 0-3-3L5 16z"/><path d="M4 20h16"/>',
-    delete: '<path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3"/>',
-    check: '<path d="m5 12 4 4L19 6"/>',
-  };
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths[name] + '</svg>';
-  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(svg) }} style={{ width: size, height: size }} />;
+  const stroke = { position: 'absolute' as const, backgroundColor: color, borderRadius: 99 };
+  const frame = { width: size, height: size, position: 'relative' as const, flexShrink: 0 };
+  if (name === 'time') return (
+    <View style={[frame, { borderWidth: 1.7, borderColor: color, borderRadius: size / 2 }]}>
+      <View style={[stroke, { width: 1.7, height: size * 0.29, left: size * 0.48, top: size * 0.19 }]} />
+      <View style={[stroke, { width: size * 0.25, height: 1.7, left: size * 0.48, top: size * 0.48 }]} />
+    </View>
+  );
+  if (name === 'add') return (
+    <View style={frame}>
+      <View style={[stroke, { width: 1.8, height: size * 0.78, left: size * 0.45, top: size * 0.11 }]} />
+      <View style={[stroke, { width: size * 0.78, height: 1.8, left: size * 0.11, top: size * 0.45 }]} />
+    </View>
+  );
+  if (name === 'close') return (
+    <View style={frame}>
+      <View style={[stroke, { width: size * 1.05, height: 1.8, left: -size * 0.025, top: size * 0.45, transform: [{ rotate: '45deg' }] }]} />
+      <View style={[stroke, { width: size * 1.05, height: 1.8, left: -size * 0.025, top: size * 0.45, transform: [{ rotate: '-45deg' }] }]} />
+    </View>
+  );
+  if (name === 'check') return (
+    <View style={frame}>
+      <View style={[stroke, { width: size * 0.38, height: 2, left: size * 0.12, top: size * 0.55, transform: [{ rotate: '45deg' }] }]} />
+      <View style={[stroke, { width: size * 0.68, height: 2, left: size * 0.34, top: size * 0.43, transform: [{ rotate: '-48deg' }] }]} />
+    </View>
+  );
+  if (name === 'delete') return (
+    <View style={frame}>
+      <View style={[stroke, { width: size * 0.76, height: 1.7, left: size * 0.12, top: size * 0.22 }]} />
+      <View style={[stroke, { width: size * 0.28, height: 1.7, left: size * 0.36, top: size * 0.09 }]} />
+      <View style={{ position: 'absolute', left: size * 0.2, top: size * 0.34, width: size * 0.6, height: size * 0.55, borderWidth: 1.5, borderTopWidth: 0, borderColor: color, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 }} />
+      <View style={[stroke, { width: 1.4, height: size * 0.32, left: size * 0.42, top: size * 0.46 }]} />
+      <View style={[stroke, { width: 1.4, height: size * 0.32, left: size * 0.58, top: size * 0.46 }]} />
+    </View>
+  );
+  return (
+    <View style={frame}>
+      <View style={[stroke, { width: size * 0.78, height: size * 0.22, left: size * 0.12, top: size * 0.43, transform: [{ rotate: '-48deg' }] }]} />
+      <View style={[stroke, { width: size * 0.25, height: size * 0.22, left: size * 0.08, top: size * 0.68, transform: [{ rotate: '42deg' }] }]} />
+    </View>
+  );
 }
 
 function BaybbleLogo() {
