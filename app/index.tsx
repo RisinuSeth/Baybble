@@ -1,12 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
+
+type IconName = 'time' | 'add' | 'close' | 'edit' | 'delete' | 'check';
+
+function CustomIcon({ name, size = 18, color = '#ffffff' }: { name: IconName; size?: number; color?: string }) {
+  const paths: Record<IconName, string> = {
+    time: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    add: '<path d="M12 5v14M5 12h14"/>',
+    close: '<path d="m6 6 12 12M18 6 6 18"/>',
+    edit: '<path d="m15 5 4 4M4 20l4-.8L19 8a2.1 2.1 0 0 0-3-3L5 16z"/><path d="M4 20h16"/>',
+    delete: '<path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+  };
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths[name] + '</svg>';
+  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(svg) }} style={{ width: size, height: size }} />;
+}
 
 function BaybbleLogo() {
   return (
@@ -300,11 +314,11 @@ export default function Home() {
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatTopBar}>
             <Pressable style={styles.chatToolButton} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-              <Ionicons name="time-outline" size={17} color="#eeeeee" />
+              <CustomIcon name="time" size={17} color="#eeeeee" />
               <Text style={styles.chatToolText}>History</Text>
             </Pressable>
             <Pressable style={styles.chatToolButton} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-              <Ionicons name="add" size={19} color="#eeeeee" />
+              <CustomIcon name="add" size={19} color="#eeeeee" />
               <Text style={styles.chatToolText}>New chat</Text>
             </Pressable>
           </View>
@@ -314,11 +328,11 @@ export default function Home() {
                 <View style={styles.historyHeadingRow}>
                   <Text style={styles.historyHeading}>Your conversations</Text>
                   <Pressable onPress={() => setHistoryOpen(false)} accessibilityLabel="Close history">
-                    <Ionicons name="close" size={19} color="#aaaaaa" />
+                    <CustomIcon name="close" size={19} color="#aaaaaa" />
                   </Pressable>
                 </View>
                 <Pressable style={styles.historyNewButton} onPress={createNewChat}>
-                  <Ionicons name="add" size={17} color="#ffffff" />
+                  <CustomIcon name="add" size={17} color="#ffffff" />
                   <Text style={styles.historyNewText}>New chat</Text>
                 </Pressable>
                 <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
@@ -337,7 +351,7 @@ export default function Home() {
                             accessibilityLabel="Conversation name"
                           />
                           <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
-                            <Ionicons name="checkmark" size={18} color="#ffffff" />
+                            <CustomIcon name="check" size={18} color="#ffffff" />
                           </Pressable>
                         </View>
                       ) : (
@@ -346,10 +360,10 @@ export default function Home() {
                             <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
                           </Pressable>
                           <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
-                            <Ionicons name="pencil-outline" size={14} color="#999999" />
+                            <CustomIcon name="edit" size={14} color="#999999" />
                           </Pressable>
                           <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
-                            <Ionicons name="trash-outline" size={14} color="#999999" />
+                            <CustomIcon name="delete" size={14} color="#999999" />
                           </Pressable>
                         </>
                       )}
