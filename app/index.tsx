@@ -75,12 +75,12 @@ export default function Home() {
       )}
 
       <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 36, paddingTop: compact ? 74 : 112 }]}>
-        <Text style={[styles.eyebrow, { marginBottom: compact ? 18 : 22 }]}>YOUR AI PROBLEM-SOLVING COMPANION</Text>
+        <Text style={[styles.eyebrow, { marginBottom: compact ? 18 : 22 }]}>AI-POWERED PROBLEM SOLVING</Text>
         <Text style={[styles.headline, { fontSize: compact ? 38 : 58, lineHeight: compact ? 46 : 68 }]}>
           Bring any problem.{ '\n' }Find a way forward.
         </Text>
         <Text style={[styles.description, { fontSize: compact ? 14 : 16 }]}>
-          Whatever you're working through, talk or type it out with Bay. Understand the problem, explore your options, and turn your next step into a clear plan.
+          Describe a problem, question or idea. Baybble helps you understand it, explore possible solutions and decide what to do next.
         </Text>
         <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
           <Text style={styles.searchIcon}>⌕</Text>
@@ -95,7 +95,7 @@ export default function Home() {
           />
           <Ionicons name="mic-outline" size={21} color="#61588d" style={styles.micIcon} />
         </View>
-        <Text style={styles.searchCaption}>Start with what's challenging you. Bay will help you work through it.</Text>
+        <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
       </View>
       <View style={styles.introBand}>
         <Text style={styles.introTitle}>Less uncertainty. More ways forward.</Text>
@@ -103,9 +103,9 @@ export default function Home() {
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.sectionEyebrow}>MEET YOUR THINKING PARTNER</Text>
+        <Text style={styles.sectionEyebrow}>WHAT BAYBBLE DOES</Text>
         <Text style={styles.sectionTitle}>A clearer way to work through life's challenges.</Text>
-        <Text style={styles.sectionBody}>More than answers. Bay helps you understand complicated situations, explore possibilities and turn unclear problems into practical next steps.</Text>
+        <Text style={styles.sectionBody}>Baybble goes beyond quick answers: it helps break down complex problems, compare possible approaches and create practical next steps.</Text>
         <View style={styles.cardsRow}>
           <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardIcon}>💬</Text><Text style={styles.cardTitle}>Make sense of a problem</Text><Text style={styles.cardBody}>Explain what's happening in your own words. Bay helps identify the real challenge and the details that matter.</Text></View>
           <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardIcon}>✦</Text><Text style={styles.cardTitle}>Explore your options</Text><Text style={styles.cardBody}>Compare different approaches, consider trade-offs and discover possibilities you may not have considered.</Text></View>
@@ -123,10 +123,10 @@ export default function Home() {
           <Text style={styles.checkLine}>✓  Turn the next step into an action plan</Text>
         </View>
         <View style={styles.chatCard}>
-          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>Your AI problem-solving companion</Text></View></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Hey! What's been on your mind? Tell me what's going on, and we'll work through it together.</Text></View>
+          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>AI problem-solving platform</Text></View></View>
+          <View style={styles.bayBubble}><Text style={styles.bubbleText}>What are you trying to solve? Share the situation and I'll help break it down.</Text></View>
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I want to start a business, but I have too many ideas and don't know where to begin.</Text></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's make this clearer. What are the ideas you're considering, and what matters most to you when choosing?</Text></View>
+          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's compare your ideas. What are you considering, and what matters most when choosing one?</Text></View>
           <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Tell Bay a little more...</Text><Ionicons name="mic-outline" size={18} color="#81799b" /></View>
         </View>
       </View>
@@ -171,8 +171,8 @@ export default function Home() {
 
       <View style={styles.pricingSection}>
         <Text style={styles.sectionEyebrow}>PRICING</Text>
-        <Text style={styles.sectionTitle}>Simple, transparent pricing.</Text>
-        <Text style={styles.sectionBody}>Choose the level of support that fits how you use Baybble. Full plan details will be shared before launch.</Text>
+        <Text style={styles.sectionTitle}>Plans built around how you use Baybble.</Text>
+        <Text style={styles.sectionBody}>Pricing and plan details will be announced before launch.</Text>
         <View style={styles.priceCard}>
           <Text style={styles.priceLabel}>THE BAYBBLE EXPERIENCE</Text>
           <Text style={styles.priceTitle}>A clearer way to solve problems.</Text>
@@ -207,10 +207,10 @@ export default function Home() {
 
       <View style={styles.faqSection}>
         <Text style={styles.sectionEyebrow}>GET TO KNOW BAYBBLE</Text>
-        <Text style={styles.sectionTitle}>Questions about your problem-solving companion.</Text>
+        <Text style={styles.sectionTitle}>Frequently asked questions</Text>
                   <Pressable key="0" style={styles.faqItem} onPress={() => toggleFaq(0)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[0].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
-            {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI problem-solving companion. Talk or type about a challenge, question or idea. Bay helps you understand the situation, explore possible solutions and work out practical next steps.</Text>}
+            {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI-powered problem-solving platform. Describe a challenge, question or idea, and it helps you understand the situation, evaluate options and identify practical next steps.</Text>}
           </Pressable>
           <Pressable key="1" style={styles.faqItem} onPress={() => toggleFaq(1)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[1].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
@@ -232,8 +232,8 @@ export default function Home() {
 
       <View style={styles.finalCta}>
         <Text style={styles.ctaEyebrow}>YOUR NEXT STEP STARTS HERE</Text>
-        <Text style={styles.ctaTitle}>You don't have to figure everything out alone.</Text>
-        <Text style={styles.ctaBody}>Bring the problem. Baybble will help you find a way forward.</Text>
+        <Text style={styles.ctaTitle}>Turn your next challenge into a clear next step.</Text>
+        <Text style={styles.ctaBody}>Bring a challenge. Find a practical way forward.</Text>
         <Pressable style={styles.ctaButton}><Text style={styles.ctaButtonText}>Start with Bay  →</Text></Pressable>
       </View>
 
