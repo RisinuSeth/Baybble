@@ -56,10 +56,12 @@ export default function Home() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       <View style={[styles.header, chatMode && styles.chatHeader, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-          <View style={styles.logoMark}>
-            <View style={styles.logoBubbleOne} />
-            <View style={styles.logoBubbleTwo} />
-          </View>
+          <Image
+            source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }}
+            style={{ width: 32, height: 32 }}
+            resizeMode="contain"
+            accessibilityLabel="Baybble logo"
+          />
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
