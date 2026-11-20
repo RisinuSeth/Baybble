@@ -25,6 +25,17 @@ export default function Home() {
   const [draft, setDraft] = useState('');
   const [chatMode, setChatMode] = useState(false);
   const [messages, setMessages] = useState<string[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const transition = useRef(new Animated.Value(0)).current;
+  const openChat = () => {
+    if (chatMode || isTransitioning) return;
+    setIsTransitioning(true);
+    Animated.timing(transition, { toValue: 1, duration: 360, useNativeDriver: true }).start(() => {
+      setChatMode(true);
+      transition.setValue(0);
+      Animated.timing(transition, { toValue: 1, duration: 520, useNativeDriver: true }).start(() => setIsTransitioning(false));
+    });
+  };
   const sendMessage = () => {
     const message = draft.trim();
     if (!message) return;
@@ -92,20 +103,20 @@ export default function Home() {
       )}
 
       {!chatMode ? (
-        <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
+        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
           <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
           <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\\n'}think through anything.</Text>
           <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
             An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
           </Text>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={() => setChatMode(true)}>
+          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
             <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
             <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
               <Ionicons name="search-outline" size={25} color="#ffffff" style={styles.searchIcon} />
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
-                onFocus={() => setChatMode(true)}
+                onFocus={openChat}
                 placeholder="What's on your mind?"
                 placeholderTextColor="#929292"
                 style={styles.input}
@@ -117,9 +128,9 @@ export default function Home() {
           </Pressable>
           <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
           <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
-        </View>
+        </Animated.View>
       ) : (
-        <View style={styles.chatWorkspace}>
+        <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
             {messages.length === 0 ? (
               <View style={styles.emptyConversation}>
@@ -160,7 +171,7 @@ export default function Home() {
             </View>
             <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
           </View>
-        </View>
+        </Animated.View>
       )}
 
     </ScrollView>
