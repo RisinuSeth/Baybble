@@ -75,13 +75,13 @@ export default function Home() {
       )}
 
       <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 36, paddingTop: compact ? 74 : 112 }]}>
-        <Text style={[styles.eyebrow, { marginBottom: compact ? 18 : 22 }]}>YOUR AI LANGUAGE COMPANION</Text>
+        <Text style={[styles.eyebrow, { marginBottom: compact ? 18 : 22 }]}>YOUR AI COMMUNICATION COMPANION</Text>
         <Text style={[styles.headline, { fontSize: compact ? 38 : 58, lineHeight: compact ? 46 : 68 }]}>
-          Learn a language.{ '\n' }Live the conversation.
+          Find your words.{ '\n' }Make every conversation count.
         </Text>
         <Text style={[styles.description, { fontSize: compact ? 14 : 16 }]}>
-          Build real confidence by speaking with Bay — your AI language companion.
-          Practise naturally, explore what interests you, and learn one conversation at a time.
+          Grow your confidence in how you communicate with Bay — your AI communication companion.
+          Practise conversations, explore ideas, express yourself clearly, and grow one interaction at a time.
         </Text>
         <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
           <Text style={styles.searchIcon}>⌕</Text>
@@ -96,50 +96,50 @@ export default function Home() {
           />
           <Ionicons name="mic-outline" size={21} color="#61588d" style={styles.micIcon} />
         </View>
-        <Text style={styles.searchCaption}>Start with a hello. Bay will take it from there.</Text>
+        <Text style={styles.searchCaption}>Start with a thought. Bay will help you find the words.</Text>
       </View>
       <View style={styles.introBand}>
-        <Text style={styles.introTitle}>A little less studying. A lot more speaking.</Text>
-        <Text style={styles.introText}>Language grows through use. Baybble gives you a friendly place to try, make mistakes, find your words, and keep the conversation going.</Text>
+        <Text style={styles.introTitle}>A little more confidence. A lot more connection.</Text>
+        <Text style={styles.introText}>Communication grows with practice. Baybble gives you a friendly place to explore ideas, express yourself, find your words, and keep the conversation going.</Text>
       </View>
 
       <View style={styles.contentSection}>
         <Text style={styles.sectionEyebrow}>MEET BAY</Text>
-        <Text style={styles.sectionTitle}>A language companion that gets you talking.</Text>
-        <Text style={styles.sectionBody}>Not another pile of lessons to get through. A welcoming conversation space where you can practise expressing yourself, one message at a time.</Text>
+        <Text style={styles.sectionTitle}>A companion for the way you communicate.</Text>
+        <Text style={styles.sectionBody}>More than a place to ask questions. A welcoming conversation space where you can practise, explore ideas, and express yourself with confidence.</Text>
         <View style={styles.cardsRow}>
-          <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardIcon}>💬</Text><Text style={styles.cardTitle}>Talk about anything</Text><Text style={styles.cardBody}>Your day, favourite films, travel, sport, or a completely random thought. Your interests make the conversation yours.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardIcon}>✦</Text><Text style={styles.cardTitle}>Learn without pressure</Text><Text style={styles.cardBody}>Try new words and sentence patterns in a relaxed space. Mistakes are part of learning, not a reason to stop talking.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardIcon}>🧠</Text><Text style={styles.cardTitle}>Build confidence</Text><Text style={styles.cardBody}>Keep practising at a pace that feels right. Each conversation is another chance to become more comfortable.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardIcon}>💬</Text><Text style={styles.cardTitle}>Explore anything</Text><Text style={styles.cardBody}>Your day, favourite films, travel, sport, or a completely random thought. Bring your interests and let the conversation flow.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardIcon}>✦</Text><Text style={styles.cardTitle}>Express yourself clearly</Text><Text style={styles.cardBody}>Work through your thoughts, discover clearer ways to say things, and communicate at your own pace.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardIcon}>🧠</Text><Text style={styles.cardTitle}>Grow your confidence</Text><Text style={styles.cardBody}>Practise everyday communication, explore new perspectives, and feel more comfortable expressing what you mean.</Text></View>
         </View>
       </View>
 
       <View style={styles.chatSection}>
         <View style={styles.chatCopy}>
-          <Text style={styles.sectionEyebrow}>A CONVERSATION, NOT A CLASS</Text>
-          <Text style={styles.sectionTitle}>Your world is the lesson.</Text>
-          <Text style={styles.sectionBody}>Practise the language you actually want to use. Explore a topic, find a better way to phrase something, and keep moving when you get stuck.</Text>
-          <Text style={styles.checkLine}>✓  Choose a topic you enjoy</Text>
-          <Text style={styles.checkLine}>✓  Ask questions and explore ideas</Text>
-          <Text style={styles.checkLine}>✓  Practise expressing yourself naturally</Text>
+          <Text style={styles.sectionEyebrow}>COMMUNICATION, WITHOUT THE PRESSURE</Text>
+          <Text style={styles.sectionTitle}>Your world starts the conversation.</Text>
+          <Text style={styles.sectionBody}>Talk through the things that matter to you. Explore a topic, find a clearer way to phrase something, and keep moving when you get stuck.</Text>
+          <Text style={styles.checkLine}>✓  Explore ideas that interest you</Text>
+          <Text style={styles.checkLine}>✓  Find clearer ways to express yourself</Text>
+          <Text style={styles.checkLine}>✓  Build confidence through conversation</Text>
         </View>
         <View style={styles.chatCard}>
-          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>Your language companion</Text></View></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Hey! What have you been into lately?</Text></View>
-          <View style={styles.youBubble}><Text style={styles.youBubbleText}>I started watching a new series. It's really interesting.</Text></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Nice! You could also say, “I've started watching a new series.” What is it about?</Text></View>
+          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>Your communication companion</Text></View></View>
+          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Hey! What's on your mind today?</Text></View>
+          <View style={styles.youBubble}><Text style={styles.youBubbleText}>I've been thinking about starting something new, but I'm not sure what to choose.</Text></View>
+          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's explore a few ideas together. What kind of things do you usually enjoy?</Text></View>
           <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Keep the conversation going...</Text><Ionicons name="mic-outline" size={18} color="#81799b" /></View>
         </View>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.sectionEyebrow}>MADE FOR REAL LIFE</Text>
-        <Text style={styles.sectionTitle}>Your language. Your reasons.</Text>
-        <Text style={styles.sectionBody}>Make practice part of the things you already love doing.</Text>
+        <Text style={styles.sectionEyebrow}>MADE FOR EVERYDAY COMMUNICATION</Text>
+        <Text style={styles.sectionTitle}>Your voice. Your reasons.</Text>
+        <Text style={styles.sectionBody}>Make better communication part of the things you already love doing.</Text>
         <View style={styles.cardsRow}>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>✈</Text><Text style={styles.cardTitle}>Travel with confidence</Text><Text style={styles.cardBody}>Practise useful conversations for new places, from meeting people to asking for directions.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>☕</Text><Text style={styles.cardTitle}>Everyday conversations</Text><Text style={styles.cardBody}>Get more comfortable with introductions, small talk, opinions, and daily life.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>🎧</Text><Text style={styles.cardTitle}>Explore your interests</Text><Text style={styles.cardBody}>Talk about music, games, sport, films, books, or whatever keeps you curious.</Text></View>
+          <View style={styles.useCard}><Text style={styles.cardIcon}>✈</Text><Text style={styles.cardTitle}>Navigate new places</Text><Text style={styles.cardBody}>Feel more prepared for new experiences, from meeting people to asking for directions.</Text></View>
+          <View style={styles.useCard}><Text style={styles.cardIcon}>☕</Text><Text style={styles.cardTitle}>Everyday communication</Text><Text style={styles.cardBody}>Feel more at ease with introductions, small talk, sharing opinions, and everyday situations.</Text></View>
+          <View style={styles.useCard}><Text style={styles.cardIcon}>🎧</Text><Text style={styles.cardTitle}>Share your ideas</Text><Text style={styles.cardBody}>Explore music, games, sport, films, books, or whatever keeps you curious — and express what you think.</Text></View>
         </View>
       </View>
 
@@ -148,9 +148,9 @@ export default function Home() {
         <Text style={styles.sectionTitle}>A simple way to get into the flow.</Text>
         <Text style={styles.sectionBody}>No complicated setup. No pressure to be perfect. Just bring your curiosity and start where you are.</Text>
         <View style={styles.cardsRow}>
-          <View style={styles.stepCard}><Text style={styles.stepNo}>01</Text><Text style={styles.cardTitle}>Pick your language</Text><Text style={styles.cardBody}>Choose the language you want to practise and get comfortable.</Text></View>
+          <View style={styles.stepCard}><Text style={styles.stepNo}>01</Text><Text style={styles.cardTitle}>Pick your language</Text><Text style={styles.cardBody}>Choose what you want to work on, from everyday communication to practising another language.</Text></View>
           <View style={styles.stepCard}><Text style={styles.stepNo}>02</Text><Text style={styles.cardTitle}>Start with anything</Text><Text style={styles.cardBody}>Message Bay about your day, ask a question, or choose a topic you love.</Text></View>
-          <View style={styles.stepCard}><Text style={styles.stepNo}>03</Text><Text style={styles.cardTitle}>Keep growing</Text><Text style={styles.cardBody}>Use each conversation to discover expressions and build confidence.</Text></View>
+          <View style={styles.stepCard}><Text style={styles.stepNo}>03</Text><Text style={styles.cardTitle}>Keep growing</Text><Text style={styles.cardBody}>Use each conversation to express yourself more clearly and build confidence.</Text></View>
         </View>
       </View>
 
@@ -176,20 +176,20 @@ export default function Home() {
         <Text style={styles.sectionBody}>A straightforward way to make room for better conversations. We’ll share the full plans before Baybble opens.</Text>
         <View style={styles.priceCard}>
           <Text style={styles.priceLabel}>THE BAYBBLE EXPERIENCE</Text>
-          <Text style={styles.priceTitle}>A better way to practise.</Text>
+          <Text style={styles.priceTitle}>A better way to communicate.</Text>
           <View style={styles.priceComingRow}><Text style={styles.priceComing}>Coming soon</Text><Text style={styles.pricePeriod}>Plans & pricing</Text></View>
-          <Text style={styles.priceDescription}>Baybble is being built around natural, everyday conversation — not a one-size-fits-all classroom.</Text>
-          <Text style={styles.priceBullet}>✓  Conversation practice around real-life topics</Text>
-          <Text style={styles.priceBullet}>✓  A friendly companion that helps you find your words</Text>
-          <Text style={styles.priceBullet}>✓  A relaxed space to build speaking confidence</Text>
+          <Text style={styles.priceDescription}>Baybble is being built around natural, everyday communication — not a one-size-fits-all approach.</Text>
+          <Text style={styles.priceBullet}>✓  Natural conversations around real-life topics</Text>
+          <Text style={styles.priceBullet}>✓  A friendly AI companion to help you find your words</Text>
+          <Text style={styles.priceBullet}>✓  A relaxed space to build communication confidence</Text>
           <Text style={styles.priceNote}>No trial or subscription is being advertised until the plans are confirmed.</Text>
         </View>
       </View>
 
       <View style={styles.topicsSection}>
-        <Text style={styles.sectionEyebrow}>PRACTISE REAL-LIFE CONVERSATIONS</Text>
-        <Text style={styles.sectionTitle}>Fluency starts with the things you want to say.</Text>
-        <Text style={styles.sectionBody}>Start with an everyday situation, follow your curiosity, and let the conversation go somewhere real.</Text>
+        <Text style={styles.sectionEyebrow}>EXPLORE REAL-LIFE CONVERSATIONS</Text>
+        <Text style={styles.sectionTitle}>Confidence starts with the things you want to say.</Text>
+        <Text style={styles.sectionBody}>Start with an everyday situation, follow your curiosity, and let the conversation go somewhere meaningful.</Text>
         <View style={styles.topicsGrid}>
           {[
             'I’m feeling tired', 'Making plans', 'Making reservations',
@@ -211,36 +211,36 @@ export default function Home() {
         <Text style={styles.sectionTitle}>A few things you might be wondering.</Text>
                   <Pressable key="0" style={styles.faqItem} onPress={() => toggleFaq(0)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[0].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
-            {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI language-learning companion designed around natural conversation. The goal is to help you practise expressing yourself in a friendly, low-pressure environment.</Text>}
+            {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI communication companion designed around natural conversation. It helps you practise expressing yourself, explore ideas, and communicate with greater confidence in a friendly, low-pressure environment.</Text>}
           </Pressable>
           <Pressable key="1" style={styles.faqItem} onPress={() => toggleFaq(1)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[1].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
-            {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants to become more comfortable using another language, whether you're just beginning or already know the basics.</Text>}
+            {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants to communicate with more confidence — whether you're practising a language, exploring ideas, or finding clearer ways to express yourself.</Text>}
           </Pressable>
           <Pressable key="2" style={styles.faqItem} onPress={() => toggleFaq(2)}>
             <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[2].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 2 && <Text style={styles.faqAnswer}>Not at all. You can begin with a greeting, ask a question, or choose a topic you enjoy. Getting started can be as simple as saying hello.</Text>}
           </Pressable>
           <Pressable key="3" style={styles.faqItem} onPress={() => toggleFaq(3)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[3].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
-            {openFaq === 3 && <Text style={styles.faqAnswer}>Baybble is conversation-first. Instead of making lessons and quizzes the centre of everything, it focuses on practising through relevant topics and conversations.</Text>}
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble just for learning languages?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[3].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
+            {openFaq === 3 && <Text style={styles.faqAnswer}>No. Language practice is one part of Baybble. It's designed as a communication companion for everyday conversations, expressing ideas, and building confidence.</Text>}
           </Pressable>
           <Pressable key="4" style={styles.faqItem} onPress={() => toggleFaq(4)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[4].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
-            {openFaq === 4 && <Text style={styles.faqAnswer}>Baybble is being shaped to support learners of multiple languages. The launch language list will be announced as development progresses.</Text>}
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Can I practise different languages?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[4].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
+            {openFaq === 4 && <Text style={styles.faqAnswer}>Yes. Baybble is being shaped to support conversations in multiple languages. The launch language list will be announced as development progresses.</Text>}
           </Pressable>
       </View>
 
       <View style={styles.finalCta}>
         <Text style={styles.ctaEyebrow}>YOUR NEXT CONVERSATION STARTS HERE</Text>
-        <Text style={styles.ctaTitle}>A new language opens up a new world.</Text>
+        <Text style={styles.ctaTitle}>Every conversation opens up a new possibility.</Text>
         <Text style={styles.ctaBody}>Bring your curiosity. Baybble will help you find the words.</Text>
         <Pressable style={styles.ctaButton}><Text style={styles.ctaButtonText}>Meet Bay  →</Text></Pressable>
       </View>
 
       <View style={styles.footer}>
         <View style={styles.footerBrand}><View style={styles.logoMark}><View style={styles.logoBubbleOne}/><View style={styles.logoBubbleTwo}/></View><Text style={styles.footerWordmark}>Baybble</Text></View>
-        <Text style={styles.footerTagline}>Your language. Your companion.</Text>
+        <Text style={styles.footerTagline}>Your words. Your companion.</Text>
         <Text style={styles.copyright}>© 2026 Baybble. All rights reserved.</Text>
       </View>
     </ScrollView>
