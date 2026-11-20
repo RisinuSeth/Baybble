@@ -29,7 +29,10 @@ export default function Home() {
   const compact = width < 760;
   const [draft, setDraft] = useState('');
   const [chatMode, setChatMode] = useState(false);
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [isSending, setIsSending] = useState(false);
+  const [chatError, setChatError] = useState('');
+  const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
   const openChat = () => {
@@ -41,11 +44,82 @@ export default function Home() {
       Animated.timing(transition, { toValue: 1, duration: 520, useNativeDriver: true }).start(() => setIsTransitioning(false));
     });
   };
-  const sendMessage = () => {
+  const stopGeneration = () => {
+    abortController.current?.abort();
+    abortController.current = null;
+    setIsSending(false);
+  };
+
+  const sendMessage = async () => {
     const message = draft.trim();
-    if (!message) return;
-    setMessages((current) => [...current, message]);
+    if (!message || isSending) return;
+    const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
+    setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
+    setChatError('');
+    setIsSending(true);
+
+    const controller = new AbortController();
+    abortController.current = controller;
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history }),
+        signal: controller.signal
+      });
+      if (!response.ok) {
+        let reason = 'Baybble could not respond. Please try again.';
+        try {
+          const data = await response.json();
+          if (typeof data.error === 'string') reason = data.error;
+        } catch {}
+        throw new Error(reason);
+      }
+      if (!response.body) throw new Error('The response stream was unavailable.');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payload = trimmed.slice(5).trim();
+          if (!payload || payload === '[DONE]') continue;
+          try {
+            const chunk = JSON.parse(payload);
+            const token = typeof chunk.response === 'string'
+              ? chunk.response
+              : typeof chunk.choices?.[0]?.delta?.content === 'string'
+                ? chunk.choices[0].delta.content
+                : '';
+            if (token) {
+              setMessages((current) => current.map((item, index) =>
+                index === current.length - 1 && item.role === 'assistant'
+                  ? { ...item, content: item.content + token }
+                  : item
+              ));
+            }
+          } catch {}
+        }
+      }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        setChatError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+        setMessages((current) => current.filter((item, index) =>
+          !(index === current.length - 1 && item.role === 'assistant' && !item.content)
+        ));
+      }
+    } finally {
+      if (abortController.current === controller) abortController.current = null;
+      setIsSending(false);
+    }
   };
   const gradientRotation = useRef(new Animated.Value(0)).current;
 
@@ -77,7 +151,7 @@ export default function Home() {
 
         <View style={styles.headerActions}>
           {chatMode ? (
-            <Pressable style={styles.newChatButton} onPress={() => { setMessages([]); setDraft(''); }}>
+            <Pressable style={styles.newChatButton} onPress={() => { stopGeneration(); setMessages([]); setDraft(''); setChatError(''); }}>
               <Ionicons name="add" size={18} color="#ffffff" />
               <Text style={styles.newChatText}>New chat</Text>
             </Pressable>
@@ -123,7 +197,7 @@ export default function Home() {
             </View>
           </Pressable>
           <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
-          <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
+          <Text style={styles.heroFootnote}>A clearer way to think through challenges and possibilities.</Text>
         </Animated.View>
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
@@ -132,16 +206,26 @@ export default function Home() {
               <View style={styles.emptyConversation}>
                 <Text style={styles.chatGreeting}>Where should we start?</Text>
                 <Text style={styles.chatSubheading}>Tell Baybble what's on your mind. We'll work through it step by step.</Text>
-                <Text style={styles.chatNotice}>Conversation preview · AI responses aren't connected yet</Text>
+                <Text style={styles.chatNotice}>Your Baybble conversation starts here.</Text>
               </View>
             ) : (
               <View style={styles.messageList}>
                 {messages.map((message, index) => (
-                  <View key={index} style={styles.userMessage}>
-                    <Text style={styles.userMessageText}>{message}</Text>
-                  </View>
+                  message.role === 'user' ? (
+                    <View key={index} style={styles.userMessage}>
+                      <Text style={styles.userMessageText}>{message.content}</Text>
+                    </View>
+                  ) : (
+                    <View key={index} style={styles.assistantMessage}>
+                      {message.content ? (
+                        <Text style={styles.assistantMessageText}>{message.content}</Text>
+                      ) : isSending ? (
+                        <Text style={styles.thinkingText}>Baybble is thinking...</Text>
+                      ) : null}
+                    </View>
+                  )
                 ))}
-                <Text style={styles.chatNotice}>Your message is in this conversation preview. AI responses will be available once Baybble's model is connected.</Text>
+                {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
               </View>
             )}
           </ScrollView>
@@ -160,8 +244,8 @@ export default function Home() {
                   accessibilityLabel="Message Baybble"
                   onSubmitEditing={sendMessage}
                 />
-                <Pressable style={styles.sendButton} onPress={sendMessage} accessibilityRole="button" accessibilityLabel="Send message">
-                  <Ionicons name="arrow-up" size={20} color="#080808" />
+                <Pressable style={styles.sendButton} onPress={isSending ? stopGeneration : sendMessage} accessibilityRole="button" accessibilityLabel={isSending ? 'Stop generating' : 'Send message'}>
+                  <Ionicons name={isSending ? 'stop' : 'arrow-up'} size={20} color="#080808" />
                 </Pressable>
               </View>
             </View>
@@ -220,6 +304,10 @@ const styles = StyleSheet.create({
   messageList: { width: '100%', gap: 18, paddingBottom: 30 },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
+  assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 3 },
+  assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
+  thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
+  chatError: { color: '#ff9b9b', fontFamily: 'Manrope', fontSize: 12, lineHeight: 19, textAlign: 'center', marginTop: 8 },
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
   composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 20, paddingRight: 10, zIndex: 1 },
