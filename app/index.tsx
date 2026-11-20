@@ -416,7 +416,17 @@ export default function Home() {
           <View style={styles.chatBody}>
             <View style={styles.chatUtilityRail}>
               <Pressable style={styles.railAction} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel="Account and sign in">
-                <View style={styles.railIconSlot}><Ionicons name="person-circle-outline" size={21} color="#eeeeee" /></View>
+                <View style={styles.railIconSlot}>
+                  {authUser?.avatarUrl ? (
+                    <Image source={{ uri: authUser.avatarUrl }} style={styles.railAvatarImage} resizeMode="cover" />
+                  ) : authUser ? (
+                    <View style={styles.railAvatarFallback}>
+                      <Text style={styles.railAvatarInitial}>{(authUser.fullName?.trim()?.[0] || authUser.email?.[0] || 'U').toUpperCase()}</Text>
+                    </View>
+                  ) : (
+                    <Ionicons name="person-circle-outline" size={21} color="#eeeeee" />
+                  )}
+                </View>
                 <Text style={styles.railActionText}>{authUser ? 'Account' : 'Sign in'}</Text>
               </Pressable>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
@@ -589,6 +599,9 @@ const styles = StyleSheet.create({
   chatUtilityRail: { width: 76, minHeight: '100%' as any, alignSelf: 'stretch', flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
   railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
+  railAvatarImage: { width: 24, height: 24, borderRadius: 12 },
+  railAvatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#292929', borderWidth: 1, borderColor: '#505050' },
+  railAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10 },
   railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
 
   historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
