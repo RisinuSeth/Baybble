@@ -8,6 +8,13 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const [draft, setDraft] = useState('');
   const [openFaq, setOpenFaq] = useState(-1);
+  const faqAnimations = useRef(Array.from({ length: 5 }, () => new Animated.Value(0))).current;
+  const toggleFaq = (index: number) => {
+    const next = openFaq === index ? -1 : index;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    faqAnimations.forEach((value, i) => Animated.timing(value, { toValue: i === next ? 1 : 0, duration: 220, useNativeDriver: true }).start());
+    setOpenFaq(next);
+  };
   const marqueeProgress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -192,7 +199,7 @@ export default function Home() {
           ].map((topic, index) => (
             <View key={topic} style={[styles.topicChip, index % 4 === 0 && styles.topicChipAccent]}>
               <Text style={styles.topicChipText}>{topic}</Text>
-              <Ionicons name="arrow-up-right" size={15} color="#77718c" />
+              <Ionicons name="arrow-up-outline" size={15} color="#77718c" />
             </View>
           ))}
         </View>
@@ -202,24 +209,24 @@ export default function Home() {
       <View style={styles.faqSection}>
         <Text style={styles.sectionEyebrow}>GOOD TO KNOW</Text>
         <Text style={styles.sectionTitle}>A few things you might be wondering.</Text>
-                  <Pressable key="0" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 0 ? -1 : 0); }}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 0 ? '180deg' : '0deg' }] }} />}</Text></View>
+                  <Pressable key="0" style={styles.faqItem} onPress={() => toggleFaq(0)}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[0].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI language-learning companion designed around natural conversation. The goal is to help you practise expressing yourself in a friendly, low-pressure environment.</Text>}
           </Pressable>
-          <Pressable key="1" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 1 ? -1 : 1); }}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 1 ? '180deg' : '0deg' }] }} />}</Text></View>
+          <Pressable key="1" style={styles.faqItem} onPress={() => toggleFaq(1)}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[1].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants to become more comfortable using another language, whether you're just beginning or already know the basics.</Text>}
           </Pressable>
-          <Pressable key="2" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 2 ? -1 : 2); }}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 2 ? '180deg' : '0deg' }] }} />}</Text></View>
+          <Pressable key="2" style={styles.faqItem} onPress={() => toggleFaq(2)}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[2].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 2 && <Text style={styles.faqAnswer}>Not at all. You can begin with a greeting, ask a question, or choose a topic you enjoy. Getting started can be as simple as saying hello.</Text>}
           </Pressable>
-          <Pressable key="3" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 3 ? -1 : 3); }}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 3 ? '180deg' : '0deg' }] }} />}</Text></View>
+          <Pressable key="3" style={styles.faqItem} onPress={() => toggleFaq(3)}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[3].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 3 && <Text style={styles.faqAnswer}>Baybble is conversation-first. Instead of making lessons and quizzes the centre of everything, it focuses on practising through relevant topics and conversations.</Text>}
           </Pressable>
-          <Pressable key="4" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 4 ? -1 : 4); }}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 4 ? '180deg' : '0deg' }] }} />}</Text></View>
+          <Pressable key="4" style={styles.faqItem} onPress={() => toggleFaq(4)}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[4].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
             {openFaq === 4 && <Text style={styles.faqAnswer}>Baybble is being shaped to support learners of multiple languages. The launch language list will be announced as development progresses.</Text>}
           </Pressable>
       </View>
