@@ -8,3 +8,11 @@ html, body, #root {
   background: #ffffff;
 }
 * { box-sizing: border-box; }
+
+@font-face {
+  font-family: 'Ionicons';
+  src: url('/fonts/Ionicons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
