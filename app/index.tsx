@@ -66,7 +66,7 @@ export default function Home() {
         </Pressable>
 
         {!compact && !chatMode && (
-          <View style={styles.nav}>
+          <View style={[styles.nav, styles.navCentered]}>
             {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
               <Pressable key={item} style={styles.navLink}>
                 <Text style={styles.navText}>{item}</Text>
@@ -120,7 +120,6 @@ export default function Home() {
                 returnKeyType="send"
                 accessibilityLabel="Start a conversation with Baybble"
               />
-              <Ionicons name="arrow-up-circle" size={27} color="#ffffff" style={styles.micIcon} />
             </View>
           </Pressable>
           <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
@@ -188,6 +187,7 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
+  navCentered: { position: 'absolute', left: '50%', transform: [{ translateX: -180 }] as any },
   navLink: { paddingVertical: 10, paddingHorizontal: 3 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
