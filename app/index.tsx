@@ -130,7 +130,7 @@ export default function Home() {
             <View style={[styles.announcementColumn, compact && styles.announcementColumnCompact]}>
               <ImageBackground
                 source={{ uri: 'https://images.pexels.com/photos/29039015/pexels-photo-29039015.jpeg?cs=srgb&dl=pexels-steve-29039015.jpg&fm=jpg' }}
-                style={styles.announcementTile}
+                style={[styles.announcementTile, compact && styles.announcementTileCompact]}
                 imageStyle={styles.announcementImage}
                 resizeMode="cover"
                 accessibilityLabel="Abstract gradient artwork from Pexels"
@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
   announcementColumn: { width: 330, gap: 14 },
   announcementColumnCompact: { width: '100%', flexDirection: 'row', gap: 12 },
   announcementTile: { width: '100%', height: 174, borderRadius: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717' },
+  announcementTileCompact: { flex: 1, width: undefined, height: 142 },
   announcementImage: { borderRadius: 13 },
   announcementShade: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, backgroundColor: 'rgba(0,0,0,0.22)' },
   announcementTitle: { color: '#ffffff', fontFamily: 'Arial Black', fontWeight: '900', fontSize: 21, letterSpacing: -0.7, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
