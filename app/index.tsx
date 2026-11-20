@@ -45,7 +45,7 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
-  const [authUser, setAuthUser] = useState<{ id: string; email?: string } | null>(null);
+  const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
@@ -53,10 +53,10 @@ export default function Home() {
   useEffect(() => {
     let alive = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (alive) setAuthUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email } : null);
+      if (alive) setAuthUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email, fullName: data.session.user.user_metadata?.full_name, avatarUrl: data.session.user.user_metadata?.avatar_url } : null);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      setAuthUser(session?.user ? { id: session.user.id, email: session.user.email, fullName: session.user.user_metadata?.full_name, avatarUrl: session.user.user_metadata?.avatar_url } : null);
     });
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
@@ -352,9 +352,26 @@ export default function Home() {
           )}
 
           <View style={styles.headerActions}>
-            <Pressable style={[styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel={authUser?.email ? 'Account' : 'Log in'}>
-              <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
-              <Text style={styles.loginText}>{authUser?.email ? 'Account' : 'Log In'}</Text>
+            <Pressable
+              style={authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]}
+              onPress={() => setAuthOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
+            >
+              {authUser ? (
+                <View style={styles.headerAvatar}>
+                  {authUser.avatarUrl ? (
+                    <Image source={{ uri: authUser.avatarUrl }} style={styles.headerAvatarImage} resizeMode="cover" />
+                  ) : (
+                    <Text style={styles.headerAvatarInitial}>{(authUser.fullName?.trim()?.[0] || authUser.email?.[0] || 'U').toUpperCase()}</Text>
+                  )}
+                </View>
+              ) : (
+                <>
+                  <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
+                  <Text style={styles.loginText}>Log In</Text>
+                </>
+              )}
             </Pressable>
             <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
               <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
@@ -545,6 +562,10 @@ const styles = StyleSheet.create({
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
+  profileButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 19, overflow: 'hidden' },
+  headerAvatar: { width: 36, height: 36, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#292929', borderWidth: 1, borderColor: '#505050' },
+  headerAvatarImage: { width: '100%', height: '100%' },
+  headerAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
   loginText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
