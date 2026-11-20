@@ -302,7 +302,7 @@ export default function Home() {
             <View style={styles.chatUtilityRail}>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
                 <View style={styles.railIconSlot}>
-                  <Ionicons name="add-outline" size={23} color="#eeeeee" />
+                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='%23eeeeee' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
                 </View>
                 <Text style={styles.railActionText}>New chat</Text>
               </Pressable>
