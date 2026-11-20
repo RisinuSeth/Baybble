@@ -154,7 +154,6 @@ export default function Home() {
                 {['English', 'Español', 'Français', 'Deutsch', 'Português', 'Italiano', '日本語'].map((language) => (
                   <View key={language} style={styles.marqueeItem}>
                     <Text style={styles.marqueeLanguage}>{language}</Text>
-                    <View style={styles.marqueeDot} />
                   </View>
                 ))}
               </View>
@@ -281,14 +280,13 @@ const styles = StyleSheet.create({
   stepsSection: { width: '100%', backgroundColor: '#fbfaff', paddingHorizontal: 28, paddingVertical: 88, alignItems: 'center' },
   stepCard: { flex: 1, minWidth: 220, borderWidth: 1, borderColor: '#ece8f4', borderRadius: 22, padding: 24, backgroundColor: '#ffffff' },
   stepNo: { color: '#9387c7', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12, letterSpacing: 1, marginBottom: 25 },
-  languageMarquee: { width: '100%', backgroundColor: '#1d1a29', paddingTop: 27, paddingBottom: 30, overflow: 'hidden' },
+  languageMarquee: { width: '100%', backgroundColor: 'transparent', paddingTop: 27, paddingBottom: 30, overflow: 'hidden' },
   marqueeEyebrow: { color: '#b9afd9', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2.5, textAlign: 'center', marginBottom: 22 },
   marqueeViewport: { width: '100%', overflow: 'hidden' },
   marqueeTrack: { flexDirection: 'row' },
   marqueeGroup: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
   marqueeItem: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  marqueeLanguage: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 16, letterSpacing: -0.3 },
-  marqueeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#c5a9f4' },
+  marqueeLanguage: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 16, letterSpacing: -0.3 },
   pricingSection: { width: '100%', paddingHorizontal: 24, paddingVertical: 90, alignItems: 'center' },
   priceCard: { width: '100%', maxWidth: 440, borderWidth: 1, borderColor: '#e9e5f1', borderRadius: 28, padding: 30, backgroundColor: '#ffffff', shadowColor: '#776a9f', shadowOpacity: 0.08, shadowRadius: 25, shadowOffset: { width: 0, height: 10 }, elevation: 3 },
   priceLabel: { color: '#7669a8', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.8 },
