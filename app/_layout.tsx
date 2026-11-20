@@ -5,12 +5,18 @@ import { Ionicons } from '@expo/vector-icons';
 import '../global.css';
 
 export default function RootLayout() {
-  useFonts(Ionicons.font);
+  const [iconsLoaded] = useFonts(Ionicons.font);
+
+  // Keep the app from rendering icon glyphs before the Ionicons font is ready.
+  // This prevents the browser from briefly (or persistently) showing missing-glyph boxes.
+  if (!iconsLoaded) {
+    return null;
+  }
 
   return (
     <>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#ffffff' } }} />
+      <StatusBar style="light" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#080808' } }} />
     </>
   );
 }
