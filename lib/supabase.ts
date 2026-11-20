@@ -9,6 +9,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
   supabaseUrl || 'https://xquyfsquqqsbufmonewm.supabase.co',
-  supabaseAnonKey || 'sb_publishable_NUGQ-j0QJbtD5rOb-IU2YQ_kzll4bK6',
+  supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxdXlmc3F1cXFzYnVmbW9uZXdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwNzMyOTAsImV4cCI6MjExMDY0OTI5MH0.VGOpv_uhdsFzDa0Ma_dvkVm456Ao4v2qfJiBdc63nkg',
   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
 );
