@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Modal } from 'react-native';
+import { supabase } from '../lib/supabase';
+import AuthDialog from '../components/AuthDialog';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
@@ -41,9 +44,22 @@ export default function Home() {
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<{ email?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setAuthUser(data.session?.user ? { email: data.session.user.email } : null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ? { email: session.user.email } : null);
+    });
+    return () => { alive = false; listener.subscription.unsubscribe(); };
+  }, []);
 
   useEffect(() => {
     try {
@@ -236,6 +252,7 @@ export default function Home() {
   const gradientAngle = gradientRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   return (
+    <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
@@ -255,10 +272,10 @@ export default function Home() {
           )}
 
           <View style={styles.headerActions}>
-            <Pressable style={styles.loginButton}>
-              <Text style={styles.loginText}>Log In</Text>
+            <Pressable style={styles.loginButton} onPress={() => setAuthOpen(true)}>
+              <Text style={styles.loginText}>{authUser?.email ? 'Account' : 'Log In'}</Text>
             </Pressable>
-            <Pressable style={styles.startButton}>
+            <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
               <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
             </Pressable>
           </View>
@@ -300,6 +317,10 @@ export default function Home() {
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatBody}>
             <View style={styles.chatUtilityRail}>
+              <Pressable style={styles.railAction} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel="Account and sign in">
+                <View style={styles.railIconSlot}><Ionicons name="person-circle-outline" size={21} color="#eeeeee" /></View>
+                <Text style={styles.railActionText}>{authUser ? 'Account' : 'Sign in'}</Text>
+              </Pressable>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
                 <View style={styles.railIconSlot}>
                   <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='%23eeeeee' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
@@ -421,6 +442,8 @@ export default function Home() {
       )}
 
     </ScrollView>
+    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setAuthOpen(false); }} />
+    </>
   );
 }
 
