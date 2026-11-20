@@ -136,41 +136,35 @@ export default function Home() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
-      <View style={[styles.header, chatMode && styles.chatHeader, { paddingHorizontal: compact ? 20 : 52 }]}>
-        <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-          <BaybbleLogo />
-          <Text style={styles.wordmark}>Baybble</Text>
-        </Pressable>
+      {!chatMode && (
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
+          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+            <BaybbleLogo />
+            <Text style={styles.wordmark}>Baybble</Text>
+          </Pressable>
 
-        {!compact && !chatMode && (
-          <View style={[styles.nav, styles.navCentered]}>
-            {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-              <Pressable key={item} style={styles.navLink}>
-                <Text style={styles.navText}>{item}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.headerActions}>
-          {chatMode ? (
-            <Pressable style={styles.newChatButton} onPress={() => { stopGeneration(); setMessages([]); setDraft(''); setChatError(''); }}>
-              <Text style={styles.newChatText}>New chat</Text>
-            </Pressable>
-          ) : (
-            <>
-              <Pressable style={styles.loginButton}>
-                <Text style={styles.loginText}>Log In</Text>
-              </Pressable>
-              <Pressable style={styles.startButton}>
-                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
-              </Pressable>
-            </>
+          {!compact && (
+            <View style={[styles.nav, styles.navCentered]}>
+              {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
+                <Pressable key={item} style={styles.navLink}>
+                  <Text style={styles.navText}>{item}</Text>
+                </Pressable>
+              ))}
+            </View>
           )}
-        </View>
-      </View>
 
-      {compact && !chatMode && (
+          <View style={styles.headerActions}>
+            <Pressable style={styles.loginButton}>
+              <Text style={styles.loginText}>Log In</Text>
+            </Pressable>
+            <Pressable style={styles.startButton}>
+              <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {compact && !chatMode && ({compact && !chatMode && (
         <View style={styles.mobileNav}>
           {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
             <Pressable key={item} style={styles.navLink}>
