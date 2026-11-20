@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
@@ -6,54 +7,6 @@ const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6
 
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
-
-type IconName = 'time' | 'add' | 'close' | 'edit' | 'delete' | 'check';
-
-function CustomIcon({ name, size = 18, color = '#ffffff' }: { name: IconName; size?: number; color?: string }) {
-  const stroke = { position: 'absolute' as const, backgroundColor: color, borderRadius: 99 };
-  const frame = { width: size, height: size, position: 'relative' as const, flexShrink: 0 };
-  if (name === 'time') return (
-    <View style={[frame, { borderWidth: 1.7, borderColor: color, borderRadius: size / 2 }]}>
-      <View style={[stroke, { width: 1.7, height: size * 0.29, left: size / 2 - 0.85, top: size * 0.19 }]} />
-      <View style={[stroke, { width: size * 0.27, height: 1.7, left: size / 2 - 0.1, top: size / 2 - 0.85 }]} />
-      <View style={{ position: 'absolute', width: 3.2, height: 3.2, borderRadius: 2, backgroundColor: color, left: size / 2 - 1.6, top: size / 2 - 1.6 }} />
-    </View>
-  );
-  if (name === 'add') return (
-    <View style={frame}>
-      <View style={[stroke, { width: 1.8, height: size * 0.78, left: size * 0.45, top: size * 0.11 }]} />
-      <View style={[stroke, { width: size * 0.78, height: 1.8, left: size * 0.11, top: size * 0.45 }]} />
-    </View>
-  );
-  if (name === 'close') return (
-    <View style={frame}>
-      <View style={[stroke, { width: size * 1.05, height: 1.8, left: -size * 0.025, top: size * 0.45, transform: [{ rotate: '45deg' }] }]} />
-      <View style={[stroke, { width: size * 1.05, height: 1.8, left: -size * 0.025, top: size * 0.45, transform: [{ rotate: '-45deg' }] }]} />
-    </View>
-  );
-  if (name === 'check') return (
-    <View style={frame}>
-      <View style={[stroke, { width: size * 0.38, height: 2, left: size * 0.12, top: size * 0.55, transform: [{ rotate: '45deg' }] }]} />
-      <View style={[stroke, { width: size * 0.68, height: 2, left: size * 0.34, top: size * 0.43, transform: [{ rotate: '-48deg' }] }]} />
-    </View>
-  );
-  if (name === 'delete') return (
-    <View style={frame}>
-      <View style={[stroke, { width: size * 0.76, height: 1.7, left: size * 0.12, top: size * 0.22 }]} />
-      <View style={[stroke, { width: size * 0.28, height: 1.7, left: size * 0.36, top: size * 0.09 }]} />
-      <View style={{ position: 'absolute', left: size * 0.2, top: size * 0.34, width: size * 0.6, height: size * 0.55, borderWidth: 1.5, borderTopWidth: 0, borderColor: color, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 }} />
-      <View style={[stroke, { width: 1.4, height: size * 0.32, left: size * 0.42, top: size * 0.46 }]} />
-      <View style={[stroke, { width: 1.4, height: size * 0.32, left: size * 0.58, top: size * 0.46 }]} />
-    </View>
-  );
-  return (
-    <View style={frame}>
-      <View style={{ position: 'absolute', width: size * 0.66, height: size * 0.17, left: size * 0.16, top: size * 0.39, borderWidth: 1.6, borderColor: color, borderRadius: 1.5, transform: [{ rotate: '-45deg' }] }} />
-      <View style={[stroke, { width: size * 0.13, height: size * 0.13, left: size * 0.12, top: size * 0.73, transform: [{ rotate: '-45deg' }] }]} />
-      <View style={[stroke, { width: size * 0.17, height: 1.5, left: size * 0.69, top: size * 0.18, transform: [{ rotate: '-45deg' }] }]} />
-    </View>
-  );
-}
 
 function BaybbleLogo() {
   return (
@@ -347,11 +300,11 @@ export default function Home() {
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatTopBar}>
             <Pressable style={styles.chatToolButton} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-              <CustomIcon name="time" size={17} color="#eeeeee" />
+              <Ionicons name="time-outline" size={17} color="#eeeeee" />
               <Text style={styles.chatToolText}>History</Text>
             </Pressable>
             <Pressable style={styles.chatToolButton} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-              <CustomIcon name="add" size={19} color="#eeeeee" />
+              <Ionicons name="add-outline" size={19} color="#eeeeee" />
               <Text style={styles.chatToolText}>New chat</Text>
             </Pressable>
           </View>
@@ -361,11 +314,11 @@ export default function Home() {
                 <View style={styles.historyHeadingRow}>
                   <Text style={styles.historyHeading}>Your conversations</Text>
                   <Pressable onPress={() => setHistoryOpen(false)} accessibilityLabel="Close history">
-                    <CustomIcon name="close" size={19} color="#aaaaaa" />
+                    <Ionicons name="close" size={19} color="#aaaaaa" />
                   </Pressable>
                 </View>
                 <Pressable style={styles.historyNewButton} onPress={createNewChat}>
-                  <CustomIcon name="add" size={17} color="#ffffff" />
+                  <Ionicons name="add-outline" size={17} color="#ffffff" />
                   <Text style={styles.historyNewText}>New chat</Text>
                 </Pressable>
                 <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
@@ -384,7 +337,7 @@ export default function Home() {
                             accessibilityLabel="Conversation name"
                           />
                           <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
-                            <CustomIcon name="check" size={18} color="#ffffff" />
+                            <Ionicons name="checkmark" size={18} color="#ffffff" />
                           </Pressable>
                         </View>
                       ) : (
@@ -393,10 +346,10 @@ export default function Home() {
                             <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
                           </Pressable>
                           <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
-                            <CustomIcon name="edit" size={14} color="#999999" />
+                            <Ionicons name="create-outline" size={14} color="#999999" />
                           </Pressable>
                           <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
-                            <CustomIcon name="delete" size={14} color="#999999" />
+                            <Ionicons name="trash-outline" size={14} color="#999999" />
                           </Pressable>
                         </>
                       )}
