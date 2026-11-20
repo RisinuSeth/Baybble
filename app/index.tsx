@@ -116,7 +116,7 @@ export default function Home() {
           <Text style={styles.checkLine}>✓  Practise expressing yourself naturally</Text>
         </View>
         <View style={styles.chatCard}>
-          <View style={styles.chatHeader}><View style={styles.avatar}><Text style={styles.avatarText}>b</Text></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>Your language companion</Text></View><View style={styles.onlineDot}/></View>
+          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>Your language companion</Text></View></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Hey! What have you been into lately?</Text></View>
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I started watching a new series. It's really interesting.</Text></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Nice! You could also say, “I've started watching a new series.” What is it about?</Text></View>
@@ -269,7 +269,6 @@ const styles = StyleSheet.create({
   avatarText: { color: '#665b9d', fontSize: 22, fontWeight: '800' },
   chatName: { color: '#211e2a', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
   chatStatus: { color: '#8b8795', fontFamily: 'Manrope', fontSize: 10, marginTop: 2 },
-  onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#8dcaab', marginLeft: 'auto' },
   bayBubble: { alignSelf: 'flex-start', maxWidth: '88%', backgroundColor: '#f2f0fb', borderRadius: 17, borderBottomLeftRadius: 5, padding: 14, marginBottom: 13 },
   bubbleText: { color: '#373243', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
   youBubble: { alignSelf: 'flex-end', maxWidth: '88%', backgroundColor: '#252132', borderRadius: 17, borderBottomRightRadius: 5, padding: 14, marginBottom: 13 },
