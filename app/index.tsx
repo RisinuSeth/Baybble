@@ -308,7 +308,7 @@ export default function Home() {
               </Pressable>
               <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
                 <View style={styles.railIconSlot}>
-                  <Ionicons name="time-outline" size={20} color="#eeeeee" />
+                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23eeeeee' stroke-width='1.8'/%3E%3Cpath d='M12 7v5l3 2' fill='none' stroke='%23eeeeee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
                 </View>
                 <Text style={styles.railActionText}>History</Text>
               </Pressable>
