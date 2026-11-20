@@ -11,6 +11,21 @@ const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
 
+const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
+
+function profileInitials(name?: string, email?: string) {
+  const source = name?.trim() || email?.split('@')[0] || 'B';
+  const parts = source.replace(/[._-]+/g, ' ').split(/\\s+/).filter(Boolean);
+  return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)).toUpperCase();
+}
+
+function profileAvatarColour(email?: string) {
+  const value = email || 'baybble';
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  return avatarColours[Math.abs(hash) % avatarColours.length];
+}
+
 function BaybbleLogo() {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
@@ -359,11 +374,11 @@ export default function Home() {
               accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
             >
               {authUser ? (
-                <View style={styles.headerAvatar}>
+                <View style={[styles.headerAvatar, !authUser.avatarUrl && { backgroundColor: profileAvatarColour(authUser.email), borderWidth: 0 }]}>
                   {authUser.avatarUrl ? (
                     <Image source={{ uri: authUser.avatarUrl }} style={styles.headerAvatarImage} resizeMode="cover" />
                   ) : (
-                    <Text style={styles.headerAvatarInitial}>{(authUser.fullName?.trim()?.[0] || authUser.email?.[0] || 'U').toUpperCase()}</Text>
+                    <Text style={styles.headerAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
                   )}
                 </View>
               ) : (
@@ -420,8 +435,8 @@ export default function Home() {
                   {authUser?.avatarUrl ? (
                     <Image source={{ uri: authUser.avatarUrl }} style={styles.railAvatarImage} resizeMode="cover" />
                   ) : authUser ? (
-                    <View style={styles.railAvatarFallback}>
-                      <Text style={styles.railAvatarInitial}>{(authUser.fullName?.trim()?.[0] || authUser.email?.[0] || 'U').toUpperCase()}</Text>
+                    <View style={[styles.railAvatarFallback, { backgroundColor: profileAvatarColour(authUser.email) }]}>
+                      <Text style={styles.railAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
                     </View>
                   ) : (
                     <Ionicons name="person-circle-outline" size={21} color="#eeeeee" />
@@ -600,7 +615,7 @@ const styles = StyleSheet.create({
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
   railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
   railAvatarImage: { width: 24, height: 24, borderRadius: 12 },
-  railAvatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#292929', borderWidth: 1, borderColor: '#505050' },
+  railAvatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#536A9B' },
   railAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10 },
   railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
 
