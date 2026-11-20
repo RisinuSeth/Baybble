@@ -48,6 +48,9 @@ export default function Home() {
     abortController.current?.abort();
     abortController.current = null;
     setIsSending(false);
+    setMessages((current) => current.filter((item, index) =>
+      !(index === current.length - 1 && item.role === 'assistant' && !item.content)
+    ));
   };
 
   const sendMessage = async () => {
@@ -85,7 +88,7 @@ export default function Home() {
         const { value, done } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\\n');
+        const lines = buffer.split('\n');
         buffer = lines.pop() ?? '';
         for (const line of lines) {
           const trimmed = line.trim();
