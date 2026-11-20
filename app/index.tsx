@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Animated, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
 
@@ -86,7 +87,7 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
-          <Text style={styles.micIcon}>💬</Text>
+          <Ionicons name="mic-outline" size={21} color="#61588d" style={styles.micIcon} />
         </View>
         <Text style={styles.searchCaption}>Start with a hello. Bay will take it from there.</Text>
       </View>
@@ -120,7 +121,7 @@ export default function Home() {
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Hey! What have you been into lately?</Text></View>
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I started watching a new series. It's really interesting.</Text></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Nice! You could also say, “I've started watching a new series.” What is it about?</Text></View>
-          <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Keep the conversation going...</Text></View>
+          <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Keep the conversation going...</Text><Ionicons name="mic-outline" size={18} color="#81799b" /></View>
         </View>
       </View>
 
@@ -163,41 +164,62 @@ export default function Home() {
       </View>
 
       <View style={styles.pricingSection}>
-        <Text style={styles.sectionEyebrow}>SIMPLE BY DESIGN</Text>
-        <Text style={styles.sectionTitle}>Make room for better conversations.</Text>
-        <Text style={styles.sectionBody}>Baybble is being developed with a simple, accessible experience in mind. Plan details will be announced as the product develops.</Text>
+        <Text style={styles.sectionEyebrow}>PRICING</Text>
+        <Text style={styles.sectionTitle}>Simple, transparent pricing.</Text>
+        <Text style={styles.sectionBody}>A straightforward way to make room for better conversations. We’ll share the full plans before Baybble opens.</Text>
         <View style={styles.priceCard}>
           <Text style={styles.priceLabel}>THE BAYBBLE EXPERIENCE</Text>
-          <Text style={styles.priceTitle}>Start with Bay</Text>
-          <Text style={styles.priceDescription}>Explore a more natural way to practise a language and discover what conversation-first learning can feel like.</Text>
-          <Text style={styles.priceBullet}>✓  A friendly place to practise</Text>
-          <Text style={styles.priceBullet}>✓  Conversations around your interests</Text>
-          <Text style={styles.priceBullet}>✓  A relaxed way to build confidence</Text>
-          <Text style={styles.priceNote}>Availability and pricing will be confirmed at launch.</Text>
+          <Text style={styles.priceTitle}>A better way to practise.</Text>
+          <View style={styles.priceComingRow}><Text style={styles.priceComing}>Coming soon</Text><Text style={styles.pricePeriod}>Plans & pricing</Text></View>
+          <Text style={styles.priceDescription}>Baybble is being built around natural, everyday conversation — not a one-size-fits-all classroom.</Text>
+          <Text style={styles.priceBullet}>✓  Conversation practice around real-life topics</Text>
+          <Text style={styles.priceBullet}>✓  A friendly companion that helps you find your words</Text>
+          <Text style={styles.priceBullet}>✓  A relaxed space to build speaking confidence</Text>
+          <Text style={styles.priceNote}>No trial or subscription is being advertised until the plans are confirmed.</Text>
         </View>
+      </View>
+
+      <View style={styles.topicsSection}>
+        <Text style={styles.sectionEyebrow}>PRACTISE REAL-LIFE CONVERSATIONS</Text>
+        <Text style={styles.sectionTitle}>Fluency starts with the things you want to say.</Text>
+        <Text style={styles.sectionBody}>Start with an everyday situation, follow your curiosity, and let the conversation go somewhere real.</Text>
+        <View style={styles.topicsGrid}>
+          {[
+            'I’m feeling tired', 'Making plans', 'Making reservations',
+            'At the restaurant', 'Small talk', 'Asking for directions',
+            'Shopping', 'Talking about the weather', 'Introducing yourself',
+            'Daily routines', 'Past & future', 'Opinions & preferences'
+          ].map((topic, index) => (
+            <View key={topic} style={[styles.topicChip, index % 4 === 0 && styles.topicChipAccent]}>
+              <Text style={styles.topicChipText}>{topic}</Text>
+              <Ionicons name="arrow-up-right" size={15} color="#77718c" />
+            </View>
+          ))}
+        </View>
+        <Text style={styles.topicsFootnote}>A few places to begin. Your conversations can go anywhere.</Text>
       </View>
 
       <View style={styles.faqSection}>
         <Text style={styles.sectionEyebrow}>GOOD TO KNOW</Text>
         <Text style={styles.sectionTitle}>A few things you might be wondering.</Text>
-                  <Pressable key="0" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 0 ? -1 : 0)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Text style={styles.faqPlus}>{openFaq === 0 ? '−' : '+'}</Text></View>
+                  <Pressable key="0" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 0 ? -1 : 0); }}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 0 ? '180deg' : '0deg' }] }} />}</Text></View>
             {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI language-learning companion designed around natural conversation. The goal is to help you practise expressing yourself in a friendly, low-pressure environment.</Text>}
           </Pressable>
-          <Pressable key="1" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 1 ? -1 : 1)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Text style={styles.faqPlus}>{openFaq === 1 ? '−' : '+'}</Text></View>
+          <Pressable key="1" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 1 ? -1 : 1); }}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 1 ? '180deg' : '0deg' }] }} />}</Text></View>
             {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants to become more comfortable using another language, whether you're just beginning or already know the basics.</Text>}
           </Pressable>
-          <Pressable key="2" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 2 ? -1 : 2)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Text style={styles.faqPlus}>{openFaq === 2 ? '−' : '+'}</Text></View>
+          <Pressable key="2" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 2 ? -1 : 2); }}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know what to say?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 2 ? '180deg' : '0deg' }] }} />}</Text></View>
             {openFaq === 2 && <Text style={styles.faqAnswer}>Not at all. You can begin with a greeting, ask a question, or choose a topic you enjoy. Getting started can be as simple as saying hello.</Text>}
           </Pressable>
-          <Pressable key="3" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 3 ? -1 : 3)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Text style={styles.faqPlus}>{openFaq === 3 ? '−' : '+'}</Text></View>
+          <Pressable key="3" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 3 ? -1 : 3); }}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Is Baybble a traditional language course?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 3 ? '180deg' : '0deg' }] }} />}</Text></View>
             {openFaq === 3 && <Text style={styles.faqAnswer}>Baybble is conversation-first. Instead of making lessons and quizzes the centre of everything, it focuses on practising through relevant topics and conversations.</Text>}
           </Pressable>
-          <Pressable key="4" style={styles.faqItem} onPress={() => setOpenFaq(openFaq === 4 ? -1 : 4)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Text style={styles.faqPlus}>{openFaq === 4 ? '−' : '+'}</Text></View>
+          <Pressable key="4" style={styles.faqItem} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setOpenFaq(openFaq === 4 ? -1 : 4); }}>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Which languages will be available?</Text><Text style={styles.faqPlus}>{<Ionicons name="chevron-down" size={19} color="#766aa8" style={{ transform: [{ rotate: openFaq === 4 ? '180deg' : '0deg' }] }} />}</Text></View>
             {openFaq === 4 && <Text style={styles.faqAnswer}>Baybble is being shaped to support learners of multiple languages. The launch language list will be announced as development progresses.</Text>}
           </Pressable>
       </View>
@@ -245,7 +267,7 @@ const styles = StyleSheet.create({
   description: { color: '#393642', fontFamily: 'Manrope', fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 610, marginTop: 22, marginBottom: 38 },
   searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
   searchIcon: { color: '#61588d', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
-  micIcon: { color: '#61588d', fontSize: 21, marginLeft: 12, marginRight: 2 },
+  micIcon: { marginLeft: 12, marginRight: 2 },
   input: { flex: 1, minWidth: 0, color: '#17151f', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
   searchCaption: { color: '#777281', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   introBand: { width: '100%', paddingVertical: 58, paddingHorizontal: 26, alignItems: 'center', backgroundColor: '#f8f7fc' },
@@ -273,7 +295,7 @@ const styles = StyleSheet.create({
   bubbleText: { color: '#373243', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
   youBubble: { alignSelf: 'flex-end', maxWidth: '88%', backgroundColor: '#252132', borderRadius: 17, borderBottomRightRadius: 5, padding: 14, marginBottom: 13 },
   youBubbleText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
-  chatFakeInput: { borderWidth: 1, borderColor: '#ece9f2', borderRadius: 999, padding: 15, marginTop: 8 },
+  chatFakeInput: { borderWidth: 1, borderColor: '#ece9f2', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 15, marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   fakePlaceholder: { color: '#a09baa', fontFamily: 'Manrope', fontSize: 11 },
   chatFootnote: { color: '#a09baa', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 13 },
   useCard: { flex: 1, minWidth: 220, borderWidth: 1, borderColor: '#eeebf4', borderRadius: 22, padding: 23, backgroundColor: '#ffffff' },
@@ -287,13 +309,22 @@ const styles = StyleSheet.create({
   marqueeGroup: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
   marqueeItem: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   marqueeLanguage: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 16, letterSpacing: -0.3 },
-  pricingSection: { width: '100%', paddingHorizontal: 24, paddingVertical: 90, alignItems: 'center' },
+  pricingSection: { width: '100%', paddingHorizontal: 24, paddingVertical: 90, alignItems: 'center', backgroundColor: '#fbfaff' },
   priceCard: { width: '100%', maxWidth: 440, borderWidth: 1, borderColor: '#e9e5f1', borderRadius: 28, padding: 30, backgroundColor: '#ffffff', shadowColor: '#776a9f', shadowOpacity: 0.08, shadowRadius: 25, shadowOffset: { width: 0, height: 10 }, elevation: 3 },
   priceLabel: { color: '#7669a8', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.8 },
   priceTitle: { color: '#211d2a', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, marginTop: 20 },
+  priceComingRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 16, marginBottom: 8 },
+  priceComing: { color: '#211d2a', fontFamily: 'Manrope', fontWeight: '800', fontSize: 29, letterSpacing: -1 },
+  pricePeriod: { color: '#888293', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
   priceDescription: { color: '#686373', fontFamily: 'Manrope', fontSize: 13, lineHeight: 23, marginTop: 12, marginBottom: 22 },
   priceBullet: { color: '#413d4c', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600', marginBottom: 13 },
   priceNote: { color: '#96919f', fontFamily: 'Manrope', fontSize: 10, textAlign: 'center', lineHeight: 17, marginTop: 12 },
+  topicsSection: { width: '100%', paddingHorizontal: 28, paddingVertical: 90, alignItems: 'center' },
+  topicsGrid: { width: '100%', maxWidth: 1000, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 },
+  topicChip: { minHeight: 58, minWidth: 190, flexGrow: 1, maxWidth: 235, borderWidth: 1, borderColor: '#e9e6f0', borderRadius: 16, paddingHorizontal: 17, paddingVertical: 14, backgroundColor: '#ffffff', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  topicChipAccent: { backgroundColor: '#f3f0ff', borderColor: '#e8e2ff' },
+  topicChipText: { color: '#262231', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12, flexShrink: 1 },
+  topicsFootnote: { color: '#888293', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 25 },
   faqSection: { width: '100%', maxWidth: 850, paddingHorizontal: 28, paddingVertical: 80, alignSelf: 'center' },
   faqItem: { borderBottomWidth: 1, borderBottomColor: '#eeebf3', paddingVertical: 21 },
   faqQuestionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 18 },
