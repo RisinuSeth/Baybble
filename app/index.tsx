@@ -164,7 +164,7 @@ export default function Home() {
         </View>
       )}
 
-      {compact && !chatMode && ({compact && !chatMode && (
+      {compact && !chatMode && (
         <View style={styles.mobileNav}>
           {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
             <Pressable key={item} style={styles.navLink}>
