@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BLACK_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#000000"/><circle cx="43" cy="43" r="17" fill="#000000"/></g></svg>';
@@ -24,31 +25,44 @@ export default function Home() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
-      <View style={[styles.header, { paddingHorizontal: compact ? 20 : 54 }]}>
+      <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-          <BaybbleLogo />
+          <View style={styles.logoMark}>
+            <View style={styles.logoBubbleOne} />
+            <View style={styles.logoBubbleTwo} />
+          </View>
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
-        {!compact ? (
+        {!compact && (
           <View style={styles.nav}>
-            {['Models', 'Product', 'Research', 'Company'].map((item) => (
-              <Pressable key={item} style={styles.navItem}><Text style={styles.navText}>{item}</Text></Pressable>
+            {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
+              <Pressable key={item} style={styles.navLink}>
+                <Text style={styles.navText}>{item}</Text>
+              </Pressable>
             ))}
           </View>
-        ) : null}
+        )}
 
-        <View style={styles.headerRight}>
-          <Pressable style={styles.login}><Text style={styles.loginText}>Log in</Text></Pressable>
-          <Pressable style={styles.headerCta}><Text style={styles.headerCtaText}>Explore Baybble ↗</Text></Pressable>
+        <View style={styles.headerActions}>
+          <Pressable style={styles.loginButton}>
+            <Text style={styles.loginText}>Log In</Text>
+          </Pressable>
+          <Pressable style={styles.startButton}>
+            <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+          </Pressable>
         </View>
       </View>
 
-      {compact ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mobileNav}>
-          {['Models', 'Product', 'Research', 'Company'].map((item) => <Text key={item} style={styles.navText}>{item}</Text>)}
-        </ScrollView>
-      ) : null}
+      {compact && (
+        <View style={styles.mobileNav}>
+          {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
+            <Pressable key={item} style={styles.navLink}>
+              <Text style={styles.navText}>{item}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
         <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
@@ -56,20 +70,20 @@ export default function Home() {
         <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
           An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
         </Text>
-        <View style={[styles.searchBar, compact && styles.searchBarCompact]}>
-          <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" fill="none" stroke="#111111" stroke-width="1.8"/><path d="M16 16l5 5" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round"/></svg>') }} style={styles.searchIcon} />
+        <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
+          <Ionicons name="search-outline" size={25} color="#000000" style={styles.searchIcon} />
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="What would you like to work through?"
-            placeholderTextColor="#777777"
-            style={styles.searchInput}
+            placeholder="What's on your mind?"
+            placeholderTextColor="#77718c"
+            style={styles.input}
             returnKeyType="send"
-            accessibilityLabel="Describe a problem or idea"
+            accessibilityLabel="Message Bay"
           />
-          <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" fill="none" stroke="#111111" stroke-width="1.8"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round"/></svg>') }} style={styles.micIcon} />
+          <Ionicons name="mic-outline" size={21} color="#000000" style={styles.micIcon} />
         </View>
-        <Text style={styles.searchCaption}>Start with a question, a challenge or an idea.</Text>
+        <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
         <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
       </View>
 
@@ -195,31 +209,32 @@ export default function Home() {
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#ffffff' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 78, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eeeeee', backgroundColor: '#ffffff', zIndex: 2 },
+  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  logo: { width: 29, height: 29 },
-  wordmark: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 22, letterSpacing: -1 },
-  nav: { flexDirection: 'row', alignItems: 'center', gap: 29 },
-  navItem: { paddingVertical: 12 },
-  navText: { color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 20 },
-  login: { paddingVertical: 12 },
-  loginText: { color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
-  headerCta: { backgroundColor: '#080808', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 17 },
-  headerCtaText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
-  mobileNav: { width: '100%', paddingHorizontal: 22, paddingVertical: 13, gap: 25, borderBottomWidth: 1, borderBottomColor: '#eeeeee' },
+  logoMark: { width: 32, height: 32, position: 'relative' },
+  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#000000', top: 0, left: 0 },
+  logoBubbleTwo: { position: 'absolute', width: 18, height: 18, borderRadius: 10, backgroundColor: '#000000', bottom: 0, right: 0, borderWidth: 2, borderColor: '#ffffff' },
+  wordmark: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
+  nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
+  navLink: { paddingVertical: 10, paddingHorizontal: 3 },
+  navText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
+  loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
+  loginText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
+  startButton: { backgroundColor: '#17151f', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
+  mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', alignItems: 'center', paddingBottom: 83, backgroundColor: '#ffffff' },
   heroEyebrow: { color: '#555555', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
   heroDescription: { color: '#333333', fontFamily: 'Manrope', fontWeight: '500', fontSize: 16, lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 23, marginBottom: 36 },
   heroDescriptionCompact: { fontSize: 14, lineHeight: 24 },
-  searchBar: { width: '100%', maxWidth: 790, minHeight: 82, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', paddingHorizontal: 26, shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
-  searchBarCompact: { minHeight: 68, paddingHorizontal: 18 },
-  searchIcon: { width: 25, height: 25, marginRight: 15 },
-  micIcon: { width: 21, height: 21, marginLeft: 12, marginRight: 2 },
-  searchInput: { flex: 1, minWidth: 0, color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
-  searchCaption: { color: '#777777', fontFamily: 'Manrope', fontSize: 11, fontWeight: '500', marginTop: 15, textAlign: 'center' },
+  searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
+  searchIcon: { color: '#000000', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
+  micIcon: { marginLeft: 12, marginRight: 2 },
+  input: { flex: 1, minWidth: 0, color: '#000000', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
+  searchCaption: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
   divider: { width: '100%', height: 1, backgroundColor: '#e9e9e9' },
   featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
