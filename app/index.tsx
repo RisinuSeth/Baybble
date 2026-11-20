@@ -11,7 +11,7 @@ export default function Home() {
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [history, setHistory] = useState<string[]>([]);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInput | null>(null);
   const listRef = useRef<ScrollView>(null);
   const started = messages.length > 0;
 
