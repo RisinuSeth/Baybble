@@ -301,11 +301,15 @@ export default function Home() {
           <View style={styles.chatBody}>
             <View style={styles.chatUtilityRail}>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-                <Ionicons name="add" size={21} color="#eeeeee" />
+                <View style={styles.railIconSlot}>
+                  <Ionicons name="add" size={21} color="#eeeeee" />
+                </View>
                 <Text style={styles.railActionText}>New chat</Text>
               </Pressable>
               <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-                <Ionicons name="time-outline" size={18} color="#eeeeee" />
+                <View style={styles.railIconSlot}>
+                  <Ionicons name="time-outline" size={20} color="#eeeeee" />
+                </View>
                 <Text style={styles.railActionText}>History</Text>
               </Pressable>
             </View>
@@ -460,6 +464,7 @@ const styles = StyleSheet.create({
   chatBody: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', position: 'relative' },
   chatUtilityRail: { width: 76, flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
+  railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
   railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
 
   historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
