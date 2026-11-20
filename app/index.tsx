@@ -129,25 +129,25 @@ export default function Home() {
             </View>
             <View style={[styles.announcementColumn, compact && styles.announcementColumnCompact]}>
               <ImageBackground
-                source={{ uri: 'https://images.pexels.com/photos/35008972/pexels-photo-35008972/free-photo-of-abstract-blue-fluid-art-with-gradient-waves.jpeg?auto=compress&dpr=1&h=1200&w=1260' }}
-                style={[styles.announcementTile, compact && styles.announcementTileCompact]}
+                source={{ uri: 'https://images.pexels.com/photos/29039015/pexels-photo-29039015.jpeg?cs=srgb&dl=pexels-steve-29039015.jpg&fm=jpg' }}
+                style={styles.announcementTile}
                 imageStyle={styles.announcementImage}
                 resizeMode="cover"
                 accessibilityLabel="Abstract gradient artwork from Pexels"
               >
                 <View style={styles.announcementShade}>
-                  <Text style={styles.announcementTitle}>BAYBBLE UPDATES</Text>
+                  <Text style={styles.announcementTitle}>Baybble Updates</Text>
                 </View>
               </ImageBackground>
               <ImageBackground
-                source={{ uri: 'https://images.pexels.com/photos/36025195/pexels-photo-36025195/free-photo-of-abstract-orange-sculptural-form-on-gradient-background.jpeg?auto=compress&dpr=1&h=900&w=1260' }}
-                style={[styles.announcementTile, styles.announcementTileSecondary, compact && styles.announcementTileSecondaryCompact]}
+                source={{ uri: 'https://images.pexels.com/photos/34204383/pexels-photo-34204383.jpeg?cs=srgb&dl=pexels-steve-34204383.jpg&fm=jpg' }}
+                style={styles.announcementTile}
                 imageStyle={styles.announcementImage}
                 resizeMode="cover"
-                accessibilityLabel="Abstract orange sculptural artwork from Pexels"
+                accessibilityLabel="Abstract 3D gradient artwork from Pexels"
               >
                 <View style={styles.announcementShade}>
-                  <Text style={styles.announcementTitle}>MEET THE BAY MODELS</Text>
+                  <Text style={styles.announcementTitle}>Meet the Bay models</Text>
                 </View>
               </ImageBackground>
             </View>
@@ -229,14 +229,11 @@ const styles = StyleSheet.create({
   heroLayoutCompact: { flexDirection: 'column', gap: 34 },
   searchColumn: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center' },
   announcementColumn: { width: 330, gap: 14 },
-  announcementColumnCompact: { width: '100%', flexDirection: 'column', gap: 12 },
-  announcementTile: { width: '100%', height: 176, borderRadius: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717' },
-  announcementTileCompact: { width: '100%', height: 220 },
-  announcementTileSecondary: { height: 160 },
-  announcementTileSecondaryCompact: { width: '100%', height: 160 },
+  announcementColumnCompact: { width: '100%', flexDirection: 'row', gap: 12 },
+  announcementTile: { width: '100%', height: 174, borderRadius: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717' },
   announcementImage: { borderRadius: 13 },
   announcementShade: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, backgroundColor: 'rgba(0,0,0,0.22)' },
-  announcementTitle: { color: '#ffffff', fontFamily: 'Arial Black', fontWeight: '900', fontSize: 21, letterSpacing: 1.15, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 9 },
+  announcementTitle: { color: '#ffffff', fontFamily: 'Arial Black', fontWeight: '900', fontSize: 21, letterSpacing: -0.7, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
 
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
