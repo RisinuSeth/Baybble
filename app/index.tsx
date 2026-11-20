@@ -167,8 +167,7 @@ export default function Home() {
     setActiveSessionId(session.id);
     setMessages(session.messages);
     setDraft('');
-    setChatError('');
-    setChatMode(true);
+    setChatError('');    setChatMode(true);
     setHistoryOpen(false);
     setRenamingSessionId(null);
     transition.setValue(1);
@@ -337,8 +336,7 @@ export default function Home() {
     <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
-          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
             <BaybbleLogo />
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
@@ -354,7 +352,8 @@ export default function Home() {
           )}
 
           <View style={styles.headerActions}>
-            <Pressable style={styles.loginButton} onPress={() => setAuthOpen(true)}>
+            <Pressable style={[styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel={authUser?.email ? 'Account' : 'Log in'}>
+              {authUser?.email ? <Ionicons name="person-circle-outline" size={19} color="#eeeeee" /> : null}
               <Text style={styles.loginText}>{authUser?.email ? 'Account' : 'Log In'}</Text>
             </Pressable>
             <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
@@ -507,8 +506,7 @@ export default function Home() {
                       onKeyPress={(event: any) => {
                         const key = event?.nativeEvent?.key ?? event?.key;
                         const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
-                        if (key === 'Enter' && !shift) {
-                          event?.preventDefault?.();
+                        if (key === 'Enter' && !shift) {                          event?.preventDefault?.();
                           sendMessage();
                         }
                       }}
