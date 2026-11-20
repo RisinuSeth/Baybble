@@ -15,7 +15,7 @@ const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#
 
 function profileInitials(name?: string, email?: string) {
   const source = name?.trim() || email?.split('@')[0] || 'B';
-  const parts = source.replace(/[._-]+/g, ' ').split(/\\s+/).filter(Boolean);
+  const parts = source.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
   return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)).toUpperCase();
 }
 
