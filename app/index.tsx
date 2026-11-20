@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Animated, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
@@ -83,7 +83,7 @@ export default function Home() {
           Describe a problem, question or idea. Baybble helps you understand it, explore possible solutions and decide what to do next.
         </Text>
         <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
-          <Text style={styles.searchIcon}>⌕</Text>
+          <Ionicons name="search-outline" size={25} color="#000000" style={styles.searchIcon} />
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -93,7 +93,7 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
-          <Ionicons name="mic-outline" size={21} color="#61588d" style={styles.micIcon} />
+          <Ionicons name="mic-outline" size={21} color="#000000" style={styles.micIcon} />
         </View>
         <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
       </View>
@@ -107,9 +107,9 @@ export default function Home() {
         <Text style={styles.sectionTitle}>A clearer way to work through life's challenges.</Text>
         <Text style={styles.sectionBody}>Baybble goes beyond quick answers: it helps break down complex problems, compare possible approaches and create practical next steps.</Text>
         <View style={styles.cardsRow}>
-          <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardIcon}>💬</Text><Text style={styles.cardTitle}>Make sense of a problem</Text><Text style={styles.cardBody}>Explain what's happening in your own words. Bay helps identify the real challenge and the details that matter.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardIcon}>✦</Text><Text style={styles.cardTitle}>Explore your options</Text><Text style={styles.cardBody}>Compare different approaches, consider trade-offs and discover possibilities you may not have considered.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardIcon}>🧠</Text><Text style={styles.cardTitle}>Turn ideas into action</Text><Text style={styles.cardBody}>Break a big challenge into manageable steps, build a plan and work out what to do next.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Ionicons name="chatbubble-ellipses-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Make sense of a problem</Text><Text style={styles.cardBody}>Explain what's happening in your own words. Bay helps identify the real challenge and the details that matter.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Ionicons name="sparkles-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Explore your options</Text><Text style={styles.cardBody}>Compare different approaches, consider trade-offs and discover possibilities you may not have considered.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Ionicons name="bulb-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Turn ideas into action</Text><Text style={styles.cardBody}>Break a big challenge into manageable steps, build a plan and work out what to do next.</Text></View>
         </View>
       </View>
 
@@ -127,7 +127,7 @@ export default function Home() {
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>What are you trying to solve? Share the situation and I'll help break it down.</Text></View>
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I want to start a business, but I have too many ideas and don't know where to begin.</Text></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's compare your ideas. What are you considering, and what matters most when choosing one?</Text></View>
-          <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Tell Bay a little more...</Text><Ionicons name="mic-outline" size={18} color="#81799b" /></View>
+          <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Tell Bay a little more...</Text><Ionicons name="mic-outline" size={18} color="#000000" /></View>
         </View>
       </View>
 
@@ -137,8 +137,8 @@ export default function Home() {
         <Text style={styles.sectionBody}>From everyday decisions to ambitious ideas, bring the things you want to figure out.</Text>
         <View style={styles.cardsRow}>
           <View style={styles.useCard}><Ionicons name="airplane-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Make a difficult decision</Text><Text style={styles.cardBody}>Lay out what matters, compare your options and think through the consequences before choosing.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>☕</Text><Text style={styles.cardTitle}>Organise your next steps</Text><Text style={styles.cardBody}>Turn a busy week, a complicated task or a big goal into a manageable plan.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>🎧</Text><Text style={styles.cardTitle}>Bring an idea to life</Text><Text style={styles.cardBody}>Shape an early idea, identify what it needs and map out a realistic way to get started.</Text></View>
+          <View style={styles.useCard}><Ionicons name="calendar-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Organise your next steps</Text><Text style={styles.cardBody}>Turn a busy week, a complicated task or a big goal into a manageable plan.</Text></View>
+          <View style={styles.useCard}><Ionicons name="headset-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Bring an idea to life</Text><Text style={styles.cardBody}>Shape an early idea, identify what it needs and map out a realistic way to get started.</Text></View>
         </View>
       </View>
 
@@ -198,7 +198,7 @@ export default function Home() {
           ].map((topic, index) => (
             <View key={topic} style={[styles.topicChip, index % 4 === 0 && styles.topicChipAccent]}>
               <Text style={styles.topicChipText}>{topic}</Text>
-              <Ionicons name="arrow-up-outline" size={15} color="#77718c" />
+              <Ionicons name="arrow-up-outline" size={15} color="#000000" />
             </View>
           ))}
         </View>
@@ -209,7 +209,7 @@ export default function Home() {
         <Text style={styles.sectionEyebrow}>GET TO KNOW BAYBBLE</Text>
         <Text style={styles.sectionTitle}>Frequently asked questions</Text>
                   <Pressable key="0" style={styles.faqItem} onPress={() => toggleFaq(0)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[0].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#766aa8" /></Animated.View></View>
+            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text><Animated.View style={{ transform: [{ rotate: faqAnimations[0].interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) }] }}><Ionicons name="chevron-down" size={19} color="#000000" /></Animated.View></View>
             {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI-powered problem-solving platform. Describe a challenge, question or idea, and it helps you understand the situation, evaluate options and identify practical next steps.</Text>}
           </Pressable>
           <Pressable key="1" style={styles.faqItem} onPress={() => toggleFaq(1)}>
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
   loginText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   startButton: { backgroundColor: '#17151f', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
-  startText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
+  startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingBottom: 70, zIndex: 1 },
   eyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 13, letterSpacing: 2.1, textAlign: 'center' },
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   bayBubble: { alignSelf: 'flex-start', maxWidth: '88%', backgroundColor: '#f2f0fb', borderRadius: 17, borderBottomLeftRadius: 5, padding: 14, marginBottom: 13 },
   bubbleText: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
   youBubble: { alignSelf: 'flex-end', maxWidth: '88%', backgroundColor: '#252132', borderRadius: 17, borderBottomRightRadius: 5, padding: 14, marginBottom: 13 },
-  youBubbleText: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
+  youBubbleText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
   chatFakeInput: { borderWidth: 1, borderColor: '#ece9f2', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 15, marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   fakePlaceholder: { color: '#000000', fontFamily: 'Manrope', fontSize: 11 },
   chatFootnote: { color: '#000000', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 13 },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   ctaTitle: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 44, letterSpacing: -1.8, textAlign: 'center', maxWidth: 720 },
   ctaBody: { color: '#000000', fontFamily: 'Manrope', fontSize: 14, textAlign: 'center', marginTop: 16 },
   ctaButton: { backgroundColor: '#211e2d', borderRadius: 999, paddingVertical: 15, paddingHorizontal: 25, marginTop: 28 },
-  ctaButtonText: { color: '#000000', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800' },
+  ctaButtonText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800' },
   footer: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 18, paddingHorizontal: 35, paddingVertical: 30, borderTopWidth: 1, borderTopColor: '#efedf3', backgroundColor: '#ffffff' },
   footerBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   footerWordmark: { color: '#000000', fontFamily: 'Manrope', fontSize: 20, fontWeight: '800' },
