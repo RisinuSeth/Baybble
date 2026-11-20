@@ -147,7 +147,6 @@ export default function Home() {
       </View>
 
       <View style={styles.languageMarquee}>
-        <Text style={styles.marqueeEyebrow}>A WORLD OF WORDS</Text>
         <View style={styles.marqueeViewport}>
           <Animated.View style={[styles.marqueeTrack, { width: width * 2, transform: [{ translateX: marqueeShift }] }]}>
             {[0, 1].map((copy) => (
