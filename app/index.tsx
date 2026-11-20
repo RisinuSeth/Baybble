@@ -23,6 +23,14 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
+  const [chatMode, setChatMode] = useState(false);
+  const [messages, setMessages] = useState<string[]>([]);
+  const sendMessage = () => {
+    const message = draft.trim();
+    if (!message) return;
+    setMessages((current) => [...current, message]);
+    setDraft('');
+  };
   const gradientRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -35,7 +43,7 @@ export default function Home() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
-      <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
+      <View style={[styles.header, chatMode && styles.chatHeader, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
           <View style={styles.logoMark}>
             <View style={styles.logoBubbleOne} />
@@ -44,7 +52,7 @@ export default function Home() {
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
-        {!compact && (
+        {!compact && !chatMode && (
           <View style={styles.nav}>
             {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
               <Pressable key={item} style={styles.navLink}>
@@ -55,16 +63,25 @@ export default function Home() {
         )}
 
         <View style={styles.headerActions}>
-          <Pressable style={styles.loginButton}>
-            <Text style={styles.loginText}>Log In</Text>
-          </Pressable>
-          <Pressable style={styles.startButton}>
-            <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
-          </Pressable>
+          {chatMode ? (
+            <Pressable style={styles.newChatButton} onPress={() => { setMessages([]); setDraft(''); }}>
+              <Ionicons name="add" size={18} color="#ffffff" />
+              <Text style={styles.newChatText}>New chat</Text>
+            </Pressable>
+          ) : (
+            <>
+              <Pressable style={styles.loginButton}>
+                <Text style={styles.loginText}>Log In</Text>
+              </Pressable>
+              <Pressable style={styles.startButton}>
+                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </View>
 
-      {compact && (
+      {compact && !chatMode && (
         <View style={styles.mobileNav}>
           {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
             <Pressable key={item} style={styles.navLink}>
@@ -74,31 +91,77 @@ export default function Home() {
         </View>
       )}
 
-      <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
-        <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
-        <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\n'}think through anything.</Text>
-        <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
-          An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
-        </Text>
-        <View style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]}>
-          <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
-          <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
-            <Ionicons name="search-outline" size={25} color="#080808" style={styles.searchIcon} />
-            <TextInput
-              value={draft}
-              onChangeText={setDraft}
-              placeholder="What's on your mind?"
-              placeholderTextColor="#929292"
-              style={styles.input}
-              returnKeyType="send"
-              accessibilityLabel="Message Bay"
-            />
-            <Ionicons name="mic-outline" size={21} color="#080808" style={styles.micIcon} />
+      {!chatMode ? (
+        <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
+          <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
+          <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\\n'}think through anything.</Text>
+          <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
+            An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
+          </Text>
+          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={() => setChatMode(true)}>
+            <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
+            <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
+              <Ionicons name="search-outline" size={25} color="#ffffff" style={styles.searchIcon} />
+              <TextInput
+                value={draft}
+                onChangeText={setDraft}
+                onFocus={() => setChatMode(true)}
+                placeholder="What's on your mind?"
+                placeholderTextColor="#929292"
+                style={styles.input}
+                returnKeyType="send"
+                accessibilityLabel="Start a conversation with Baybble"
+              />
+              <Ionicons name="arrow-up-circle" size={27} color="#ffffff" style={styles.micIcon} />
+            </View>
+          </Pressable>
+          <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
+          <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
+        </View>
+      ) : (
+        <View style={styles.chatWorkspace}>
+          <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
+            {messages.length === 0 ? (
+              <View style={styles.emptyConversation}>
+                <Text style={styles.chatGreeting}>Where should we start?</Text>
+                <Text style={styles.chatSubheading}>Tell Baybble what's on your mind. We'll work through it step by step.</Text>
+                <Text style={styles.chatNotice}>Conversation preview · AI responses aren't connected yet</Text>
+              </View>
+            ) : (
+              <View style={styles.messageList}>
+                {messages.map((message, index) => (
+                  <View key={index} style={styles.userMessage}>
+                    <Text style={styles.userMessageText}>{message}</Text>
+                  </View>
+                ))}
+                <Text style={styles.chatNotice}>Your message is in this conversation preview. AI responses will be available once Baybble's model is connected.</Text>
+              </View>
+            )}
+          </ScrollView>
+          <View style={styles.composerArea}>
+            <View style={styles.composerFrame}>
+              <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
+              <View style={styles.composerInner}>
+                <TextInput
+                  value={draft}
+                  onChangeText={setDraft}
+                  placeholder="Message Baybble"
+                  placeholderTextColor="#929292"
+                  style={styles.composerInput}
+                  multiline
+                  autoFocus
+                  accessibilityLabel="Message Baybble"
+                  onSubmitEditing={sendMessage}
+                />
+                <Pressable style={styles.sendButton} onPress={sendMessage} accessibilityRole="button" accessibilityLabel="Send message">
+                  <Ionicons name="arrow-up" size={20} color="#080808" />
+                </Pressable>
+              </View>
+            </View>
+            <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
           </View>
         </View>
-        <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
-        <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
-      </View>
+      )}
 
     </ScrollView>
   );
@@ -108,6 +171,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
+  chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
+  newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
+  newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   logoMark: { width: 32, height: 32, position: 'relative' },
   logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#ffffff', top: 0, left: 0 },
@@ -136,6 +202,22 @@ const styles = StyleSheet.create({
   input: { flex: 1, minWidth: 0, color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
   searchCaption: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
+  chatWorkspace: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, flex: 1, backgroundColor: '#080808', alignItems: 'center' },
+  conversationScroll: { width: '100%', flex: 1 },
+  conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
+  emptyConversation: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+  chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
+  chatSubheading: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23, textAlign: 'center', maxWidth: 470, marginTop: 14 },
+  chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
+  messageList: { width: '100%', gap: 18, paddingBottom: 30 },
+  userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
+  userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
+  composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
+  composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
+  composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 20, paddingRight: 10, zIndex: 1 },
+  composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
+  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
+  composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
   featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
   featureIntroLabel: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2, marginBottom: 18 },
