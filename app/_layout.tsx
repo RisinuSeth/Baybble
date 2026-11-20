@@ -5,9 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import '../global.css';
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts(Ionicons.font);
-
-  if (!fontsLoaded) return null;
+  useFonts(Ionicons.font);
 
   return (
     <>
