@@ -301,13 +301,11 @@ export default function Home() {
           <View style={styles.chatBody}>
             <View style={styles.chatUtilityRail}>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-                <View style={styles.newChatPlusCircle}>
-                  <Text style={styles.newChatPlus}>+</Text>
-                </View>
+                <Ionicons name="add-outline" size={19} color="#eeeeee" />
                 <Text style={styles.railActionText}>New chat</Text>
               </Pressable>
               <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-                <Ionicons name="time" size={20} color="#eeeeee" />
+                <Ionicons name="time-outline" size={18} color="#eeeeee" />
                 <Text style={styles.railActionText}>History</Text>
               </Pressable>
             </View>
@@ -463,8 +461,6 @@ const styles = StyleSheet.create({
   chatUtilityRail: { width: 76, flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
   railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
-  newChatPlusCircle: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: '#555555', backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center' },
-  newChatPlus: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 23, fontWeight: '400', lineHeight: 26, textAlign: 'center' },
   historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
   historySidebarCompact: { position: 'absolute', zIndex: 5, top: 0, bottom: 0, left: 76, width: 270, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 16, elevation: 12 },
   historyHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, paddingBottom: 14 },
