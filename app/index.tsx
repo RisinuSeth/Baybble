@@ -353,7 +353,7 @@ export default function Home() {
 
           <View style={styles.headerActions}>
             <Pressable style={[styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel={authUser?.email ? 'Account' : 'Log in'}>
-              {authUser?.email ? <Ionicons name="person-circle-outline" size={19} color="#eeeeee" /> : null}
+              <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
               <Text style={styles.loginText}>{authUser?.email ? 'Account' : 'Log In'}</Text>
             </Pressable>
             <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
