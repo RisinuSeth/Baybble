@@ -136,7 +136,7 @@ export default function Home() {
         <Text style={styles.sectionTitle}>Whatever you're working through.</Text>
         <Text style={styles.sectionBody}>From everyday decisions to ambitious ideas, bring the things you want to figure out.</Text>
         <View style={styles.cardsRow}>
-          <View style={styles.useCard}><Text style={styles.cardIcon}>✈</Text><Text style={styles.cardTitle}>Make a difficult decision</Text><Text style={styles.cardBody}>Lay out what matters, compare your options and think through the consequences before choosing.</Text></View>
+          <View style={styles.useCard}><Ionicons name="airplane-outline" size={24} color="#000000" style={styles.cardIcon} /><Text style={styles.cardTitle}>Make a difficult decision</Text><Text style={styles.cardBody}>Lay out what matters, compare your options and think through the consequences before choosing.</Text></View>
           <View style={styles.useCard}><Text style={styles.cardIcon}>☕</Text><Text style={styles.cardTitle}>Organise your next steps</Text><Text style={styles.cardBody}>Turn a busy week, a complicated task or a big goal into a manageable plan.</Text></View>
           <View style={styles.useCard}><Text style={styles.cardIcon}>🎧</Text><Text style={styles.cardTitle}>Bring an idea to life</Text><Text style={styles.cardBody}>Shape an early idea, identify what it needs and map out a realistic way to get started.</Text></View>
         </View>
