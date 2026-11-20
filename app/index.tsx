@@ -6,7 +6,12 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDim
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
 function BaybbleLogo() {
-  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BAYBBLE_LOGO_SVG) }} style={styles.logo} resizeMode="contain" />;
+  return (
+    <View style={styles.logoMark} accessibilityLabel="Baybble logo">
+      <View style={styles.logoBubbleOne} />
+      <View style={styles.logoBubbleTwo} />
+    </View>
+  );
 }
 
 function SectionHeading({ eyebrow, title, body, compact }: { eyebrow: string; title: string; body?: string; compact: boolean }) {
@@ -56,12 +61,7 @@ export default function Home() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       <View style={[styles.header, chatMode && styles.chatHeader, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-          <Image
-            source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BAYBBLE_LOGO_SVG) }}
-            style={{ width: 32, height: 32 }}
-            resizeMode="contain"
-            accessibilityLabel="Baybble logo"
-          />
+          <BaybbleLogo />
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   logoMark: { width: 32, height: 32, position: 'relative' },
   logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#ffffff', top: 0, left: 0 },
-  logoBubbleTwo: { position: 'absolute', width: 18, height: 18, borderRadius: 10, backgroundColor: '#ffffff', bottom: 0, right: 0, borderWidth: 2, borderColor: '#080808' },
+  logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navLink: { paddingVertical: 10, paddingHorizontal: 3 },
