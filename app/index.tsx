@@ -101,7 +101,7 @@ export default function Home() {
         <View style={styles.cardsRow}>
           <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardIcon}>💬</Text><Text style={styles.cardTitle}>Talk about anything</Text><Text style={styles.cardBody}>Your day, favourite films, travel, sport, or a completely random thought. Your interests make the conversation yours.</Text></View>
           <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardIcon}>✦</Text><Text style={styles.cardTitle}>Learn without pressure</Text><Text style={styles.cardBody}>Try new words and sentence patterns in a relaxed space. Mistakes are part of learning, not a reason to stop talking.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardIcon}>↗</Text><Text style={styles.cardTitle}>Build confidence</Text><Text style={styles.cardBody}>Keep practising at a pace that feels right. Each conversation is another chance to become more comfortable.</Text></View>
+          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardIcon}>🧠</Text><Text style={styles.cardTitle}>Build confidence</Text><Text style={styles.cardBody}>Keep practising at a pace that feels right. Each conversation is another chance to become more comfortable.</Text></View>
         </View>
       </View>
 
