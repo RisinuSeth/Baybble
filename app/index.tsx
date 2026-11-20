@@ -14,8 +14,9 @@ function CustomIcon({ name, size = 18, color = '#ffffff' }: { name: IconName; si
   const frame = { width: size, height: size, position: 'relative' as const, flexShrink: 0 };
   if (name === 'time') return (
     <View style={[frame, { borderWidth: 1.7, borderColor: color, borderRadius: size / 2 }]}>
-      <View style={[stroke, { width: 1.7, height: size * 0.29, left: size * 0.48, top: size * 0.19 }]} />
-      <View style={[stroke, { width: size * 0.25, height: 1.7, left: size * 0.48, top: size * 0.48 }]} />
+      <View style={[stroke, { width: 1.7, height: size * 0.29, left: size / 2 - 0.85, top: size * 0.19 }]} />
+      <View style={[stroke, { width: size * 0.27, height: 1.7, left: size / 2 - 0.1, top: size / 2 - 0.85 }]} />
+      <View style={{ position: 'absolute', width: 3.2, height: 3.2, borderRadius: 2, backgroundColor: color, left: size / 2 - 1.6, top: size / 2 - 1.6 }} />
     </View>
   );
   if (name === 'add') return (
@@ -47,8 +48,9 @@ function CustomIcon({ name, size = 18, color = '#ffffff' }: { name: IconName; si
   );
   return (
     <View style={frame}>
-      <View style={[stroke, { width: size * 0.78, height: size * 0.22, left: size * 0.12, top: size * 0.43, transform: [{ rotate: '-48deg' }] }]} />
-      <View style={[stroke, { width: size * 0.25, height: size * 0.22, left: size * 0.08, top: size * 0.68, transform: [{ rotate: '42deg' }] }]} />
+      <View style={{ position: 'absolute', width: size * 0.66, height: size * 0.17, left: size * 0.16, top: size * 0.39, borderWidth: 1.6, borderColor: color, borderRadius: 1.5, transform: [{ rotate: '-45deg' }] }} />
+      <View style={[stroke, { width: size * 0.13, height: size * 0.13, left: size * 0.12, top: size * 0.73, transform: [{ rotate: '-45deg' }] }]} />
+      <View style={[stroke, { width: size * 0.17, height: 1.5, left: size * 0.69, top: size * 0.18, transform: [{ rotate: '-45deg' }] }]} />
     </View>
   );
 }
