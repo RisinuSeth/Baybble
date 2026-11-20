@@ -86,7 +86,7 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
-          <Text style={styles.micIcon}>🎙</Text>
+          <Text style={styles.micIcon}>💬</Text>
         </View>
         <Text style={styles.searchCaption}>Start with a hello. Bay will take it from there.</Text>
       </View>
