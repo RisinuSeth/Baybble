@@ -86,6 +86,7 @@ export default function Home() {
             returnKeyType="send"
             accessibilityLabel="Message Bay"
           />
+          <Text style={styles.micIcon}>🎙</Text>
         </View>
         <Text style={styles.searchCaption}>Start with a hello. Bay will take it from there.</Text>
       </View>
@@ -120,7 +121,6 @@ export default function Home() {
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I started watching a new series. It's really interesting.</Text></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Nice! You could also say, “I've started watching a new series.” What is it about?</Text></View>
           <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Keep the conversation going...</Text></View>
-          <Text style={styles.chatFootnote}>A sample conversation · Illustrative preview</Text>
         </View>
       </View>
 
@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
   description: { color: '#393642', fontFamily: 'Manrope', fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 610, marginTop: 22, marginBottom: 38 },
   searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
   searchIcon: { color: '#61588d', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
+  micIcon: { color: '#61588d', fontSize: 21, marginLeft: 12, marginRight: 2 },
   input: { flex: 1, minWidth: 0, color: '#17151f', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
   searchCaption: { color: '#777281', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   introBand: { width: '100%', paddingVertical: 58, paddingHorizontal: 26, alignItems: 'center', backgroundColor: '#f8f7fc' },
