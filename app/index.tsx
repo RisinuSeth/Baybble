@@ -56,21 +56,20 @@ export default function Home() {
         <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
           An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
         </Text>
-        <View style={[styles.composer, compact && styles.composerCompact]}>
+        <View style={[styles.searchBar, compact && styles.searchBarCompact]}>
+          <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" fill="none" stroke="#111111" stroke-width="1.8"/><path d="M16 16l5 5" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round"/></svg>') }} style={styles.searchIcon} />
           <TextInput
             value={draft}
             onChangeText={setDraft}
             placeholder="What would you like to work through?"
             placeholderTextColor="#777777"
-            style={styles.composerInput}
-            multiline
+            style={styles.searchInput}
+            returnKeyType="send"
             accessibilityLabel="Describe a problem or idea"
           />
-          <View style={styles.composerBottom}>
-            <Text style={styles.composerHint}>Start with a question, a challenge or an idea.</Text>
-            <View style={styles.sendCircle}><Text style={styles.sendArrow}>↑</Text></View>
-          </View>
+          <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" fill="none" stroke="#111111" stroke-width="1.8"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8" fill="none" stroke="#111111" stroke-width="1.8" stroke-linecap="round"/></svg>') }} style={styles.micIcon} />
         </View>
+        <Text style={styles.searchCaption}>Start with a question, a challenge or an idea.</Text>
         <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
       </View>
 
@@ -215,13 +214,12 @@ const styles = StyleSheet.create({
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
   heroDescription: { color: '#333333', fontFamily: 'Manrope', fontWeight: '500', fontSize: 16, lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 23, marginBottom: 36 },
   heroDescriptionCompact: { fontSize: 14, lineHeight: 24 },
-  composer: { width: '100%', maxWidth: 760, minHeight: 150, borderWidth: 1, borderColor: '#d9d9d9', borderRadius: 23, paddingHorizontal: 22, paddingTop: 20, paddingBottom: 15, backgroundColor: '#ffffff', shadowColor: '#000000', shadowOpacity: 0.06, shadowRadius: 22, shadowOffset: { width: 0, height: 7 }, elevation: 2 },
-  composerCompact: { minHeight: 142, borderRadius: 19 },
-  composerInput: { width: '100%', minHeight: 58, color: '#111111', fontFamily: 'Manrope', fontSize: 15, lineHeight: 23, outlineStyle: 'none' as any, textAlignVertical: 'top' as any },
-  composerBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 },
-  composerHint: { color: '#777777', fontFamily: 'Manrope', fontSize: 11 },
-  sendCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#111111', alignItems: 'center', justifyContent: 'center' },
-  sendArrow: { color: '#ffffff', fontSize: 19, fontWeight: '700', marginTop: -2 },
+  searchBar: { width: '100%', maxWidth: 790, minHeight: 82, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', paddingHorizontal: 26, shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
+  searchBarCompact: { minHeight: 68, paddingHorizontal: 18 },
+  searchIcon: { width: 25, height: 25, marginRight: 15 },
+  micIcon: { width: 21, height: 21, marginLeft: 12, marginRight: 2 },
+  searchInput: { flex: 1, minWidth: 0, color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
+  searchCaption: { color: '#777777', fontFamily: 'Manrope', fontSize: 11, fontWeight: '500', marginTop: 15, textAlign: 'center' },
   heroFootnote: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
   divider: { width: '100%', height: 1, backgroundColor: '#e9e9e9' },
   featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
