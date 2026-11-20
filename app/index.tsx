@@ -155,7 +155,6 @@ export default function Home() {
         <View style={styles.headerActions}>
           {chatMode ? (
             <Pressable style={styles.newChatButton} onPress={() => { stopGeneration(); setMessages([]); setDraft(''); setChatError(''); }}>
-              <Ionicons name="add" size={18} color="#ffffff" />
               <Text style={styles.newChatText}>New chat</Text>
             </Pressable>
           ) : (
@@ -186,7 +185,6 @@ export default function Home() {
           <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
             <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
             <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
-              <Ionicons name="search-outline" size={25} color="#ffffff" style={styles.searchIcon} />
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
