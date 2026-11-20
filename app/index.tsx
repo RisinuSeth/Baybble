@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
 
@@ -9,7 +9,7 @@ export default function Home() {
   const compact = width < 760;
 
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.pageContent} showsVerticalScrollIndicator>
       <View pointerEvents="none" style={styles.artwork}>
         <View style={styles.blueGlow} />
         <View style={styles.pinkGlow} />
@@ -182,12 +182,13 @@ export default function Home() {
         <Text style={styles.footerTagline}>Your language. Your companion.</Text>
         <Text style={styles.copyright}>© 2026 Baybble. All rights reserved.</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#ffffff', alignItems: 'center', overflow: 'visible' },
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#ffffff' },
+  pageContent: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   artwork: { position: 'absolute', top: -210, right: -160, width: 590, height: 590 },
   blueGlow: { position: 'absolute', top: 20, right: 20, width: 430, height: 430, borderRadius: 215, backgroundColor: '#b8c9ff', opacity: 0.46 },
   pinkGlow: { position: 'absolute', top: 115, right: 115, width: 330, height: 330, borderRadius: 165, backgroundColor: '#f4c5e9', opacity: 0.48 },
