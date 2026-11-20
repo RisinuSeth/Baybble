@@ -105,7 +105,7 @@ export default function Home() {
       )}
 
       {!chatMode ? (
-        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
+        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
           <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
           <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\n'}think through anything.</Text>
           <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', alignItems: 'center', paddingBottom: 83, backgroundColor: '#080808' },
+  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 40, backgroundColor: '#080808' },
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
