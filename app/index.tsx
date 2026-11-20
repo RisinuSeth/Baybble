@@ -3,10 +3,10 @@ import { Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
-const BLACK_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
+const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
 function BaybbleLogo() {
-  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }} style={styles.logo} resizeMode="contain" />;
+  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BAYBBLE_LOGO_SVG) }} style={styles.logo} resizeMode="contain" />;
 }
 
 function SectionHeading({ eyebrow, title, body, compact }: { eyebrow: string; title: string; body?: string; compact: boolean }) {
@@ -57,7 +57,7 @@ export default function Home() {
       <View style={[styles.header, chatMode && styles.chatHeader, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
           <Image
-            source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }}
+            source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BAYBBLE_LOGO_SVG) }}
             style={{ width: 32, height: 32 }}
             resizeMode="contain"
             accessibilityLabel="Baybble logo"
@@ -107,7 +107,7 @@ export default function Home() {
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
           <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
-          <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\\n'}think through anything.</Text>
+          <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\n'}think through anything.</Text>
           <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
             An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
           </Text>
