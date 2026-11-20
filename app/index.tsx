@@ -1,245 +1,193 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
-
-const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
+import React, { useState } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BLACK_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#000000"/><circle cx="43" cy="43" r="17" fill="#000000"/></g></svg>';
 
 function BaybbleLogo() {
-  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }} style={styles.logoMark} resizeMode="contain" />;
+  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }} style={styles.logo} resizeMode="contain" />;
+}
+
+function SectionHeading({ eyebrow, title, body, compact }: { eyebrow: string; title: string; body?: string; compact: boolean }) {
+  return (
+    <View style={styles.sectionHeading}>
+      <Text style={styles.eyebrow}>{eyebrow}</Text>
+      <Text style={[styles.sectionTitle, compact && styles.sectionTitleCompact]}>{title}</Text>
+      {body ? <Text style={styles.sectionBody}>{body}</Text> : null}
+    </View>
+  );
 }
 
 export default function Home() {
   const { width } = useWindowDimensions();
-  const [draft, setDraft] = useState('');
-  const [openFaq, setOpenFaq] = useState(-1);
-  const faqAnimations = useRef(Array.from({ length: 5 }, () => new Animated.Value(0))).current;
-  const toggleFaq = (index: number) => {
-    const next = openFaq === index ? -1 : index;
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    faqAnimations.forEach((value, i) => Animated.timing(value, { toValue: i === next ? 1 : 0, duration: 220, useNativeDriver: true }).start());
-    setOpenFaq(next);
-  };
-  const marqueeProgress = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(marqueeProgress, { toValue: 1, duration: 26000, useNativeDriver: true })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [marqueeProgress]);
-
-  const marqueeShift = marqueeProgress.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] });
   const compact = width < 760;
+  const [draft, setDraft] = useState('');
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.pageContent} showsVerticalScrollIndicator>
-      <View pointerEvents="none" style={styles.artwork}>
-        <View style={styles.blueGlow} />
-        <View style={styles.pinkGlow} />
-      </View>
-
-      <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
+      <View style={[styles.header, { paddingHorizontal: compact ? 20 : 54 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
           <BaybbleLogo />
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
-        {!compact && (
+        {!compact ? (
           <View style={styles.nav}>
-            {navItems.map((item) => (
-              <Pressable key={item} style={styles.navLink}>
-                <Text style={styles.navText}>{item}</Text>
-              </Pressable>
+            {['Models', 'Product', 'Research', 'Company'].map((item) => (
+              <Pressable key={item} style={styles.navItem}><Text style={styles.navText}>{item}</Text></Pressable>
             ))}
           </View>
-        )}
+        ) : null}
 
-        <View style={styles.headerActions}>
-          <Pressable style={styles.loginButton}>
-            <Text style={styles.loginText}>Log In</Text>
-          </Pressable>
-          <Pressable style={styles.startButton}>
-            <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
-          </Pressable>
+        <View style={styles.headerRight}>
+          <Pressable style={styles.login}><Text style={styles.loginText}>Log in</Text></Pressable>
+          <Pressable style={styles.headerCta}><Text style={styles.headerCtaText}>Explore Baybble ↗</Text></Pressable>
         </View>
       </View>
 
-      {compact && (
-        <View style={styles.mobileNav}>
-          {navItems.map((item) => (
-            <Pressable key={item} style={styles.navLink}>
-              <Text style={styles.navText}>{item}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
+      {compact ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mobileNav}>
+          {['Models', 'Product', 'Research', 'Company'].map((item) => <Text key={item} style={styles.navText}>{item}</Text>)}
+        </ScrollView>
+      ) : null}
 
-      <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 36, paddingTop: compact ? 74 : 112 }]}>
-        <Text style={[styles.eyebrow, { marginBottom: compact ? 18 : 22 }]}>AI-POWERED PROBLEM SOLVING</Text>
-        <Text style={[styles.headline, { fontSize: compact ? 38 : 58, lineHeight: compact ? 46 : 68 }]}>
-          Bring any problem.{ '\n' }Find a way forward.
+      <View style={[styles.hero, { paddingHorizontal: compact ? 22 : 56, paddingTop: compact ? 76 : 116 }]}>
+        <Text style={styles.heroEyebrow}>INTRODUCING BAYBBLE</Text>
+        <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>A clearer way to{'\n'}think through anything.</Text>
+        <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>
+          An AI problem-solving platform to help you understand challenges, explore possibilities and turn ideas into practical next steps.
         </Text>
-        <Text style={[styles.description, { fontSize: compact ? 14 : 16 }]}>
-          Describe a problem, question or idea. Baybble helps you understand it, explore possible solutions and decide what to do next.
-        </Text>
-        <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
+        <View style={[styles.composer, compact && styles.composerCompact]}>
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="What's on your mind?"
-            placeholderTextColor="#77718c"
-            style={styles.input}
-            returnKeyType="send"
-            accessibilityLabel="Message Bay"
+            placeholder="What would you like to work through?"
+            placeholderTextColor="#777777"
+            style={styles.composerInput}
+            multiline
+            accessibilityLabel="Describe a problem or idea"
           />
+          <View style={styles.composerBottom}>
+            <Text style={styles.composerHint}>Start with a question, a challenge or an idea.</Text>
+            <View style={styles.sendCircle}><Text style={styles.sendArrow}>↑</Text></View>
+          </View>
         </View>
-        <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
-      </View>
-      <View style={styles.introBand}>
-        <Text style={styles.introTitle}>Less uncertainty. More ways forward.</Text>
-        <Text style={styles.introText}>Life brings questions, decisions and challenges. Baybble gives you a place to think them through, understand your options and decide what to do next.</Text>
-      </View>
-
-      <View style={styles.contentSection}>
-        <Text style={styles.sectionEyebrow}>WHAT BAYBBLE DOES</Text>
-        <Text style={styles.sectionTitle}>A clearer way to work through life's challenges.</Text>
-        <Text style={styles.sectionBody}>Baybble goes beyond quick answers: it helps break down complex problems, compare possible approaches and create practical next steps.</Text>
-        <View style={styles.cardsRow}>
-          <View style={[styles.infoCard, { backgroundColor: '#f1efff' }]}><Text style={styles.cardTitle}>Make sense of a problem</Text><Text style={styles.cardBody}>Explain what's happening in your own words. Bay helps identify the real challenge and the details that matter.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#fff0f8' }]}><Text style={styles.cardTitle}>Explore your options</Text><Text style={styles.cardBody}>Compare different approaches, consider trade-offs and discover possibilities you may not have considered.</Text></View>
-          <View style={[styles.infoCard, { backgroundColor: '#edf4ff' }]}><Text style={styles.cardTitle}>Turn ideas into action</Text><Text style={styles.cardBody}>Break a big challenge into manageable steps, build a plan and work out what to do next.</Text></View>
-        </View>
+        <Text style={styles.heroFootnote}>Baybble is being built. Core AI features are not available yet.</Text>
       </View>
 
-      <View style={styles.chatSection}>
-        <View style={styles.chatCopy}>
-          <Text style={styles.sectionEyebrow}>PROBLEM-SOLVING, WITHOUT THE OVERWHELM</Text>
-          <Text style={styles.sectionTitle}>Every problem starts somewhere.</Text>
-          <Text style={styles.sectionBody}>Bring a decision, a difficult task or an idea you don't know how to execute. Bay asks useful questions, thinks through the situation with you and helps find a practical way forward.</Text>
-          <Text style={styles.checkLine}>✓  Understand what's really getting in the way</Text>
-          <Text style={styles.checkLine}>✓  Explore options and possible solutions</Text>
-          <Text style={styles.checkLine}>✓  Turn the next step into an action plan</Text>
-        </View>
-        <View style={styles.chatCard}>
-          <View style={styles.chatHeader}><View style={styles.avatar}><BaybbleLogo /></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>AI problem-solving platform</Text></View></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>What are you trying to solve? Share the situation and I'll help break it down.</Text></View>
-          <View style={styles.youBubble}><Text style={styles.youBubbleText}>I want to start a business, but I have too many ideas and don't know where to begin.</Text></View>
-          <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's compare your ideas. What are you considering, and what matters most when choosing one?</Text></View>
-          <View style={styles.chatFakeInput}><Text style={styles.fakePlaceholder}>Tell Bay a little more...</Text></View>
-        </View>
+      <View style={styles.divider} />
+
+      <View style={[styles.featureIntro, { paddingHorizontal: compact ? 22 : 58 }]}>
+        <Text style={styles.featureIntroLabel}>THE BAYBBLE APPROACH</Text>
+        <Text style={[styles.featureIntroTitle, compact && styles.featureIntroTitleCompact]}>More than an answer.{'\n'}A way forward.</Text>
+        <Text style={styles.featureIntroBody}>Some challenges need more than a quick response. Baybble is designed to help you work through the details, see the bigger picture and decide what to do next.</Text>
       </View>
 
-      <View style={styles.contentSection}>
-        <Text style={styles.sectionEyebrow}>MADE FOR REAL-LIFE CHALLENGES</Text>
-        <Text style={styles.sectionTitle}>Whatever you're working through.</Text>
-        <Text style={styles.sectionBody}>From everyday decisions to ambitious ideas, bring the things you want to figure out.</Text>
-        <View style={styles.cardsRow}>
-          <View style={styles.useCard}><Text style={styles.cardTitle}>Make a difficult decision</Text><Text style={styles.cardBody}>Lay out what matters, compare your options and think through the consequences before choosing.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardTitle}>Organise your next steps</Text><Text style={styles.cardBody}>Turn a busy week, a complicated task or a big goal into a manageable plan.</Text></View>
-          <View style={styles.useCard}><Text style={styles.cardTitle}>Bring an idea to life</Text><Text style={styles.cardBody}>Shape an early idea, identify what it needs and map out a realistic way to get started.</Text></View>
+      <View style={[styles.featureGrid, { paddingHorizontal: compact ? 18 : 48 }]}>
+        <View style={[styles.featureCard, styles.featureCardDark, compact && styles.featureCardCompact]}>
+          <Text style={styles.cardIndexLight}>01 / UNDERSTAND</Text>
+          <Text style={styles.featureCardTitleLight}>Get to the heart of the problem.</Text>
+          <Text style={styles.featureCardBodyLight}>Bring the situation as it is. Break it down, identify what matters and make sense of the moving parts.</Text>
+          <Text style={styles.cardArrowLight}>↗</Text>
+        </View>
+        <View style={[styles.featureCard, styles.featureCardSoft, compact && styles.featureCardCompact]}>
+          <Text style={styles.cardIndex}>02 / EXPLORE</Text>
+          <Text style={styles.featureCardTitle}>See more possibilities.</Text>
+          <Text style={styles.featureCardBody}>Look at different approaches, compare trade-offs and consider paths you may not have seen yet.</Text>
+          <Text style={styles.cardArrow}>↗</Text>
+        </View>
+        <View style={[styles.featureCard, styles.featureCardSoft, compact && styles.featureCardCompact]}>
+          <Text style={styles.cardIndex}>03 / MOVE FORWARD</Text>
+          <Text style={styles.featureCardTitle}>Turn clarity into action.</Text>
+          <Text style={styles.featureCardBody}>Shape your thinking into a practical plan, with manageable steps and a clear place to begin.</Text>
+          <Text style={styles.cardArrow}>↗</Text>
         </View>
       </View>
 
-      <View style={styles.stepsSection}>
-        <Text style={styles.sectionEyebrow}>HOW IT WORKS</Text>
-        <Text style={styles.sectionTitle}>A simple way to find a way forward.</Text>
-        <Text style={styles.sectionBody}>No complicated setup. No need to have everything figured out. Just explain what's happening and start from there.</Text>
-        <View style={styles.cardsRow}>
-          <View style={styles.stepCard}><Text style={styles.stepNo}>01</Text><Text style={styles.cardTitle}>Explain the situation</Text><Text style={styles.cardBody}>Tell Bay what's happening, what you're trying to achieve and what's making it difficult.</Text></View>
-          <View style={styles.stepCard}><Text style={styles.stepNo}>02</Text><Text style={styles.cardTitle}>Think it through together</Text><Text style={styles.cardBody}>Bay asks relevant questions, helps clarify the problem and explores possible approaches with you.</Text></View>
-          <View style={styles.stepCard}><Text style={styles.stepNo}>03</Text><Text style={styles.cardTitle}>Choose your next step</Text><Text style={styles.cardBody}>Leave with a clearer understanding, practical options and a next step you can act on.</Text></View>
+      <View style={[styles.splitSection, { paddingHorizontal: compact ? 22 : 58 }]}>
+        <View style={styles.splitCopy}>
+          <Text style={styles.eyebrow}>ONE PLACE. MANY CHALLENGES.</Text>
+          <Text style={[styles.splitTitle, compact && styles.splitTitleCompact]}>Bring the things you're figuring out.</Text>
+          <Text style={styles.splitBody}>A decision you can't settle. A project that feels too big. An idea you're ready to explore. Start wherever you are — Baybble is being designed to help you work through it.</Text>
         </View>
-      </View>
-
-      <View style={styles.languageMarquee}>
-        <View style={styles.marqueeViewport}>
-          <Animated.View style={[styles.marqueeTrack, { width: width * 2, transform: [{ translateX: marqueeShift }] }]}>
-            {[0, 1].map((copy) => (
-              <View key={copy} style={[styles.marqueeGroup, { width }]}>
-                {['Think clearly', 'Explore options', 'Solve problems', 'Make a plan', 'Take action', 'Learn faster', 'Move forward'].map((language) => (
-                  <View key={language} style={styles.marqueeItem}>
-                    <Text style={styles.marqueeLanguage}>{language}</Text>
-                  </View>
-                ))}
-              </View>
-            ))}
-          </Animated.View>
-        </View>
-      </View>
-
-      <View style={styles.pricingSection}>
-        <Text style={styles.sectionEyebrow}>PRICING</Text>
-        <Text style={styles.sectionTitle}>Plans built around how you use Baybble.</Text>
-        <Text style={styles.sectionBody}>Pricing and plan details will be announced before launch.</Text>
-        <View style={styles.priceCard}>
-          <Text style={styles.priceLabel}>THE BAYBBLE EXPERIENCE</Text>
-          <Text style={styles.priceTitle}>A clearer way to solve problems.</Text>
-          <View style={styles.priceComingRow}><Text style={styles.priceComing}>Coming soon</Text><Text style={styles.pricePeriod}>Plans & pricing</Text></View>
-          <Text style={styles.priceDescription}>Baybble is being built to help people think through real challenges and move from uncertainty to action.</Text>
-          <Text style={styles.priceBullet}>✓  Natural voice and text conversations</Text>
-          <Text style={styles.priceBullet}>✓  Help understanding problems and exploring solutions</Text>
-          <Text style={styles.priceBullet}>✓  Practical plans and clear next steps</Text>
-          <Text style={styles.priceNote}>No trial or subscription is being advertised until the plans are confirmed.</Text>
-        </View>
-      </View>
-
-      <View style={styles.topicsSection}>
-        <Text style={styles.sectionEyebrow}>START WITH WHAT YOU NEED TO SOLVE</Text>
-        <Text style={styles.sectionTitle}>Every challenge has a place to start.</Text>
-        <Text style={styles.sectionBody}>Choose a starting point or describe your own challenge. Bay will help you work through it.</Text>
-        <View style={styles.topicsGrid}>
+        <View style={styles.useCases}>
           {[
-            'I have a business idea', 'Help me make a decision', 'Plan my week',
-            'Understand this topic', 'Fix my website', 'Organise a project',
-            'Prepare for a meeting', 'Solve a work problem', 'Set a goal',
-            'Compare my options', 'Learn something new', 'Where do I start?'
-          ].map((topic, index) => (
-            <View key={topic} style={[styles.topicChip, index % 4 === 0 && styles.topicChipAccent]}>
-              <Text style={styles.topicChipText}>{topic}</Text>
+            ['01', 'Decisions', 'Compare options and understand what matters.'],
+            ['02', 'Projects', 'Organise complex work into clear steps.'],
+            ['03', 'Ideas', 'Develop an early thought into a real direction.'],
+            ['04', 'Learning', 'Make difficult topics easier to work through.']
+          ].map(([n, title, body]) => (
+            <View key={n} style={styles.useCaseRow}>
+              <Text style={styles.useCaseNumber}>{n}</Text>
+              <View style={styles.useCaseText}><Text style={styles.useCaseTitle}>{title}</Text><Text style={styles.useCaseBody}>{body}</Text></View>
+              <Text style={styles.useCaseArrow}>↗</Text>
             </View>
           ))}
         </View>
-        <Text style={styles.topicsFootnote}>A few places to begin. Or bring a challenge of your own.</Text>
       </View>
 
-      <View style={styles.faqSection}>
-        <Text style={styles.sectionEyebrow}>GET TO KNOW BAYBBLE</Text>
-        <Text style={styles.sectionTitle}>Frequently asked questions</Text>
-                  <Pressable key="0" style={styles.faqItem} onPress={() => toggleFaq(0)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>What is Baybble?</Text></View>
-            {openFaq === 0 && <Text style={styles.faqAnswer}>Baybble is an AI-powered problem-solving platform. Describe a challenge, question or idea, and it helps you understand the situation, evaluate options and identify practical next steps.</Text>}
-          </Pressable>
-          <Pressable key="1" style={styles.faqItem} onPress={() => toggleFaq(1)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Who is Baybble for?</Text></View>
-            {openFaq === 1 && <Text style={styles.faqAnswer}>Anyone who wants help thinking through everyday challenges, making decisions, learning something difficult, organising plans or developing an idea.</Text>}
-          </Pressable>
-          <Pressable key="2" style={styles.faqItem} onPress={() => toggleFaq(2)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Do I need to know exactly what the problem is?</Text></View>
-            {openFaq === 2 && <Text style={styles.faqAnswer}>Not at all. Start with whatever you know, even if it's messy or incomplete. Bay can ask questions to help clarify what's going on.</Text>}
-          </Pressable>
-          <Pressable key="3" style={styles.faqItem} onPress={() => toggleFaq(3)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Can Baybble help with different kinds of problems?</Text></View>
-            {openFaq === 3 && <Text style={styles.faqAnswer}>Yes. You can bring decisions, projects, learning questions, work challenges, business ideas and many other everyday problems. Bay will help you think them through.</Text>}
-          </Pressable>
-          <Pressable key="4" style={styles.faqItem} onPress={() => toggleFaq(4)}>
-            <View style={styles.faqQuestionRow}><Text style={styles.faqQuestion}>Can I speak or type to Bay?</Text></View>
-            {openFaq === 4 && <Text style={styles.faqAnswer}>The vision includes both voice and text, so you can choose the way that feels most natural. Available features will be announced as development progresses.</Text>}
-          </Pressable>
+      <View style={styles.modelsSection}>
+        <View style={[styles.modelsInner, { paddingHorizontal: compact ? 22 : 58 }]}>
+          <Text style={styles.eyebrow}>THE MODEL FAMILY</Text>
+          <Text style={[styles.modelsTitle, compact && styles.sectionTitleCompact]}>Built to keep getting better.</Text>
+          <Text style={styles.modelsBody}>Baybble is planned as a growing family of AI models. Each generation will represent a step forward in how Baybble understands problems and helps people work through them.</Text>
+          <View style={[styles.modelGrid, compact && styles.modelGridCompact]}>
+            <View style={[styles.modelCard, styles.modelCardActive]}>
+              <Text style={styles.modelVersion}>BAY 1.0</Text>
+              <Text style={styles.modelName}>The beginning.</Text>
+              <Text style={styles.modelStatus}>FOUNDATION MODEL · PLANNED</Text>
+              <Text style={styles.modelDescription}>The first generation of Baybble's problem-solving model family.</Text>
+            </View>
+            <View style={styles.modelCard}>
+              <Text style={styles.modelVersion}>BAY 2.0</Text>
+              <Text style={styles.modelName}>The next step.</Text>
+              <Text style={styles.modelStatus}>FUTURE GENERATION</Text>
+              <Text style={styles.modelDescription}>A future iteration, with capabilities to be defined as development progresses.</Text>
+            </View>
+            <View style={styles.modelCard}>
+              <Text style={styles.modelVersion}>NEXT</Text>
+              <Text style={styles.modelName}>More to come.</Text>
+              <Text style={styles.modelStatus}>LONG-TERM DIRECTION</Text>
+              <Text style={styles.modelDescription}>A model family designed to evolve over time, not stand still.</Text>
+            </View>
+          </View>
+          <Text style={styles.modelDisclaimer}>Model names describe the product roadmap, not currently available models.</Text>
+        </View>
       </View>
 
-      <View style={styles.finalCta}>
-        <Text style={styles.ctaEyebrow}>YOUR NEXT STEP STARTS HERE</Text>
-        <Text style={styles.ctaTitle}>Turn your next challenge into a clear next step.</Text>
-        <Text style={styles.ctaBody}>Bring a challenge. Find a practical way forward.</Text>
-        <Pressable style={styles.ctaButton}><Text style={styles.ctaButtonText}>Start with Bay  →</Text></Pressable>
+      <View style={[styles.processSection, { paddingHorizontal: compact ? 22 : 58 }]}>
+        <SectionHeading eyebrow="HOW IT WORKS" title="Start with what you know." body="You don't need a perfect prompt or a fully formed plan. Just begin with the situation in front of you." compact={compact} />
+        <View style={styles.processRows}>
+          {[
+            ['01', 'Tell Baybble what is happening', 'Describe the challenge in your own words.'],
+            ['02', 'Work through the possibilities', 'Clarify the problem and explore different ways forward.'],
+            ['03', 'Decide what comes next', 'Turn your thinking into a practical next step.']
+          ].map(([number, title, body]) => (
+            <View key={number} style={styles.processRow}>
+              <Text style={styles.processNumber}>{number}</Text>
+              <Text style={styles.processTitle}>{title}</Text>
+              <Text style={styles.processBody}>{body}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.footerBrand}><BaybbleLogo /><Text style={styles.footerWordmark}>Baybble</Text></View>
-        <Text style={styles.footerTagline}>Your problems. A clearer way forward.</Text>
-        <Text style={styles.copyright}>© 2026 Baybble. All rights reserved.</Text>
+      <View style={[styles.closing, { paddingHorizontal: compact ? 22 : 58 }]}>
+        <Text style={styles.closingEyebrow}>A NEW WAY TO WORK THROUGH WHAT'S NEXT</Text>
+        <Text style={[styles.closingTitle, compact && styles.closingTitleCompact]}>Think clearer.{'\n'}Move forward.</Text>
+        <Text style={styles.closingBody}>Baybble is being built around one simple idea: every challenge deserves a clearer way forward.</Text>
+        <Pressable style={styles.closingButton}><Text style={styles.closingButtonText}>Discover Baybble ↗</Text></Pressable>
+      </View>
+
+      <View style={[styles.footer, { paddingHorizontal: compact ? 22 : 58 }]}>
+        <View style={styles.footerTop}>
+          <View style={styles.footerBrand}><BaybbleLogo /><Text style={styles.footerWordmark}>Baybble</Text></View>
+          <Text style={styles.footerStatement}>Think clearer. Solve more.</Text>
+        </View>
+        <View style={styles.footerDivider} />
+        <View style={styles.footerBottom}>
+          <Text style={styles.copyright}>© 2026 Baybble. All rights reserved.</Text>
+          <View style={styles.footerLinks}><Text style={styles.footerLink}>Product</Text><Text style={styles.footerLink}>Models</Text><Text style={styles.footerLink}>About</Text><Text style={styles.footerLink}>Privacy</Text></View>
+        </View>
       </View>
     </ScrollView>
   );
@@ -247,100 +195,104 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#ffffff' },
-  pageContent: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  artwork: { position: 'absolute', top: -210, right: -160, width: 590, height: 590 },
-  blueGlow: { position: 'absolute', top: 20, right: 20, width: 430, height: 430, borderRadius: 215, backgroundColor: '#b8c9ff', opacity: 0.46 },
-  pinkGlow: { position: 'absolute', top: 115, right: 115, width: 330, height: 330, borderRadius: 165, backgroundColor: '#f4c5e9', opacity: 0.48 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
+  page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
+  header: { width: '100%', minHeight: 78, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eeeeee', backgroundColor: '#ffffff', zIndex: 2 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  logoMark: { width: 32, height: 32 },
-  wordmark: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
-  nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navLink: { paddingVertical: 10, paddingHorizontal: 3 },
-  navText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
-  loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
-  loginText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
-  startButton: { backgroundColor: '#17151f', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
-  startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
-  mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', alignItems: 'center', justifyContent: 'center', paddingBottom: 70, zIndex: 1 },
-  eyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 13, letterSpacing: 2.1, textAlign: 'center' },
-  headline: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', letterSpacing: -2.4, textAlign: 'center', maxWidth: 820 },
-  description: { color: '#000000', fontFamily: 'Manrope', fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 610, marginTop: 22, marginBottom: 38 },
-  searchBar: { width: '100%', maxWidth: 790, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#b8b0e9', borderRadius: 999, backgroundColor: '#ffffff', shadowColor: '#8c80c8', shadowOpacity: 0.17, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
-  input: { flex: 1, minWidth: 0, color: '#000000', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
-  searchCaption: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
-  introBand: { width: '100%', paddingVertical: 58, paddingHorizontal: 26, alignItems: 'center', backgroundColor: '#f8f7fc' },
-  introTitle: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 32, letterSpacing: -1.2, textAlign: 'center' },
-  introText: { color: '#000000', fontFamily: 'Manrope', fontSize: 15, lineHeight: 26, textAlign: 'center', maxWidth: 690, marginTop: 14 },
-  contentSection: { width: '100%', paddingHorizontal: 28, paddingVertical: 88, alignItems: 'center' },
-  sectionEyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 13, letterSpacing: 2.1, textAlign: 'center', marginBottom: 15 },
-  sectionTitle: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 42, lineHeight: 50, letterSpacing: -1.8, textAlign: 'center', maxWidth: 760 },
-  sectionBody: { color: '#000000', fontFamily: 'Manrope', fontSize: 15, fontWeight: '500', lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 16, marginBottom: 40 },
-  cardsRow: { width: '100%', maxWidth: 1120, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16 },
-  infoCard: { flex: 1, minWidth: 220, minHeight: 235, borderRadius: 25, padding: 25 },
-  cardTitle: { color: '#000000', fontFamily: 'Manrope', fontSize: 17, fontWeight: '800', marginBottom: 10 },
-  cardBody: { color: '#000000', fontFamily: 'Manrope', fontSize: 13, fontWeight: '500', lineHeight: 23 },
-  chatSection: { width: '100%', backgroundColor: '#f8f7fc', paddingHorizontal: 28, paddingVertical: 86, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 45 },
-  chatCopy: { flex: 1, minWidth: 260, maxWidth: 470 },
-  checkLine: { color: '#000000', fontFamily: 'Manrope', fontSize: 13, fontWeight: '700', marginTop: 16 },
-  chatCard: { width: '100%', maxWidth: 450, backgroundColor: '#ffffff', borderRadius: 26, padding: 22, shadowColor: '#6b5d9d', shadowOpacity: 0.1, shadowRadius: 25, shadowOffset: { width: 0, height: 12 }, elevation: 4 },
-  chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: '#f0eef4', marginBottom: 20 },
-  avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#e9e7ff', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#000000', fontSize: 22, fontWeight: '800' },
-  chatName: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
-  chatStatus: { color: '#000000', fontFamily: 'Manrope', fontSize: 10, marginTop: 2 },
-  bayBubble: { alignSelf: 'flex-start', maxWidth: '88%', backgroundColor: '#f2f0fb', borderRadius: 17, borderBottomLeftRadius: 5, padding: 14, marginBottom: 13 },
-  bubbleText: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
-  youBubble: { alignSelf: 'flex-end', maxWidth: '88%', backgroundColor: '#252132', borderRadius: 17, borderBottomRightRadius: 5, padding: 14, marginBottom: 13 },
-  youBubbleText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20 },
-  chatFakeInput: { borderWidth: 1, borderColor: '#ece9f2', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 15, marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  fakePlaceholder: { color: '#000000', fontFamily: 'Manrope', fontSize: 11 },
-  chatFootnote: { color: '#000000', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 13 },
-  useCard: { flex: 1, minWidth: 220, borderWidth: 1, borderColor: '#eeebf4', borderRadius: 22, padding: 23, backgroundColor: '#ffffff' },
-  stepsSection: { width: '100%', backgroundColor: '#fbfaff', paddingHorizontal: 28, paddingVertical: 88, alignItems: 'center' },
-  stepCard: { flex: 1, minWidth: 220, borderWidth: 1, borderColor: '#ece8f4', borderRadius: 22, padding: 24, backgroundColor: '#ffffff' },
-  stepNo: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12, letterSpacing: 1, marginBottom: 25 },
-  languageMarquee: { width: '100%', backgroundColor: 'transparent', paddingTop: 27, paddingBottom: 30, overflow: 'hidden' },
-  marqueeEyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2.5, textAlign: 'center', marginBottom: 22 },
-  marqueeViewport: { width: '100%', overflow: 'hidden' },
-  marqueeTrack: { flexDirection: 'row' },
-  marqueeGroup: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
-  marqueeItem: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  marqueeLanguage: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 16, letterSpacing: -0.3 },
-  pricingSection: { width: '100%', paddingHorizontal: 24, paddingVertical: 90, alignItems: 'center', backgroundColor: '#fbfaff' },
-  priceCard: { width: '100%', maxWidth: 440, borderWidth: 1, borderColor: '#e9e5f1', borderRadius: 28, padding: 30, backgroundColor: '#ffffff', shadowColor: '#776a9f', shadowOpacity: 0.08, shadowRadius: 25, shadowOffset: { width: 0, height: 10 }, elevation: 3 },
-  priceLabel: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.8 },
-  priceTitle: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, marginTop: 20 },
-  priceComingRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 16, marginBottom: 8 },
-  priceComing: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 29, letterSpacing: -1 },
-  pricePeriod: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
-  priceDescription: { color: '#000000', fontFamily: 'Manrope', fontSize: 13, lineHeight: 23, marginTop: 12, marginBottom: 22 },
-  priceBullet: { color: '#000000', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600', marginBottom: 13 },
-  priceNote: { color: '#000000', fontFamily: 'Manrope', fontSize: 10, textAlign: 'center', lineHeight: 17, marginTop: 12 },
-  topicsSection: { width: '100%', paddingHorizontal: 28, paddingVertical: 90, alignItems: 'center' },
-  topicsGrid: { width: '100%', maxWidth: 1000, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 },
-  topicChip: { minHeight: 58, minWidth: 190, flexGrow: 1, maxWidth: 235, borderWidth: 1, borderColor: '#e9e6f0', borderRadius: 16, paddingHorizontal: 17, paddingVertical: 14, backgroundColor: '#ffffff', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  topicChipAccent: { backgroundColor: '#f3f0ff', borderColor: '#e8e2ff' },
-  topicChipText: { color: '#000000', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12, flexShrink: 1 },
-  topicsFootnote: { color: '#000000', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 25 },
-  faqSection: { width: '100%', maxWidth: 850, paddingHorizontal: 28, paddingVertical: 80, alignSelf: 'center' },
-  faqItem: { borderBottomWidth: 1, borderBottomColor: '#eeebf3', paddingVertical: 21 },
-  faqQuestionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 18 },
-  faqQuestion: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14, flex: 1 },
-  faqPlus: { color: '#000000', fontFamily: 'Manrope', fontSize: 24 },
-  faqAnswer: { color: '#000000', fontFamily: 'Manrope', fontSize: 13, lineHeight: 23, marginTop: 14, paddingRight: 25 },
-  finalCta: { width: '100%', backgroundColor: '#f2efff', paddingHorizontal: 26, paddingVertical: 85, alignItems: 'center' },
-  ctaEyebrow: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2, textAlign: 'center', marginBottom: 18 },
-  ctaTitle: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 44, letterSpacing: -1.8, textAlign: 'center', maxWidth: 720 },
-  ctaBody: { color: '#000000', fontFamily: 'Manrope', fontSize: 14, textAlign: 'center', marginTop: 16 },
-  ctaButton: { backgroundColor: '#211e2d', borderRadius: 999, paddingVertical: 15, paddingHorizontal: 25, marginTop: 28 },
-  ctaButtonText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800' },
-  footer: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 18, paddingHorizontal: 35, paddingVertical: 30, borderTopWidth: 1, borderTopColor: '#efedf3', backgroundColor: '#ffffff' },
+  logo: { width: 29, height: 29 },
+  wordmark: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 22, letterSpacing: -1 },
+  nav: { flexDirection: 'row', alignItems: 'center', gap: 29 },
+  navItem: { paddingVertical: 12 },
+  navText: { color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  login: { paddingVertical: 12 },
+  loginText: { color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
+  headerCta: { backgroundColor: '#080808', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 17 },
+  headerCtaText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
+  mobileNav: { width: '100%', paddingHorizontal: 22, paddingVertical: 13, gap: 25, borderBottomWidth: 1, borderBottomColor: '#eeeeee' },
+  hero: { width: '100%', alignItems: 'center', paddingBottom: 83, backgroundColor: '#ffffff' },
+  heroEyebrow: { color: '#555555', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
+  heroTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
+  heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
+  heroDescription: { color: '#333333', fontFamily: 'Manrope', fontWeight: '500', fontSize: 16, lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 23, marginBottom: 36 },
+  heroDescriptionCompact: { fontSize: 14, lineHeight: 24 },
+  composer: { width: '100%', maxWidth: 760, minHeight: 150, borderWidth: 1, borderColor: '#d9d9d9', borderRadius: 23, paddingHorizontal: 22, paddingTop: 20, paddingBottom: 15, backgroundColor: '#ffffff', shadowColor: '#000000', shadowOpacity: 0.06, shadowRadius: 22, shadowOffset: { width: 0, height: 7 }, elevation: 2 },
+  composerCompact: { minHeight: 142, borderRadius: 19 },
+  composerInput: { width: '100%', minHeight: 58, color: '#111111', fontFamily: 'Manrope', fontSize: 15, lineHeight: 23, outlineStyle: 'none' as any, textAlignVertical: 'top' as any },
+  composerBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 },
+  composerHint: { color: '#777777', fontFamily: 'Manrope', fontSize: 11 },
+  sendCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#111111', alignItems: 'center', justifyContent: 'center' },
+  sendArrow: { color: '#ffffff', fontSize: 19, fontWeight: '700', marginTop: -2 },
+  heroFootnote: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
+  divider: { width: '100%', height: 1, backgroundColor: '#e9e9e9' },
+  featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
+  featureIntroLabel: { color: '#555555', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2, marginBottom: 18 },
+  featureIntroTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 49, lineHeight: 54, letterSpacing: -2.5 },
+  featureIntroTitleCompact: { fontSize: 38, lineHeight: 43 },
+  featureIntroBody: { color: '#444444', fontFamily: 'Manrope', fontSize: 15, lineHeight: 26, maxWidth: 570, marginTop: 19 },
+  featureGrid: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingBottom: 105 },
+  featureCard: { flex: 1, minWidth: 235, minHeight: 310, borderRadius: 8, padding: 27, justifyContent: 'flex-start' },
+  featureCardCompact: { minWidth: '100%' as any, minHeight: 250 },
+  featureCardDark: { backgroundColor: '#101010' },
+  featureCardSoft: { backgroundColor: '#f5f5f3' },
+  cardIndex: { color: '#555555', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.7, marginBottom: 48 },
+  cardIndexLight: { color: '#aaaaaa', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.7, marginBottom: 48 },
+  featureCardTitle: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, lineHeight: 30, letterSpacing: -1, maxWidth: 290 },
+  featureCardTitleLight: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, lineHeight: 30, letterSpacing: -1, maxWidth: 290 },
+  featureCardBody: { color: '#444444', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22, marginTop: 15, maxWidth: 300 },
+  featureCardBodyLight: { color: '#cccccc', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22, marginTop: 15, maxWidth: 300 },
+  cardArrow: { color: '#111111', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
+  cardArrowLight: { color: '#ffffff', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
+  splitSection: { width: '100%', paddingTop: 82, paddingBottom: 100, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 55, backgroundColor: '#f7f7f5' },
+  splitCopy: { flex: 1, minWidth: 250, maxWidth: 430 },
+  eyebrow: { color: '#555555', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.9, marginBottom: 18 },
+  splitTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 43, lineHeight: 49, letterSpacing: -2 },
+  splitTitleCompact: { fontSize: 36, lineHeight: 42 },
+  splitBody: { color: '#444444', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25, marginTop: 20, maxWidth: 420 },
+  useCases: { flex: 1, minWidth: 280, maxWidth: 590 },
+  useCaseRow: { flexDirection: 'row', alignItems: 'center', gap: 18, paddingVertical: 22, borderBottomWidth: 1, borderBottomColor: '#ddddda' },
+  useCaseNumber: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, fontWeight: '700', width: 22 },
+  useCaseText: { flex: 1 },
+  useCaseTitle: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15 },
+  useCaseBody: { color: '#555555', fontFamily: 'Manrope', fontSize: 12, marginTop: 5, lineHeight: 19 },
+  useCaseArrow: { color: '#111111', fontSize: 18 },
+  modelsSection: { width: '100%', backgroundColor: '#ffffff', paddingVertical: 100 },
+  modelsInner: { width: '100%' },
+  modelsTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 48, lineHeight: 54, letterSpacing: -2.4 },
+  modelsBody: { color: '#444444', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25, maxWidth: 620, marginTop: 18, marginBottom: 35 },
+  modelGrid: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 13 },
+  modelGridCompact: { flexDirection: 'column' },
+  modelCard: { flex: 1, minWidth: 220, minHeight: 220, padding: 23, borderWidth: 1, borderColor: '#e2e2e2', borderRadius: 7, backgroundColor: '#ffffff' },
+  modelCardActive: { backgroundColor: '#f4f4f1', borderColor: '#f4f4f1' },
+  modelVersion: { color: '#555555', fontFamily: 'Manrope', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  modelName: { color: '#111111', fontFamily: 'Manrope', fontSize: 24, fontWeight: '800', letterSpacing: -1, marginTop: 29 },
+  modelStatus: { color: '#777777', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1, marginTop: 17 },
+  modelDescription: { color: '#444444', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 13 },
+  modelDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, marginTop: 16 },
+  processSection: { width: '100%', paddingTop: 90, paddingBottom: 100, backgroundColor: '#f7f7f5' },
+  sectionHeading: { width: '100%', alignItems: 'flex-start', marginBottom: 38 },
+  sectionTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 45, lineHeight: 51, letterSpacing: -2 },
+  sectionTitleCompact: { fontSize: 35, lineHeight: 41 },
+  sectionBody: { color: '#444444', fontFamily: 'Manrope', fontSize: 14, lineHeight: 24, maxWidth: 610, marginTop: 17 },
+  processRows: { width: '100%' },
+  processRow: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18, paddingVertical: 24, borderTopWidth: 1, borderTopColor: '#ddddda' },
+  processNumber: { color: '#777777', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700', width: 30 },
+  processTitle: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15, flex: 1, minWidth: 210 },
+  processBody: { color: '#555555', fontFamily: 'Manrope', fontSize: 12, flex: 1, minWidth: 200, lineHeight: 20 },
+  closing: { width: '100%', backgroundColor: '#101010', paddingTop: 95, paddingBottom: 100, alignItems: 'center' },
+  closingEyebrow: { color: '#bcbcbc', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2, textAlign: 'center', marginBottom: 23 },
+  closingTitle: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 62, lineHeight: 67, letterSpacing: -3, textAlign: 'center' },
+  closingTitleCompact: { fontSize: 43, lineHeight: 48 },
+  closingBody: { color: '#cccccc', fontFamily: 'Manrope', fontSize: 14, lineHeight: 24, maxWidth: 530, textAlign: 'center', marginTop: 20 },
+  closingButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 14, paddingHorizontal: 21, marginTop: 29 },
+  closingButtonText: { color: '#111111', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12 },
+  footer: { width: '100%', paddingTop: 35, paddingBottom: 28, backgroundColor: '#ffffff' },
+  footerTop: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingBottom: 28 },
   footerBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  footerWordmark: { color: '#000000', fontFamily: 'Manrope', fontSize: 20, fontWeight: '800' },
-  footerTagline: { color: '#000000', fontFamily: 'Manrope', fontSize: 11 },
-  copyright: { color: '#000000', fontFamily: 'Manrope', fontSize: 10 },
-
+  footerWordmark: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 21 },
+  footerStatement: { color: '#555555', fontFamily: 'Manrope', fontSize: 12 },
+  footerDivider: { width: '100%', height: 1, backgroundColor: '#e8e8e8' },
+  footerBottom: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 18, paddingTop: 23 },
+  copyright: { color: '#777777', fontFamily: 'Manrope', fontSize: 10 },
+  footerLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: 22 },
+  footerLink: { color: '#555555', fontFamily: 'Manrope', fontSize: 10, fontWeight: '600' }
 });
