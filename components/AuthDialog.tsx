@@ -5,20 +5,34 @@ import { supabase } from '../lib/supabase';
 type Props = { visible: boolean; onClose: () => void; userEmail: string | null; onSignedOut: () => void };
 
 export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }: Props) {
-  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'reset' | 'update'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
 
+  React.useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setMode('update'); setNotice('Choose a new password for your Baybble account.'); setError('');
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
   const submit = async () => {
     setBusy(true); setError(''); setNotice('');
     try {
       if (mode === 'signup') {
-        const { data, error: e } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data, error: e } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined } });
         if (e) throw e;
         setNotice(data.session ? 'Your Baybble account is ready.' : 'Check your email to confirm your account, then sign in.');
+      } else if (mode === 'update') {
+        const { error: e } = await supabase.auth.updateUser({ password });
+        if (e) throw e;
+        setNotice('Your password has been updated.');
+        setMode('login'); setPassword('');
       } else if (mode === 'reset') {
         const { error: e } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined });
         if (e) throw e;
@@ -55,18 +69,18 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
             {busy ? <ActivityIndicator color="#080808" /> : <Text style={styles.primaryText}>Sign out</Text>}
           </Pressable>
         </> : <>
-          <Text style={styles.title}>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset your password' : 'Welcome back'}</Text>
+          <Text style={styles.title}>{mode === 'signup' ? 'Create your account' : mode === 'reset' ? 'Reset your password' : mode === 'update' ? 'Choose a new password' : 'Welcome back'}</Text>
           <Text style={styles.sub}>Sign in to keep your Baybble conversations synced.</Text>
           <TextInput value={email} onChangeText={setEmail} placeholder="Email address" placeholderTextColor="#777" autoCapitalize="none" keyboardType="email-address" style={styles.input} />
           {mode !== 'reset' ? <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="#777" secureTextEntry style={styles.input} /> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {notice ? <Text style={styles.notice}>{notice}</Text> : null}
           <Pressable style={styles.primary} onPress={submit} disabled={busy || !email.trim() || (mode !== 'reset' && password.length < 6)}>
-            {busy ? <ActivityIndicator color="#080808" /> : <Text style={styles.primaryText}>{mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : 'Log in'}</Text>}
+            {busy ? <ActivityIndicator color="#080808" /> : <Text style={styles.primaryText}>{mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : mode === 'update' ? 'Update password' : 'Log in'}</Text>}
           </Pressable>
           <View style={styles.links}>
             <Pressable onPress={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); setNotice(''); }}><Text style={styles.link}>{mode === 'signup' ? 'Already have an account? Log in' : 'Create an account'}</Text></Pressable>
-            {mode !== 'reset' ? <Pressable onPress={() => { setMode('reset'); setError(''); setNotice(''); }}><Text style={styles.link}>Forgot password?</Text></Pressable> : <Pressable onPress={() => setMode('login')}><Text style={styles.link}>Back to log in</Text></Pressable>}
+            {mode !== 'reset' && mode !== 'update' ? <Pressable onPress={() => { setMode('reset'); setError(''); setNotice(''); }}><Text style={styles.link}>Forgot password?</Text></Pressable>  : mode === 'reset' ? <Pressable onPress={() => setMode('login')}><Text style={styles.link}>Back to log in</Text></Pressable> : null}
           </View>
         </>}
       </View>
