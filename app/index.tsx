@@ -307,7 +307,7 @@ export default function Home() {
                 <Text style={styles.railActionText}>New chat</Text>
               </Pressable>
               <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-                <Ionicons name="time-outline" size={18} color="#eeeeee" />
+                <Ionicons name="time" size={20} color="#eeeeee" />
                 <Text style={styles.railActionText}>History</Text>
               </Pressable>
             </View>
