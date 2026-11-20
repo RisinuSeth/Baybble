@@ -45,7 +45,7 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
-  const [authUser, setAuthUser] = useState<{ email?: string } | null>(null);
+  const [authUser, setAuthUser] = useState<{ id: string; email?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
@@ -53,10 +53,10 @@ export default function Home() {
   useEffect(() => {
     let alive = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (alive) setAuthUser(data.session?.user ? { email: data.session.user.email } : null);
+      if (alive) setAuthUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email } : null);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthUser(session?.user ? { email: session.user.email } : null);
+      setAuthUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     });
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
@@ -74,6 +74,58 @@ export default function Home() {
       setHistoryReady(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!historyReady || !authUser?.id) return;
+    let cancelled = false;
+    const loadCloudHistory = async () => {
+      const { data: conversations, error } = await supabase
+        .from('baybble_conversations')
+        .select('id,title,updated_at')
+        .eq('user_id', authUser.id)
+        .order('updated_at', { ascending: false })
+        .limit(50);
+      if (error || cancelled) return;
+      if (!conversations?.length && sessions.length) {
+        const migrated: ChatSession[] = [];
+        for (const old of sessions.slice(0, 50)) {
+          const { data: created, error: createError } = await supabase
+            .from('baybble_conversations')
+            .insert({ user_id: authUser.id, title: old.title })
+            .select('id,updated_at')
+            .single();
+          if (createError || !created) continue;
+          if (old.messages.length) {
+            const rows = old.messages.map((message) => ({
+              conversation_id: created.id, user_id: authUser.id, role: message.role, content: message.content
+            }));
+            await supabase.from('baybble_messages').insert(rows);
+          }
+          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.updated_at).getTime() });
+        }
+        if (!cancelled && migrated.length) setSessions(migrated);
+        return;
+      }
+      const cloud: ChatSession[] = [];
+      for (const conversation of conversations ?? []) {
+        const { data: rows } = await supabase
+          .from('baybble_messages')
+          .select('role,content')
+          .eq('conversation_id', conversation.id)
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: true });
+        cloud.push({
+          id: conversation.id,
+          title: conversation.title,
+          messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
+          updatedAt: new Date(conversation.updated_at).getTime()
+        });
+      }
+      if (!cancelled) setSessions(cloud);
+    };
+    loadCloudHistory();
+    return () => { cancelled = true; };
+  }, [historyReady, authUser?.id]);
 
   useEffect(() => {
     if (!historyReady) return;
@@ -126,20 +178,24 @@ export default function Home() {
     setRenameDraft(session.title);
   };
 
-  const saveRename = () => {
+  const saveRename = async () => {
     const title = renameDraft.trim();
     if (renamingSessionId && title) {
       setSessions((current) => current.map((session) =>
         session.id === renamingSessionId ? { ...session, title } : session
       ));
+      if (authUser?.id && !renamingSessionId.startsWith('chat-')) {
+        await supabase.from('baybble_conversations').update({ title }).eq('id', renamingSessionId).eq('user_id', authUser.id);
+      }
     }
     setRenamingSessionId(null);
     setRenameDraft('');
   };
 
-  const deleteChat = (sessionId: string) => {
+  const deleteChat = async (sessionId: string) => {
     if (typeof window !== 'undefined' && !window.confirm('Delete this conversation? This cannot be undone.')) return;
     setSessions((current) => current.filter((session) => session.id !== sessionId));
+    if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
     if (activeSessionId === sessionId) createNewChat();
   };
   const openChat = () => {
@@ -164,15 +220,31 @@ export default function Home() {
     const message = draft.trim();
     if (!message || isSending) return;
     const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
-    if (!activeSessionId) {
-      const id = `chat-${Date.now()}`;
-      setActiveSessionId(id);
+    let conversationId = activeSessionId;
+    const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
+    if (!conversationId) {
+      if (authUser?.id) {
+        const { data: created, error } = await supabase
+          .from('baybble_conversations')
+          .insert({ user_id: authUser.id, title })
+          .select('id')
+          .single();
+        if (error || !created) { setChatError('Could not create a saved conversation. Please try again.'); return; }
+        conversationId = created.id;
+      } else {
+        conversationId = `chat-${Date.now()}`;
+      }
+      setActiveSessionId(conversationId);
       setSessions((current) => [{
-        id,
-        title: message.length > 42 ? `${message.slice(0, 42).trim()}…` : message,
-        messages: history,
-        updatedAt: Date.now()
+        id: conversationId as string, title, messages: history, updatedAt: Date.now()
       }, ...current].slice(0, 50));
+    }
+    if (authUser?.id && conversationId) {
+      const { error } = await supabase.from('baybble_messages').insert({
+        conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message
+      });
+      if (error) { setChatError('Your message could not be saved. Please try again.'); return; }
+      await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
     }
     setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
@@ -200,6 +272,7 @@ export default function Home() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let assistantReply = '';
       let buffer = '';
       while (true) {
         const { value, done } = await reader.read();
@@ -220,6 +293,7 @@ export default function Home() {
                 ? chunk.choices[0].delta.content
                 : '';
             if (token) {
+              assistantReply += token;
               setMessages((current) => current.map((item, index) =>
                 index === current.length - 1 && item.role === 'assistant'
                   ? { ...item, content: item.content + token }
@@ -228,6 +302,13 @@ export default function Home() {
             }
           } catch {}
         }
+      }
+      if (authUser?.id && conversationId && assistantReply) {
+        const { error: saveError } = await supabase.from('baybble_messages').insert({
+          conversation_id: conversationId, user_id: authUser.id, role: 'assistant', content: assistantReply
+        });
+        if (saveError) setChatError('Reply received, but it could not be saved to your account.');
+        await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === 'AbortError')) {
@@ -377,7 +458,7 @@ export default function Home() {
                     </View>
                   ))}
                 </ScrollView>
-                <Text style={styles.historyFootnote}>Saved in this browser</Text>
+                <Text style={styles.historyFootnote}>{authUser ? 'Synced to your Baybble account' : 'Saved in this browser'}</Text>
               </View>
             ) : null}
             <View style={styles.chatMain}>
