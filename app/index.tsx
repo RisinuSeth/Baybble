@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
@@ -298,17 +298,21 @@ export default function Home() {
         </Animated.View>
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
-          <View style={styles.chatTopBar}>
-            <Pressable style={styles.chatToolButton} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-              <Ionicons name="time-outline" size={17} color="#eeeeee" />
-              <Text style={styles.chatToolText}>History</Text>
-            </Pressable>
-            <Pressable style={styles.chatToolButton} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-              <Ionicons name="add-outline" size={19} color="#eeeeee" />
-              <Text style={styles.chatToolText}>New chat</Text>
-            </Pressable>
-          </View>
           <View style={styles.chatBody}>
+            <View style={styles.chatUtilityRail}>
+              <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
+                <View style={styles.railIconSlot}>
+                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='%23eeeeee' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                </View>
+                <Text style={styles.railActionText}>New chat</Text>
+              </Pressable>
+              <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
+                <View style={styles.railIconSlot}>
+                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23eeeeee' stroke-width='1.8'/%3E%3Cpath d='M12 7v5l3 2' fill='none' stroke='%23eeeeee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                </View>
+                <Text style={styles.railActionText}>History</Text>
+              </Pressable>
+            </View>
             {historyOpen ? (
               <View style={[styles.historySidebar, compact && styles.historySidebarCompact]}>
                 <View style={styles.historyHeadingRow}>
@@ -317,10 +321,6 @@ export default function Home() {
                     <Ionicons name="close" size={19} color="#aaaaaa" />
                   </Pressable>
                 </View>
-                <Pressable style={styles.historyNewButton} onPress={createNewChat}>
-                  <Ionicons name="add-outline" size={17} color="#ffffff" />
-                  <Text style={styles.historyNewText}>New chat</Text>
-                </Pressable>
                 <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
                   {sessions.length === 0 ? (
                     <Text style={styles.historyEmpty}>Your saved conversations will appear here.</Text>
@@ -461,12 +461,14 @@ const styles = StyleSheet.create({
   searchCaption: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
   chatWorkspace: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, flex: 1, backgroundColor: '#080808' },
-  chatTopBar: { width: '100%', maxWidth: 1180, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 22, paddingTop: 16, paddingBottom: 8 },
-  chatToolButton: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#303030' },
-  chatToolText: { color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
   chatBody: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', position: 'relative' },
+  chatUtilityRail: { width: 76, flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
+  railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
+  railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
+  railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
+
   historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
-  historySidebarCompact: { position: 'absolute', zIndex: 5, top: 0, bottom: 0, left: 0, width: 270, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 16, elevation: 12 },
+  historySidebarCompact: { position: 'absolute', zIndex: 5, top: 0, bottom: 0, left: 76, width: 270, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 16, elevation: 12 },
   historyHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, paddingBottom: 14 },
   historyHeading: { color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '800' },
   historyNewButton: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#383838', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 12, marginBottom: 12 },
