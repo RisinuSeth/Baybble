@@ -16,7 +16,6 @@ export default function Home() {
     Manrope_800ExtraBold,
   });
 
-  if (!fontsLoaded) return <View style={styles.loading} />;
 
   return (
     <View style={styles.screen}>
