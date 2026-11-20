@@ -35,11 +35,6 @@ export default function Home() {
         )}
 
         <View style={styles.headerActions}>
-          {!compact && (
-            <Pressable style={styles.demoButton}>
-              <Text style={styles.demoText}>Schedule a Demo</Text>
-            </Pressable>
-          )}
           <Pressable style={styles.loginButton}>
             <Text style={styles.loginText}>Log In</Text>
           </Pressable>
@@ -56,9 +51,6 @@ export default function Home() {
               <Text style={styles.navText}>{item}</Text>
             </Pressable>
           ))}
-          <Pressable style={styles.navLink}>
-            <Text style={styles.navText}>Schedule a Demo</Text>
-          </Pressable>
         </View>
       )}
 
@@ -107,8 +99,6 @@ const styles = StyleSheet.create({
   navLink: { paddingVertical: 10, paddingHorizontal: 3 },
   navText: { color: '#292633', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
-  demoButton: { paddingVertical: 11, paddingHorizontal: 14 },
-  demoText: { color: '#292633', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
   loginText: { color: '#292633', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   startButton: { backgroundColor: '#17151f', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
