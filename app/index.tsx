@@ -102,6 +102,7 @@ export default function Home() {
             await supabase.from('baybble_messages').insert(rows);
           }
           migrated.push({ ...old, id: created.id, updatedAt: new Date(created.updated_at).getTime() });
+          if (activeSessionId === old.id) setActiveSessionId(created.id);
         }
         if (!cancelled && migrated.length) setSessions(migrated);
         return;
@@ -523,7 +524,7 @@ export default function Home() {
       )}
 
     </ScrollView>
-    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setAuthOpen(false); }} />
+    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
   );
 }
