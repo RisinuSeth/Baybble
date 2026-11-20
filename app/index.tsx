@@ -5,6 +5,9 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDim
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
+type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
+type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
+
 function BaybbleLogo() {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
@@ -29,12 +32,100 @@ export default function Home() {
   const compact = width < 760;
   const [draft, setDraft] = useState('');
   const [chatMode, setChatMode] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [messages, setMessages] = useState<BaybbleMessage[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
+  const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem('baybble-chat-history-v1');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setSessions(parsed);
+      }
+    } catch {
+      // Keep Baybble usable if browser storage is unavailable.
+    } finally {
+      setHistoryReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!historyReady) return;
+    try {
+      window.localStorage.setItem('baybble-chat-history-v1', JSON.stringify(sessions));
+    } catch {
+      // Storage may be full or disabled; current chat remains usable.
+    }
+  }, [sessions, historyReady]);
+
+  useEffect(() => {
+    if (!historyReady || !activeSessionId || messages.length === 0) return;
+    setSessions((current) => current.map((session) =>
+      session.id === activeSessionId
+        ? { ...session, messages, updatedAt: Date.now() }
+        : session
+    ));
+  }, [messages, activeSessionId, historyReady]);
+
+  const createNewChat = () => {
+    abortController.current?.abort();
+    abortController.current = null;
+    setIsSending(false);
+    setMessages([]);
+    setDraft('');
+    setChatError('');
+    setActiveSessionId(null);
+    setChatMode(true);
+    setHistoryOpen(false);
+    setRenamingSessionId(null);
+    transition.setValue(1);
+  };
+
+  const openSavedChat = (session: ChatSession) => {
+    abortController.current?.abort();
+    abortController.current = null;
+    setIsSending(false);
+    setActiveSessionId(session.id);
+    setMessages(session.messages);
+    setDraft('');
+    setChatError('');
+    setChatMode(true);
+    setHistoryOpen(false);
+    setRenamingSessionId(null);
+    transition.setValue(1);
+  };
+
+  const beginRename = (session: ChatSession) => {
+    setRenamingSessionId(session.id);
+    setRenameDraft(session.title);
+  };
+
+  const saveRename = () => {
+    const title = renameDraft.trim();
+    if (renamingSessionId && title) {
+      setSessions((current) => current.map((session) =>
+        session.id === renamingSessionId ? { ...session, title } : session
+      ));
+    }
+    setRenamingSessionId(null);
+    setRenameDraft('');
+  };
+
+  const deleteChat = (sessionId: string) => {
+    if (typeof window !== 'undefined' && !window.confirm('Delete this conversation? This cannot be undone.')) return;
+    setSessions((current) => current.filter((session) => session.id !== sessionId));
+    if (activeSessionId === sessionId) createNewChat();
+  };
   const openChat = () => {
     if (chatMode || isTransitioning) return;
     setIsTransitioning(true);
@@ -57,6 +148,16 @@ export default function Home() {
     const message = draft.trim();
     if (!message || isSending) return;
     const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
+    if (!activeSessionId) {
+      const id = `chat-${Date.now()}`;
+      setActiveSessionId(id);
+      setSessions((current) => [{
+        id,
+        title: message.length > 42 ? `${message.slice(0, 42).trim()}…` : message,
+        messages: history,
+        updatedAt: Date.now()
+      }, ...current].slice(0, 50));
+    }
     setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
     setChatError('');
@@ -197,60 +298,124 @@ export default function Home() {
         </Animated.View>
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
-          <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
-            {messages.length === 0 ? (
-              <View style={styles.emptyConversation}>
-                <Text style={styles.chatGreeting}>Where should we start?</Text>
-                <Text style={styles.chatSubheading}>Tell Baybble what's on your mind. We'll work through it step by step.</Text>
-                <Text style={styles.chatNotice}>Your Baybble conversation starts here.</Text>
-              </View>
-            ) : (
-              <View style={styles.messageList}>
-                {messages.map((message, index) => (
-                  message.role === 'user' ? (
-                    <View key={index} style={styles.userMessage}>
-                      <Text style={styles.userMessageText}>{message.content}</Text>
+          <View style={styles.chatTopBar}>
+            <Pressable style={styles.chatToolButton} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
+              <Ionicons name="time-outline" size={17} color="#eeeeee" />
+              <Text style={styles.chatToolText}>History</Text>
+            </Pressable>
+            <Pressable style={styles.chatToolButton} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
+              <Ionicons name="add" size={19} color="#eeeeee" />
+              <Text style={styles.chatToolText}>New chat</Text>
+            </Pressable>
+          </View>
+          <View style={styles.chatBody}>
+            {historyOpen ? (
+              <View style={[styles.historySidebar, compact && styles.historySidebarCompact]}>
+                <View style={styles.historyHeadingRow}>
+                  <Text style={styles.historyHeading}>Your conversations</Text>
+                  <Pressable onPress={() => setHistoryOpen(false)} accessibilityLabel="Close history">
+                    <Ionicons name="close" size={19} color="#aaaaaa" />
+                  </Pressable>
+                </View>
+                <Pressable style={styles.historyNewButton} onPress={createNewChat}>
+                  <Ionicons name="add" size={17} color="#ffffff" />
+                  <Text style={styles.historyNewText}>New chat</Text>
+                </Pressable>
+                <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
+                  {sessions.length === 0 ? (
+                    <Text style={styles.historyEmpty}>Your saved conversations will appear here.</Text>
+                  ) : sessions.map((session) => (
+                    <View key={session.id} style={[styles.historyItem, activeSessionId === session.id && styles.historyItemActive]}>
+                      {renamingSessionId === session.id ? (
+                        <View style={styles.renameRow}>
+                          <TextInput
+                            value={renameDraft}
+                            onChangeText={setRenameDraft}
+                            onSubmitEditing={saveRename}
+                            autoFocus
+                            style={styles.renameInput}
+                            accessibilityLabel="Conversation name"
+                          />
+                          <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
+                            <Ionicons name="checkmark" size={18} color="#ffffff" />
+                          </Pressable>
+                        </View>
+                      ) : (
+                        <>
+                          <Pressable style={styles.historyTitleButton} onPress={() => openSavedChat(session)}>
+                            <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
+                          </Pressable>
+                          <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
+                            <Ionicons name="pencil-outline" size={14} color="#999999" />
+                          </Pressable>
+                          <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
+                            <Ionicons name="trash-outline" size={14} color="#999999" />
+                          </Pressable>
+                        </>
+                      )}
                     </View>
-                  ) : (
-                    <View key={index} style={styles.assistantMessage}>
-                      {message.content ? (
-                        <Text style={styles.assistantMessageText}>{message.content}</Text>
-                      ) : isSending ? (
-                        <Text style={styles.thinkingText}>Baybble is thinking...</Text>
-                      ) : null}
-                    </View>
-                  )
-                ))}
-                {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
+                  ))}
+                </ScrollView>
+                <Text style={styles.historyFootnote}>Saved in this browser</Text>
               </View>
-            )}
-          </ScrollView>
-          <View style={styles.composerArea}>
-            <View style={styles.composerFrame}>
-              <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
-              <View style={styles.composerInner}>
-                <TextInput
-                  value={draft}
-                  onChangeText={setDraft}
-                  placeholder="Message Baybble"
-                  placeholderTextColor="#929292"
-                  style={styles.composerInput}
-                  multiline
-                  autoFocus
-                  accessibilityLabel="Message Baybble"
-                  onKeyPress={(event: any) => {
-                    const key = event?.nativeEvent?.key ?? event?.key;
-                    const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
-                    if (key === 'Enter' && !shift) {
-                      event?.preventDefault?.();
-                      sendMessage();
-                    }
-                  }}
-                  onSubmitEditing={sendMessage}
-                />
+            ) : null}
+            <View style={styles.chatMain}>
+              <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
+                {messages.length === 0 ? (
+                  <View style={styles.emptyConversation}>
+                    <Text style={styles.chatGreeting}>Where should we start?</Text>
+                    <Text style={styles.chatSubheading}>Tell Baybble what's on your mind. We'll work through it step by step.</Text>
+                    <Text style={styles.chatNotice}>Your Baybble conversation starts here.</Text>
+                  </View>
+                ) : (
+                  <View style={styles.messageList}>
+                    {messages.map((message, index) => (
+                      message.role === 'user' ? (
+                        <View key={index} style={styles.userMessage}>
+                          <Text style={styles.userMessageText}>{message.content}</Text>
+                        </View>
+                      ) : (
+                        <View key={index} style={styles.assistantMessage}>
+                          {message.content ? (
+                            <Text style={styles.assistantMessageText}>{message.content}</Text>
+                          ) : isSending ? (
+                            <Text style={styles.thinkingText}>Baybble is thinking...</Text>
+                          ) : null}
+                        </View>
+                      )
+                    ))}
+                    {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
+                  </View>
+                )}
+              </ScrollView>
+              <View style={styles.composerArea}>
+                <View style={styles.composerFrame}>
+                  <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
+                  <View style={styles.composerInner}>
+                    <TextInput
+                      value={draft}
+                      onChangeText={setDraft}
+                      placeholder="Message Baybble"
+                      placeholderTextColor="#929292"
+                      style={styles.composerInput}
+                      multiline
+                      autoFocus
+                      accessibilityLabel="Message Baybble"
+                      onKeyPress={(event: any) => {
+                        const key = event?.nativeEvent?.key ?? event?.key;
+                        const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
+                        if (key === 'Enter' && !shift) {
+                          event?.preventDefault?.();
+                          sendMessage();
+                        }
+                      }}
+                      onSubmitEditing={sendMessage}
+                    />
+                  </View>
+                </View>
+                <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
               </View>
             </View>
-            <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
           </View>
         </Animated.View>
       )}
@@ -295,7 +460,28 @@ const styles = StyleSheet.create({
   input: { flex: 1, minWidth: 0, color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
   searchCaption: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
-  chatWorkspace: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, flex: 1, backgroundColor: '#080808', alignItems: 'center' },
+  chatWorkspace: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, flex: 1, backgroundColor: '#080808' },
+  chatTopBar: { width: '100%', maxWidth: 1180, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 22, paddingTop: 16, paddingBottom: 8 },
+  chatToolButton: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#303030' },
+  chatToolText: { color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
+  chatBody: { width: '100%', flex: 1, minHeight: 0, flexDirection: 'row', position: 'relative' },
+  historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
+  historySidebarCompact: { position: 'absolute', zIndex: 5, top: 0, bottom: 0, left: 0, width: 270, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 16, elevation: 12 },
+  historyHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, paddingBottom: 14 },
+  historyHeading: { color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '800' },
+  historyNewButton: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#383838', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 12, marginBottom: 12 },
+  historyNewText: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
+  historyList: { flex: 1 },
+  historyEmpty: { color: '#858585', fontFamily: 'Manrope', fontSize: 11, lineHeight: 18, paddingHorizontal: 6, paddingTop: 12 },
+  historyItem: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingVertical: 5, paddingHorizontal: 5, marginBottom: 3 },
+  historyItemActive: { backgroundColor: '#242424' },
+  historyTitleButton: { flex: 1, minWidth: 0, paddingVertical: 7 },
+  historyTitle: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11 },
+  historyAction: { padding: 6 },
+  renameRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 7 },
+  renameInput: { flex: 1, minWidth: 0, color: '#ffffff', fontFamily: 'Manrope', fontSize: 11, borderBottomWidth: 1, borderBottomColor: '#777777', paddingVertical: 5, outlineStyle: 'none' as any },
+  historyFootnote: { color: '#666666', fontFamily: 'Manrope', fontSize: 9, paddingTop: 10, paddingHorizontal: 5 },
+  chatMain: { flex: 1, minWidth: 0, minHeight: 0, alignItems: 'center' },
   conversationScroll: { width: '100%', flex: 1 },
   conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
   emptyConversation: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
