@@ -1,7 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Animated, Image, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const navItems = ['Product', 'Use Cases', 'Pricing', 'Resources'];
+
+const BLACK_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#000000"/><circle cx="43" cy="43" r="17" fill="#000000"/></g></svg>';
+
+function BaybbleLogo() {
+  return <Image source={{ uri: 'data:image/svg+xml;utf8,' + encodeURIComponent(BLACK_LOGO_SVG) }} style={styles.logoMark} resizeMode="contain" />;
+}
 
 export default function Home() {
   const { width } = useWindowDimensions();
@@ -36,10 +42,7 @@ export default function Home() {
 
       <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
         <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-          <View style={styles.logoMark}>
-            <View style={styles.logoBubbleOne} />
-            <View style={styles.logoBubbleTwo} />
-          </View>
+          <BaybbleLogo />
           <Text style={styles.wordmark}>Baybble</Text>
         </Pressable>
 
@@ -120,7 +123,7 @@ export default function Home() {
           <Text style={styles.checkLine}>✓  Turn the next step into an action plan</Text>
         </View>
         <View style={styles.chatCard}>
-          <View style={styles.chatHeader}><View style={styles.avatar}><View style={styles.logoMark}><View style={styles.logoBubbleOne} /><View style={styles.logoBubbleTwo} /></View></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>AI problem-solving platform</Text></View></View>
+          <View style={styles.chatHeader}><View style={styles.avatar}><BaybbleLogo /></View><View><Text style={styles.chatName}>Bay</Text><Text style={styles.chatStatus}>AI problem-solving platform</Text></View></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>What are you trying to solve? Share the situation and I'll help break it down.</Text></View>
           <View style={styles.youBubble}><Text style={styles.youBubbleText}>I want to start a business, but I have too many ideas and don't know where to begin.</Text></View>
           <View style={styles.bayBubble}><Text style={styles.bubbleText}>Let's compare your ideas. What are you considering, and what matters most when choosing one?</Text></View>
@@ -234,7 +237,7 @@ export default function Home() {
       </View>
 
       <View style={styles.footer}>
-        <View style={styles.footerBrand}><View style={styles.logoMark}><View style={styles.logoBubbleOne}/><View style={styles.logoBubbleTwo}/></View><Text style={styles.footerWordmark}>Baybble</Text></View>
+        <View style={styles.footerBrand}><BaybbleLogo /><Text style={styles.footerWordmark}>Baybble</Text></View>
         <Text style={styles.footerTagline}>Your problems. A clearer way forward.</Text>
         <Text style={styles.copyright}>© 2026 Baybble. All rights reserved.</Text>
       </View>
@@ -250,9 +253,7 @@ const styles = StyleSheet.create({
   pinkGlow: { position: 'absolute', top: 115, right: 115, width: 330, height: 330, borderRadius: 165, backgroundColor: '#f4c5e9', opacity: 0.48 },
   header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  logoMark: { width: 32, height: 32, position: 'relative' },
-  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#000000', top: 0, left: 0 },
-  logoBubbleTwo: { position: 'absolute', width: 18, height: 18, borderRadius: 10, backgroundColor: '#000000', bottom: 0, right: 0, borderWidth: 2, borderColor: '#ffffff' },
+  logoMark: { width: 32, height: 32 },
   wordmark: { color: '#000000', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navLink: { paddingVertical: 10, paddingHorizontal: 3 },
