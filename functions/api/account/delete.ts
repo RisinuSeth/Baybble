@@ -1,5 +1,6 @@
 interface Env {
-  SUPABASE_URL: string;
+  SUPABASE_URL?: string;
+  EXPO_PUBLIC_SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
 }
 
@@ -11,7 +12,7 @@ function errorResponse(message: string, status: number) {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
     return errorResponse("Account deletion is not configured yet. Please contact support.", 503);
   }
 
@@ -27,7 +28,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
   if (body.confirmation !== "DELETE") return errorResponse("Deletion confirmation is required.", 400);
 
-  const baseUrl = env.SUPABASE_URL.replace(/\/$/, "");
+  const baseUrl = (env.SUPABASE_URL || env.EXPO_PUBLIC_SUPABASE_URL || "https://xquyfsquqqsbufmonewm.supabase.co").replace(/\/$/, "");
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
   const headers = { apikey: serviceKey, Authorization: "Bearer " + serviceKey };
 
