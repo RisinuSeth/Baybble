@@ -1342,8 +1342,8 @@ const styles = StyleSheet.create({
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808', overflow: 'hidden' },
-  // NASA ISS photo iss074e0089803; positioned to show only the atmospheric limb against space.
-  heroHorizonPhoto: { position: 'absolute' as any, width: '150%', height: 300, left: '-25%' as any, top: '32%' as any, pointerEvents: 'none' as any, zIndex: 0, opacity: 0.9, backgroundImage: "linear-gradient(to bottom, rgba(8,8,8,0) 42%, rgba(8,8,8,0.18) 64%, #080808 100%), url('https://images-assets.nasa.gov/image/iss074e0089803/iss074e0089803~orig.jpg')", backgroundSize: '100% 100%, 100% auto', backgroundPosition: 'center, center 58%', backgroundRepeat: 'no-repeat' } as any,
+  // NASA ISS023-E-57948 atmospheric limb, tightly cropped to a thin full-width horizon band.
+  heroHorizonPhoto: { position: 'absolute' as any, width: '100%', height: 190, left: 0, top: '27%' as any, pointerEvents: 'none' as any, zIndex: 0, opacity: 0.96, backgroundImage: "linear-gradient(to bottom, #080808 0%, rgba(8,8,8,0.18) 24%, rgba(8,8,8,0) 47%, rgba(8,8,8,0.12) 72%, #080808 100%), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS023/ISS023-E-57948.JPG')", backgroundSize: '100% 100%, 100% auto', backgroundPosition: 'center, center 59%', backgroundRepeat: 'no-repeat' } as any,
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
