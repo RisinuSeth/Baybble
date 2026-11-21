@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from 'react-native';
 import { supabase } from '../lib/supabase';
 import AuthDialog from '../components/AuthDialog';
+import MarkdownMessage from '../components/MarkdownMessage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
@@ -802,7 +803,7 @@ export default function Home() {
                       ) : (
                         <View key={index} style={styles.assistantMessage}>
                           {message.content ? (
-                            <Text style={styles.assistantMessageText}>{message.content}</Text>
+                            <MarkdownMessage content={message.content} />
                           ) : isSending ? (
                             <Text style={styles.thinkingText}>Baybble is thinking...</Text>
                           ) : null}
