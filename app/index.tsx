@@ -522,6 +522,11 @@ export default function Home() {
       } catch (error) {
         if (uploadedPaths.length) await supabase.storage.from('baybble-conversation-files').remove(uploadedPaths);
         await supabase.from('baybble_messages').delete().eq('id', messageId).eq('user_id', authUser.id);
+        if (isNewConversation) {
+          await supabase.from('baybble_conversations').delete().eq('id', conversationId).eq('user_id', authUser.id);
+          setSessions((current) => current.filter((session) => session.id !== conversationId));
+          setActiveSessionId(null);
+        }
         setChatError(error instanceof Error ? error.message : 'The files could not be attached. Please try again.');
         return;
       }
