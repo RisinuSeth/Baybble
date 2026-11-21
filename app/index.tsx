@@ -962,7 +962,6 @@ export default function Home() {
                 </View>
                 {chatMenuOpen ? (
                   <>
-                    <Pressable style={styles.chatMenuDismiss} onPress={() => setChatMenuOpen(false)} />
                     <View style={styles.chatOptionsMenu}>
                       {activeSessionId ? (
                         <>
@@ -1164,7 +1163,6 @@ const styles = StyleSheet.create({
   chatShareButton: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 11, borderRadius: 9 },
   chatShareText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
   chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
-  chatMenuDismiss: { position: 'absolute' as any, top: 0, left: 0, right: 0, bottom: -10000, zIndex: 1 },
   chatOptionsMenu: { position: 'absolute' as any, top: 46, right: 18, width: 190, paddingVertical: 6, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#353535', zIndex: 3, shadowColor: '#000000', shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
   chatOptionsItem: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13 },
   chatOptionsText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
