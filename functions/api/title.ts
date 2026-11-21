@@ -48,9 +48,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!messages.length) return Response.json({ error: "Empty conversation." }, { status: 400 });
 
   const userMessages = messages.filter((message) => message.role === "user");
-  const greetingOnly = userMessages.length === 1 && /^(hi|hello|hey|hiya|yo|good morning|good afternoon|good evening|howdy)[!,.?\\s]*$/i.test(userMessages[0].content);
+  const greetingOnly = userMessages.length === 1 && /^(hi|hello|hey|hiya|yo|good morning|good afternoon|good evening|howdy)[!,.?\s]*$/i.test(userMessages[0].content);
   if (greetingOnly) {
-    return new Response('data: {"response":"A Fresh Start"}\\n\\ndata: [DONE]\\n\\n', {
+    return new Response('data: {"response":"A Fresh Start"}\n\ndata: [DONE]\n\n', {
       headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform" }
     });
   }
