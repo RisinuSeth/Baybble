@@ -83,6 +83,14 @@ function BaybbleLogo({ dark = false }: { dark?: boolean }) {
   );
 }
 
+function SidebarToggleIcon() {
+  return (
+    <View style={styles.sidebarToggleFrame} accessibilityElementsHidden>
+      <View style={styles.sidebarToggleDivider} />
+    </View>
+  );
+}
+
 function SectionHeading({ eyebrow, title, body, compact }: { eyebrow: string; title: string; body?: string; compact: boolean }) {
   return (
     <View style={styles.sectionHeading}>
@@ -731,6 +739,7 @@ export default function Home() {
   };
   const gradientRotation = useRef(new Animated.Value(0)).current;
   const sidebarWidth = useRef(new Animated.Value(270)).current;
+  const collapsedBrandHover = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(sidebarWidth, {
@@ -976,7 +985,6 @@ export default function Home() {
                   {!sidebarCollapsed || compact ? (
                     <>
                       <View style={styles.sidebarBrand}>
-                        <BaybbleLogo />
                         <Text style={styles.sidebarWordmark}>Baybble</Text>
                       </View>
                       <Pressable
@@ -985,17 +993,44 @@ export default function Home() {
                         accessibilityRole="button"
                         accessibilityLabel={compact ? "Close sidebar" : "Collapse sidebar"}
                       >
-                        <Ionicons name={compact ? "close" : "chevron-back"} size={18} color="#a8a8a8" />
+                        {compact ? (
+                          <Ionicons name="close" size={18} color="#a8a8a8" />
+                        ) : (
+                          <SidebarToggleIcon />
+                        )}
                       </Pressable>
                     </>
                   ) : (
                     <Pressable
                       style={styles.sidebarCollapsedBrandToggle}
                       onPress={() => setSidebarCollapsed(false)}
+                      onHoverIn={() => Animated.timing(collapsedBrandHover, { toValue: 1, duration: 150, useNativeDriver: true }).start()}
+                      onHoverOut={() => Animated.timing(collapsedBrandHover, { toValue: 0, duration: 170, useNativeDriver: true }).start()}
                       accessibilityRole="button"
                       accessibilityLabel="Expand sidebar"
                     >
-                      <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                      <Animated.View
+                        style={[
+                          styles.sidebarCollapsedBrandLogo,
+                          {
+                            opacity: collapsedBrandHover.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+                            transform: [{ scale: collapsedBrandHover.interpolate({ inputRange: [0, 1], outputRange: [1, 0.82] }) }]
+                          }
+                        ]}
+                      >
+                        <View style={{ transform: [{ scale: 0.72 }] }}>
+                          <BaybbleLogo />
+                        </View>
+                      </Animated.View>
+                      <Animated.View
+                        pointerEvents="none"
+                        style={[
+                          styles.sidebarCollapsedBrandGlyph,
+                          { opacity: collapsedBrandHover }
+                        ]}
+                      >
+                        <SidebarToggleIcon />
+                      </Animated.View>
                     </Pressable>
                   )}
                 </View>
@@ -1361,7 +1396,11 @@ const styles = StyleSheet.create({
   workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
   sidebarBrandRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, paddingHorizontal: 3 },
   sidebarBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8, position: 'relative' as any, overflow: 'hidden' },
+  sidebarCollapsedBrandLogo: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  sidebarCollapsedBrandGlyph: { position: 'absolute' as any, top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+  sidebarToggleFrame: { width: 19, height: 16, borderWidth: 1.5, borderColor: '#a8a8a8', borderRadius: 4, flexDirection: 'row', padding: 2 },
+  sidebarToggleDivider: { width: 1.5, height: '100%', borderRadius: 1, backgroundColor: '#a8a8a8' },
   sidebarWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 19, letterSpacing: -0.7 },
   sidebarIconButton: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   sidebarNewButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 10, backgroundColor: '#f2f2f2', paddingHorizontal: 12, marginBottom: 13 },
