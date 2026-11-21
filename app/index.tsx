@@ -379,7 +379,8 @@ export default function Home() {
         .order('created_at', { ascending: true });
       setConversationAttachments((files || []).map((file: any) => ({ name: file.filename, text: file.extracted_text })));
     }
-    setChatError('');    setChatMode(true);
+    setChatError('');
+    setChatMode(true);
     setHistoryOpen(false);
     setRenamingSessionId(null);
     transition.setValue(1);
@@ -1235,7 +1236,7 @@ export default function Home() {
       )}
 
     </ScrollView>
-    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setActiveSessionId(null); setAuthOpen(false); }} />
+    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setPendingAttachments([]); setConversationAttachments([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
   );
 }
