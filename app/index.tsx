@@ -126,7 +126,7 @@ export default function Home() {
     }
 
     const examples = [
-      'Help me plan a dinner party...',
+      'Help me organise my week...',
       'Help me think through a difficult decision...',
       'Turn this idea into a practical plan...',
       'Explain a complex topic in simple terms...',
