@@ -102,6 +102,7 @@ export default function Home() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarLogoHovered, setSidebarLogoHovered] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
@@ -754,21 +755,36 @@ export default function Home() {
               >
                 <View style={styles.sidebarBrandRow}>
                   {!sidebarCollapsed || compact ? (
-                    <View style={styles.sidebarBrand}>
-                      <BaybbleLogo />
-                      <Text style={styles.sidebarWordmark}>Baybble</Text>
-                    </View>
+                    <>
+                      <View style={styles.sidebarBrand}>
+                        <BaybbleLogo />
+                        <Text style={styles.sidebarWordmark}>Baybble</Text>
+                      </View>
+                      <Pressable
+                        style={styles.sidebarIconButton}
+                        onPress={() => compact ? setHistoryOpen(false) : setSidebarCollapsed((value) => !value)}
+                        accessibilityRole="button"
+                        accessibilityLabel={compact ? "Close sidebar" : "Collapse sidebar"}
+                      >
+                        <Ionicons name={compact ? "close" : "chevron-back"} size={18} color="#a8a8a8" />
+                      </Pressable>
+                    </>
                   ) : (
-                    <BaybbleLogo />
+                    <Pressable
+                      style={styles.sidebarCollapsedBrandToggle}
+                      onHoverIn={() => setSidebarLogoHovered(true)}
+                      onHoverOut={() => setSidebarLogoHovered(false)}
+                      onPress={() => setSidebarCollapsed(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Expand sidebar"
+                    >
+                      {sidebarLogoHovered ? (
+                        <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                      ) : (
+                        <BaybbleLogo />
+                      )}
+                    </Pressable>
                   )}
-                  <Pressable
-                    style={styles.sidebarIconButton}
-                    onPress={() => compact ? setHistoryOpen(false) : setSidebarCollapsed((value) => !value)}
-                    accessibilityRole="button"
-                    accessibilityLabel={compact ? "Close sidebar" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                  >
-                    <Ionicons name={compact ? "close" : sidebarCollapsed ? "chevron-forward" : "chevron-back"} size={18} color="#a8a8a8" />
-                  </Pressable>
                 </View>
 
                 <Pressable
@@ -1025,6 +1041,7 @@ const styles = StyleSheet.create({
   workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
   sidebarBrandRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, paddingHorizontal: 3 },
   sidebarBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   sidebarWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 19, letterSpacing: -0.7 },
   sidebarIconButton: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   sidebarNewButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 10, backgroundColor: '#f2f2f2', paddingHorizontal: 12, marginBottom: 13 },
