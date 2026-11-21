@@ -1534,7 +1534,7 @@ const styles = StyleSheet.create({
   chatSubheading: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23, textAlign: 'center', maxWidth: 470, marginTop: 14 },
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
   messageList: { width: '100%', gap: 18, paddingBottom: 30 },
-  userMessageGroup: { alignSelf: 'flex-end', maxWidth: '82%', alignItems: 'flex-end' },
+  userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end' },
   assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start' },
   messageActions: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingTop: 7, paddingHorizontal: 2 },
   messageActionsUser: { justifyContent: 'flex-end' },
