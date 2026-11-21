@@ -450,7 +450,7 @@ export default function Home() {
             let generatedTitle = '';
             let titleBuffer = '';
             const processTitleEvents = (chunkText: string) => {
-              for (const line of chunkText.split(/\\r?\\n/)) {
+              for (const line of chunkText.split(/\r?\n/)) {
                 const trimmed = line.trim();
                 if (!trimmed.startsWith('data:')) continue;
                 const payload = trimmed.slice(5).trim();
@@ -470,7 +470,7 @@ export default function Home() {
               const { value, done } = await titleReader.read();
               if (done) break;
               titleBuffer += titleDecoder.decode(value, { stream: true });
-              const lastNewline = titleBuffer.lastIndexOf('\\n');
+              const lastNewline = titleBuffer.lastIndexOf('\n');
               if (lastNewline >= 0) {
                 processTitleEvents(titleBuffer.slice(0, lastNewline));
                 titleBuffer = titleBuffer.slice(lastNewline + 1);
@@ -480,7 +480,7 @@ export default function Home() {
             if (titleBuffer.trim()) processTitleEvents(titleBuffer);
             const cleanTitle = generatedTitle
               .trim()
-              .replace(/^title:\\s*/i, '')
+              .replace(/^title:\s*/i, '')
               .replace(/^["']|["']$/g, '')
               .replace(/[.!?]+$/g, '')
               .slice(0, 55)
