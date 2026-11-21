@@ -441,7 +441,7 @@ export default function Home() {
         Animated.timing(navCapsuleOpacity, { toValue: 0, duration: 120, useNativeDriver: false }),
         Animated.timing(navCapsuleWidth, { toValue: 0, duration: 160, useNativeDriver: false })
       ]).start();
-    }, 170);
+    }, 650);
   };
 
   return (
@@ -537,6 +537,7 @@ export default function Home() {
                 <Pressable
                   key={entry.title}
                   style={styles.megaMenuItem}
+                  onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
                   disabled={!entry.href}
                   onPress={() => {
                     if (entry.href) {
