@@ -388,9 +388,11 @@ export default function Home() {
                 </>
               )}
             </Pressable>
-            <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
-              <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
-            </Pressable>
+            {!authUser && (
+              <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
+                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       )}
