@@ -449,7 +449,7 @@ export default function Home() {
     <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <BaybbleLogo />
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
@@ -467,7 +467,6 @@ export default function Home() {
                     if (activeMegaMenu === item) moveNavCapsule(item);
                   }}
                   onHoverIn={() => openMegaMenu(item)}
-                  onHoverOut={scheduleCloseMegaMenu}
                   onPress={() => activeMegaMenu === item ? scheduleCloseMegaMenu() : openMegaMenu(item)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: activeMegaMenu === item }}
@@ -478,7 +477,7 @@ export default function Home() {
             </View>
           )}
 
-          <View style={styles.headerActions}>
+          <View style={styles.headerActions} onMouseEnter={scheduleCloseMegaMenu}>
             <Pressable
               style={authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]}
               onPress={() => setAuthOpen(true)}
