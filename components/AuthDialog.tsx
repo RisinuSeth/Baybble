@@ -59,9 +59,16 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
         fullName: typeof metadata.full_name === 'string' ? metadata.full_name : '',
         username: typeof metadata.username === 'string' ? metadata.username : (data.user.email ?? userEmail).split('@')[0],
         avatarUrl: '',
-        avatarPath: typeof metadata.avatar_path === 'string' ? metadata.avatar_path : ''
+        avatarPath: typeof metadata.avatar_path === 'string'
+          ? metadata.avatar_path
+          : typeof metadata.avatar_url === 'string'
+            ? (metadata.avatar_url.split('/object/public/baybble-avatars/')[1] || '').split('?')[0]
+            : ''
       };
       if (next.avatarPath) {
+        if (typeof metadata.avatar_path !== 'string') {
+          await supabase.auth.updateUser({ data: { avatar_path: next.avatarPath, avatar_url: null } });
+        }
         const { data: signed } = await supabase.storage.from('baybble-avatars').createSignedUrl(next.avatarPath, 3600);
         next.avatarUrl = signed?.signedUrl ?? '';
       }
