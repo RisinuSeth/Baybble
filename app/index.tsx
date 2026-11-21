@@ -77,8 +77,8 @@ function profileAvatarColour(email?: string) {
 function BaybbleLogo({ dark = false }: { dark?: boolean }) {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
-      <View style={[styles.logoBubbleOne, dark && { backgroundColor: '#B4B4B4' }]} />
-      <View style={[styles.logoBubbleTwo, dark && { backgroundColor: '#B4B4B4', borderColor: '#080808' }]} />
+      <View style={styles.logoBubbleOne} />
+      <View style={styles.logoBubbleTwo} />
     </View>
   );
 }
@@ -1323,8 +1323,8 @@ const styles = StyleSheet.create({
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   logoMark: { width: 32, height: 32, position: 'relative' },
-  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#B4B4B4', top: 0, left: 0 },
-  logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#B4B4B4', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
+  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#ffffff', top: 0, left: 0 },
+  logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
