@@ -67,11 +67,20 @@ export default function Home() {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (alive) setAuthUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email, fullName: data.session.user.user_metadata?.full_name, avatarUrl: data.session.user.user_metadata?.avatar_url } : null);
-    });
+    const applySession = async (session: any) => {
+      if (!session?.user) { if (alive) setAuthUser(null); return; }
+      const user = session.user;
+      let avatarUrl = '';
+      const avatarPath = user.user_metadata?.avatar_path;
+      if (typeof avatarPath === 'string' && avatarPath) {
+        const { data } = await supabase.storage.from('baybble-avatars').createSignedUrl(avatarPath, 3600);
+        avatarUrl = data?.signedUrl ?? '';
+      }
+      if (alive) setAuthUser({ id: user.id, email: user.email, fullName: user.user_metadata?.full_name, avatarUrl });
+    };
+    supabase.auth.getSession().then(({ data }) => applySession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthUser(session?.user ? { id: session.user.id, email: session.user.email, fullName: session.user.user_metadata?.full_name, avatarUrl: session.user.user_metadata?.avatar_url } : null);
+      void applySession(session);
     });
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
