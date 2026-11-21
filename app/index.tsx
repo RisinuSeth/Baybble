@@ -102,6 +102,7 @@ export default function Home() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarLogoHovered, setSidebarLogoHovered] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
@@ -771,11 +772,17 @@ export default function Home() {
                   ) : (
                     <Pressable
                       style={styles.sidebarCollapsedBrandToggle}
+                      onHoverIn={() => setSidebarLogoHovered(true)}
+                      onHoverOut={() => setSidebarLogoHovered(false)}
                       onPress={() => setSidebarCollapsed(false)}
                       accessibilityRole="button"
                       accessibilityLabel="Expand sidebar"
                     >
-                      <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                      {sidebarLogoHovered ? (
+                        <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                      ) : (
+                        <BaybbleLogo />
+                      )}
                     </Pressable>
                   )}
                 </View>
