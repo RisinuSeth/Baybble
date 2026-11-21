@@ -13,6 +13,49 @@ type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; upda
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
 
+const megaMenuContent: Record<string, { eyebrow: string; title: string; description: string; items: { title: string; description: string }[] }> = {
+  Product: {
+    eyebrow: 'THE BAYBBLE WORKSPACE',
+    title: 'A clearer way to work through problems.',
+    description: 'Explore the tools that help turn questions, challenges and ideas into practical next steps.',
+    items: [
+      { title: 'Problem-solving workspace', description: 'Think through a challenge in one focused space.' },
+      { title: 'Conversation history', description: 'Return to previous discussions and pick up where you left off.' },
+      { title: 'A more considered answer', description: 'Explore context, options and useful next steps.' }
+    ]
+  },
+  'Use Cases': {
+    eyebrow: 'WHAT YOU CAN DO',
+    title: 'One workspace. Different ways forward.',
+    description: 'Bring Baybble the challenge you are working on, from an early idea to a decision that needs clarity.',
+    items: [
+      { title: 'Understand', description: 'Break down unfamiliar topics and complex questions.' },
+      { title: 'Explore', description: 'Compare possibilities and think through alternatives.' },
+      { title: 'Plan', description: 'Turn an idea into clear, manageable next steps.' }
+    ]
+  },
+  Pricing: {
+    eyebrow: 'PLANS & ACCESS',
+    title: 'Find the right way to use Baybble.',
+    description: 'See the available options and choose the experience that fits the way you work.',
+    items: [
+      { title: 'Explore plans', description: 'See the available Baybble plans.' },
+      { title: 'Compare features', description: 'Understand what is included with each option.' },
+      { title: 'Account & billing', description: 'Manage your Baybble account and plan details.' }
+    ]
+  },
+  Resources: {
+    eyebrow: 'BAYBBLE RESOURCES',
+    title: 'Helpful context, whenever you need it.',
+    description: 'Find guidance for getting started, making the most of Baybble and understanding the platform.',
+    items: [
+      { title: 'Getting started', description: 'Learn the basics of working with Baybble.' },
+      { title: 'Guides & ideas', description: 'Discover practical ways to approach everyday challenges.' },
+      { title: 'Help & support', description: 'Find answers to common questions about Baybble.' }
+    ]
+  }
+};
+
 function profileInitials(name?: string, email?: string) {
   const source = name?.trim() || email?.split('@')[0] || 'B';
   const parts = source.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
@@ -26,11 +69,11 @@ function profileAvatarColour(email?: string) {
   return avatarColours[Math.abs(hash) % avatarColours.length];
 }
 
-function BaybbleLogo() {
+function BaybbleLogo({ dark = false }: { dark?: boolean }) {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
-      <View style={styles.logoBubbleOne} />
-      <View style={styles.logoBubbleTwo} />
+      <View style={[styles.logoBubbleOne, dark && { backgroundColor: '#080808' }]} />
+      <View style={[styles.logoBubbleTwo, dark && { backgroundColor: '#080808', borderColor: '#ffffff' }]} />
     </View>
   );
 }
@@ -60,6 +103,9 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const megaMenuAnimation = useRef(new Animated.Value(0)).current;
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -356,20 +402,48 @@ export default function Home() {
 
   const gradientAngle = gradientRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
+  useEffect(() => {
+    Animated.timing(megaMenuAnimation, {
+      toValue: activeMegaMenu ? 1 : 0,
+      duration: activeMegaMenu ? 260 : 180,
+      useNativeDriver: true
+    }).start();
+    return () => {
+      if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    };
+  }, [activeMegaMenu, megaMenuAnimation]);
+
+  const openMegaMenu = (item: string) => {
+    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    setActiveMegaMenu(item);
+  };
+  const scheduleCloseMegaMenu = () => {
+    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    megaMenuTimer.current = setTimeout(() => setActiveMegaMenu(null), 170);
+  };
+
   return (
     <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-            <BaybbleLogo />
-            <Text style={styles.wordmark}>Baybble</Text>
+        <View style={[styles.header, activeMegaMenu && !compact && styles.headerMenuOpen, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+            <BaybbleLogo dark={!!activeMegaMenu && !compact} />
+            <Text style={[styles.wordmark, activeMegaMenu && !compact && styles.wordmarkMenuOpen]}>Baybble</Text>
           </Pressable>
 
           {!compact && (
             <View style={[styles.nav, styles.navCentered]}>
               {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-                <Pressable key={item} style={styles.navLink}>
-                  <Text style={styles.navText}>{item}</Text>
+                <Pressable
+                  key={item}
+                  style={styles.navLink}
+                  onHoverIn={() => openMegaMenu(item)}
+                  onHoverOut={scheduleCloseMegaMenu}
+                  onPress={() => activeMegaMenu === item ? setActiveMegaMenu(null) : openMegaMenu(item)}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: activeMegaMenu === item }}
+                >
+                  <Text style={[styles.navText, activeMegaMenu && styles.navTextMenuOpen]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
@@ -392,19 +466,56 @@ export default function Home() {
                 </View>
               ) : (
                 <>
-                  <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
-                  <Text style={styles.loginText}>Log In</Text>
+                  <Ionicons name="person-circle-outline" size={19} color={activeMegaMenu && !compact ? '#080808' : '#eeeeee'} />
+                  <Text style={[styles.loginText, activeMegaMenu && !compact && styles.loginTextMenuOpen]}>Log In</Text>
                 </>
               )}
             </Pressable>
             {!authUser && (
-              <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
-                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+              <Pressable style={[styles.startButton, activeMegaMenu && !compact && styles.startButtonMenuOpen]} onPress={() => setAuthOpen(true)}>
+                <Text style={[styles.startText, activeMegaMenu && !compact && styles.startTextMenuOpen]}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
               </Pressable>
             )}
           </View>
         </View>
       )}
+
+      {activeMegaMenu && !compact && !chatMode ? (
+        <>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close navigation menu"
+            onPress={() => setActiveMegaMenu(null)}
+            style={styles.megaMenuBackdrop}
+          />
+          <Animated.View
+            onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
+            onHoverOut={scheduleCloseMegaMenu}
+            style={[
+              styles.megaMenuPanel,
+              {
+                opacity: megaMenuAnimation,
+                transform: [{ translateY: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }), scale: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.985, 1] }) }]
+              }
+            ]}
+          >
+            <View style={styles.megaMenuIntro}>
+              <Text style={styles.megaMenuEyebrow}>{megaMenuContent[activeMegaMenu]?.eyebrow}</Text>
+              <Text style={styles.megaMenuTitle}>{megaMenuContent[activeMegaMenu]?.title}</Text>
+              <Text style={styles.megaMenuDescription}>{megaMenuContent[activeMegaMenu]?.description}</Text>
+            </View>
+            <View style={styles.megaMenuItems}>
+              {(megaMenuContent[activeMegaMenu]?.items ?? []).map((entry, index) => (
+                <View key={entry.title} style={styles.megaMenuItem}>
+                  <Text style={styles.megaMenuIndex}>0{index + 1}</Text>
+                  <Text style={styles.megaMenuItemTitle}>{entry.title}</Text>
+                  <Text style={styles.megaMenuItemDescription}>{entry.description}</Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+        </>
+      ) : null}
 
       {compact && !chatMode && (
         <View style={styles.mobileNav}>
@@ -583,7 +694,24 @@ export default function Home() {
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
+  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: '#080808' },
+  headerMenuOpen: { backgroundColor: '#ffffff' },
+  wordmarkMenuOpen: { color: '#080808' },
+  navTextMenuOpen: { color: '#080808' },
+  loginTextMenuOpen: { color: '#080808' },
+  startButtonMenuOpen: { backgroundColor: '#080808' },
+  startTextMenuOpen: { color: '#ffffff' },
+  megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
+  megaMenuPanel: { position: 'absolute' as any, top: 80, left: 52, right: 52, zIndex: 9, borderRadius: 25, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 34, flexDirection: 'row', alignItems: 'stretch', gap: 42, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuIntro: { flex: 1, minWidth: 230, maxWidth: 330, justifyContent: 'center', paddingRight: 8 },
+  megaMenuEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.8, marginBottom: 17 },
+  megaMenuTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 29, lineHeight: 34, letterSpacing: -1.2 },
+  megaMenuDescription: { color: '#666666', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 14 },
+  megaMenuItems: { flex: 1.65, flexDirection: 'row', alignItems: 'stretch', gap: 12 },
+  megaMenuItem: { flex: 1, minWidth: 0, borderRadius: 15, backgroundColor: '#f5f5f5', paddingHorizontal: 17, paddingVertical: 19, justifyContent: 'center' },
+  megaMenuIndex: { color: '#929292', fontFamily: 'Manrope', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 24 },
+  megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  megaMenuItemDescription: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 16, marginTop: 8 },
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
