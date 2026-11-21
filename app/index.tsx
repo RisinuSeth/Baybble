@@ -112,6 +112,8 @@ export default function Home() {
   const [renameDraft, setRenameDraft] = useState('');
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
@@ -348,6 +350,51 @@ export default function Home() {
     input.multiple = true;
     input.onchange = (event) => { void handleFileSelection(event); };
     input.click();
+  };
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      speechRecognitionRef.current?.stop?.();
+      setIsListening(false);
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setChatError('Voice input is not supported in this browser. Try a recent version of Chrome.');
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      speechRecognitionRef.current = recognition;
+      recognition.lang = navigator.language || 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          if (event.results[index].isFinal) transcript += event.results[index][0]?.transcript || '';
+        }
+        if (transcript.trim()) {
+          setDraft((current) => `${current}${current && !/\\s$/.test(current) ? ' ' : ''}${transcript.trim()}`);
+          setChatError('');
+        }
+      };
+      recognition.onerror = (event: any) => {
+        if (event?.error !== 'no-speech' && event?.error !== 'aborted') {
+          setChatError('Voice input could not start. Check your microphone permission and try again.');
+        }
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        speechRecognitionRef.current = null;
+      };
+      recognition.start();
+      setIsListening(true);
+      setChatError('');
+    } catch {
+      setIsListening(false);
+      setChatError('Voice input could not start. Check your microphone permission and try again.');
+    }
   };
 
   const createNewChat = () => {
@@ -1233,8 +1280,14 @@ export default function Home() {
                       }}
                       onSubmitEditing={sendMessage}
                     />
-                    <Pressable style={[styles.attachButton, { marginRight: 0, marginLeft: 5 }]} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
-                      <Ionicons name="attach-outline" size={21} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
+                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Add files">
+                      <Ionicons name="add" size={25} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
+                    </Pressable>
+                    <Pressable style={[styles.micButton, isListening && styles.micButtonActive]} onPress={toggleVoiceInput} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel={isListening ? "Stop voice input" : "Start voice input"}>
+                      <Ionicons name={isListening ? "stop" : "mic-outline"} size={19} color={isListening ? "#ffffff" : (isSending || isPreparingFiles ? "#666666" : "#bcbcbc")} />
+                    </Pressable>
+                    <Pressable style={[styles.sendButton, (isSending || (!draft.trim() && pendingAttachments.length === 0)) && styles.sendButtonDisabled]} onPress={sendMessage} disabled={isSending || (!draft.trim() && pendingAttachments.length === 0)} accessibilityRole="button" accessibilityLabel="Send message">
+                      <Ionicons name="arrow-up" size={22} color="#080808" />
                     </Pressable>
                   </View>
                 </View>
@@ -1395,7 +1448,9 @@ const styles = StyleSheet.create({
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
   composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
-  attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 5 },
+  attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 2 },
+  micButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
+  micButtonActive: { backgroundColor: '#8b3434', borderRadius: 19 },
   pendingFiles: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 9 },
   pendingFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#242424', borderWidth: 1, borderColor: '#383838' },
   pendingFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
@@ -1403,7 +1458,8 @@ const styles = StyleSheet.create({
   messageFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 8, borderRadius: 9, backgroundColor: '#353535' },
   messageFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
-  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
+  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 7 },
+  sendButtonDisabled: { opacity: 0.55 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
   filePreparingText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 8 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
