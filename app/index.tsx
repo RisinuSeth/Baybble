@@ -740,6 +740,7 @@ export default function Home() {
   const gradientRotation = useRef(new Animated.Value(0)).current;
   const sidebarWidth = useRef(new Animated.Value(270)).current;
   const collapsedBrandHover = useRef(new Animated.Value(0)).current;
+  const collapsedBrandHoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     Animated.timing(sidebarWidth, {
@@ -748,6 +749,15 @@ export default function Home() {
       useNativeDriver: false
     }).start();
   }, [sidebarCollapsed, sidebarWidth]);
+
+  useEffect(() => {
+    if (collapsedBrandHoverTimer.current) {
+      clearTimeout(collapsedBrandHoverTimer.current);
+      collapsedBrandHoverTimer.current = null;
+    }
+    collapsedBrandHover.stopAnimation();
+    collapsedBrandHover.setValue(0);
+  }, [sidebarCollapsed, collapsedBrandHover]);
 
   const visibleSessions = sessions
     .filter((session) => session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase()))
@@ -1003,9 +1013,29 @@ export default function Home() {
                   ) : (
                     <Pressable
                       style={styles.sidebarCollapsedBrandToggle}
-                      onPress={() => setSidebarCollapsed(false)}
-                      onHoverIn={() => Animated.timing(collapsedBrandHover, { toValue: 1, duration: 150, useNativeDriver: true }).start()}
-                      onHoverOut={() => Animated.timing(collapsedBrandHover, { toValue: 0, duration: 170, useNativeDriver: true }).start()}
+                      onPress={() => {
+                        if (collapsedBrandHoverTimer.current) {
+                          clearTimeout(collapsedBrandHoverTimer.current);
+                          collapsedBrandHoverTimer.current = null;
+                        }
+                        collapsedBrandHover.stopAnimation();
+                        collapsedBrandHover.setValue(0);
+                        setSidebarCollapsed(false);
+                      }}
+                      onHoverIn={() => {
+                        if (collapsedBrandHoverTimer.current) clearTimeout(collapsedBrandHoverTimer.current);
+                        collapsedBrandHoverTimer.current = setTimeout(() => {
+                          Animated.timing(collapsedBrandHover, { toValue: 1, duration: 170, useNativeDriver: true }).start();
+                          collapsedBrandHoverTimer.current = null;
+                        }, 180);
+                      }}
+                      onHoverOut={() => {
+                        if (collapsedBrandHoverTimer.current) {
+                          clearTimeout(collapsedBrandHoverTimer.current);
+                          collapsedBrandHoverTimer.current = null;
+                        }
+                        Animated.timing(collapsedBrandHover, { toValue: 0, duration: 170, useNativeDriver: true }).start();
+                      }}
                       accessibilityRole="button"
                       accessibilityLabel="Expand sidebar"
                     >
