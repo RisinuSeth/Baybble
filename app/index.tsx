@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Modal } from 'react-native';
+import { supabase } from '../lib/supabase';
+import AuthDialog from '../components/AuthDialog';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
@@ -8,11 +11,71 @@ const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
 
-function BaybbleLogo() {
+const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
+
+const megaMenuContent: Record<string, { eyebrow: string; title: string; description: string; items: { title: string; description: string; status?: string; href?: string }[] }> = {
+  Product: {
+    eyebrow: 'EXPLORE BAYBBLE',
+    title: 'One platform. More possibilities ahead.',
+    description: 'Discover the Baybble experience and what is coming next.',
+    items: [
+      { title: 'Baybble Workspace', description: 'Think through challenges, explore ideas and find practical next steps.', status: 'AVAILABLE NOW' },
+      { title: 'More products', description: 'New tools and experiences are in development.', status: 'COMING SOON' },
+      { title: 'New capabilities', description: 'More ways to work through problems are on the way.', status: 'COMING SOON' }
+    ]
+  },
+  'Use Cases': {
+    eyebrow: 'USE BAYBBLE TO',
+    title: 'A clearer way forward, whatever you are working on.',
+    description: 'Start with a question, an idea or a challenge. Use Baybble to make sense of it and decide what to do next.',
+    items: [
+      { title: 'Understand', description: 'Make complex topics and unfamiliar ideas easier to understand.' },
+      { title: 'Explore', description: 'Look at different perspectives, options and possibilities.' },
+      { title: 'Make decisions', description: 'Weigh up choices and think through the consequences.' },
+      { title: 'Plan next steps', description: 'Turn a broad goal into a clear, practical plan.' }
+    ]
+  },
+  Pricing: {
+    eyebrow: 'PLANS & ACCESS',
+    title: 'Straightforward access to Baybble.',
+    description: 'We are shaping the plans and features for the platform.',
+    items: [
+      { title: 'Plans & pricing', description: 'Plan details will be published here.', status: 'COMING SOON' },
+      { title: 'Feature comparison', description: 'A clear breakdown of plan features is on the way.', status: 'COMING SOON' }
+    ]
+  },
+  Resources: {
+    eyebrow: 'RESOURCES',
+    title: 'Everything you need to get started.',
+    description: 'Useful information and updates to help you get more from Baybble.',
+    items: [
+      { title: 'Getting Started', description: 'A guide to using the Baybble workspace.', status: 'COMING SOON' },
+      { title: 'Latest News', description: 'Product announcements and platform updates.', status: 'COMING SOON' },
+      { title: 'Release Notes', description: 'See what is new and what has changed.', status: 'COMING SOON' },
+      { title: 'Help & Support', description: 'Find help with your Baybble account and experience.', status: 'COMING SOON' },
+      { title: 'Security & Privacy', description: 'Read how Baybble handles your information.', href: '/privacy' }
+    ]
+  }
+};
+
+function profileInitials(name?: string, email?: string) {
+  const source = name?.trim() || email?.split('@')[0] || 'B';
+  const parts = source.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
+  return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)).toUpperCase();
+}
+
+function profileAvatarColour(email?: string) {
+  const value = email || 'baybble';
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  return avatarColours[Math.abs(hash) % avatarColours.length];
+}
+
+function BaybbleLogo({ dark = false }: { dark?: boolean }) {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
-      <View style={styles.logoBubbleOne} />
-      <View style={styles.logoBubbleTwo} />
+      <View style={[styles.logoBubbleOne, dark && { backgroundColor: '#080808' }]} />
+      <View style={[styles.logoBubbleTwo, dark && { backgroundColor: '#080808', borderColor: '#ffffff' }]} />
     </View>
   );
 }
@@ -31,6 +94,7 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   const [chatMode, setChatMode] = useState(false);
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -41,9 +105,86 @@ export default function Home() {
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
+  const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const megaMenuAnimation = useRef(new Animated.Value(0)).current;
+  const navItemLayouts = useRef<Record<string, { x: number; width: number }>>({});
+  const navCapsuleX = useRef(new Animated.Value(0)).current;
+  const navCapsuleWidth = useRef(new Animated.Value(0)).current;
+  const navCapsuleOpacity = useRef(new Animated.Value(0)).current;
+  const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!chatMode || draft || messages.length > 0) {
+      setAnimatedPlaceholder('');
+      return;
+    }
+
+    const examples = [
+      'Help me organise my week...',
+      'Help me think through a difficult decision...',
+      'Turn this idea into a practical plan...',
+      'Explain a complex topic in simple terms...',
+      'Explore different ways to solve this problem...'
+    ];
+    let phraseIndex = 0;
+    let characterIndex = 0;
+    let deleting = false;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const animate = () => {
+      const phrase = examples[phraseIndex];
+      if (!deleting) {
+        characterIndex += 1;
+        setAnimatedPlaceholder(phrase.slice(0, characterIndex));
+        if (characterIndex >= phrase.length) {
+          deleting = true;
+          timeout = setTimeout(animate, 1500);
+          return;
+        }
+        timeout = setTimeout(animate, 58);
+        return;
+      }
+
+      characterIndex -= 1;
+      setAnimatedPlaceholder(phrase.slice(0, characterIndex));
+      if (characterIndex <= 0) {
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % examples.length;
+        timeout = setTimeout(animate, 320);
+        return;
+      }
+      timeout = setTimeout(animate, 28);
+    };
+
+    timeout = setTimeout(animate, 500);
+    return () => clearTimeout(timeout);
+  }, [chatMode, draft, messages.length]);
+
+  useEffect(() => {
+    let alive = true;
+    const applySession = async (session: any) => {
+      if (!session?.user) { if (alive) setAuthUser(null); return; }
+      const user = session.user;
+      let avatarUrl = '';
+      const avatarPath = user.user_metadata?.avatar_path;
+      if (typeof avatarPath === 'string' && avatarPath) {
+        const { data } = await supabase.storage.from('baybble-avatars').createSignedUrl(avatarPath, 3600);
+        avatarUrl = data?.signedUrl ?? '';
+      }
+      if (alive) setAuthUser({ id: user.id, email: user.email, fullName: user.user_metadata?.full_name, avatarUrl });
+    };
+    supabase.auth.getSession().then(({ data }) => applySession(data.session));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      void applySession(session);
+    });
+    return () => { alive = false; listener.subscription.unsubscribe(); };
+  }, []);
 
   useEffect(() => {
     try {
@@ -58,6 +199,59 @@ export default function Home() {
       setHistoryReady(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!historyReady || !authUser?.id) return;
+    let cancelled = false;
+    const loadCloudHistory = async () => {
+      const { data: conversations, error } = await supabase
+        .from('baybble_conversations')
+        .select('id,title,updated_at')
+        .eq('user_id', authUser.id)
+        .order('updated_at', { ascending: false })
+        .limit(50);
+      if (error || cancelled) return;
+      if (!conversations?.length && sessions.length) {
+        const migrated: ChatSession[] = [];
+        for (const old of sessions.slice(0, 50)) {
+          const { data: created, error: createError } = await supabase
+            .from('baybble_conversations')
+            .insert({ user_id: authUser.id, title: old.title })
+            .select('id,updated_at')
+            .single();
+          if (createError || !created) continue;
+          if (old.messages.length) {
+            const rows = old.messages.map((message) => ({
+              conversation_id: created.id, user_id: authUser.id, role: message.role, content: message.content
+            }));
+            await supabase.from('baybble_messages').insert(rows);
+          }
+          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.updated_at).getTime() });
+          if (activeSessionId === old.id) setActiveSessionId(created.id);
+        }
+        if (!cancelled && migrated.length) setSessions(migrated);
+        return;
+      }
+      const cloud: ChatSession[] = [];
+      for (const conversation of conversations ?? []) {
+        const { data: rows } = await supabase
+          .from('baybble_messages')
+          .select('role,content')
+          .eq('conversation_id', conversation.id)
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: true });
+        cloud.push({
+          id: conversation.id,
+          title: conversation.title,
+          messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
+          updatedAt: new Date(conversation.updated_at).getTime()
+        });
+      }
+      if (!cancelled) setSessions(cloud);
+    };
+    loadCloudHistory();
+    return () => { cancelled = true; };
+  }, [historyReady, authUser?.id]);
 
   useEffect(() => {
     if (!historyReady) return;
@@ -98,8 +292,7 @@ export default function Home() {
     setActiveSessionId(session.id);
     setMessages(session.messages);
     setDraft('');
-    setChatError('');
-    setChatMode(true);
+    setChatError('');    setChatMode(true);
     setHistoryOpen(false);
     setRenamingSessionId(null);
     transition.setValue(1);
@@ -110,20 +303,24 @@ export default function Home() {
     setRenameDraft(session.title);
   };
 
-  const saveRename = () => {
+  const saveRename = async () => {
     const title = renameDraft.trim();
     if (renamingSessionId && title) {
       setSessions((current) => current.map((session) =>
         session.id === renamingSessionId ? { ...session, title } : session
       ));
+      if (authUser?.id && !renamingSessionId.startsWith('chat-')) {
+        await supabase.from('baybble_conversations').update({ title }).eq('id', renamingSessionId).eq('user_id', authUser.id);
+      }
     }
     setRenamingSessionId(null);
     setRenameDraft('');
   };
 
-  const deleteChat = (sessionId: string) => {
+  const deleteChat = async (sessionId: string) => {
     if (typeof window !== 'undefined' && !window.confirm('Delete this conversation? This cannot be undone.')) return;
     setSessions((current) => current.filter((session) => session.id !== sessionId));
+    if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
     if (activeSessionId === sessionId) createNewChat();
   };
   const openChat = () => {
@@ -148,15 +345,32 @@ export default function Home() {
     const message = draft.trim();
     if (!message || isSending) return;
     const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
-    if (!activeSessionId) {
-      const id = `chat-${Date.now()}`;
-      setActiveSessionId(id);
+    let conversationId = activeSessionId;
+    const isNewConversation = !conversationId;
+    const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
+    if (!conversationId) {
+      if (authUser?.id) {
+        const { data: created, error } = await supabase
+          .from('baybble_conversations')
+          .insert({ user_id: authUser.id, title })
+          .select('id')
+          .single();
+        if (error || !created) { setChatError('Could not create a saved conversation. Please try again.'); return; }
+        conversationId = created.id;
+      } else {
+        conversationId = `chat-${Date.now()}`;
+      }
+      setActiveSessionId(conversationId);
       setSessions((current) => [{
-        id,
-        title: message.length > 42 ? `${message.slice(0, 42).trim()}…` : message,
-        messages: history,
-        updatedAt: Date.now()
+        id: conversationId as string, title, messages: history, updatedAt: Date.now()
       }, ...current].slice(0, 50));
+    }
+    if (authUser?.id && conversationId) {
+      const { error } = await supabase.from('baybble_messages').insert({
+        conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message
+      });
+      if (error) { setChatError('Your message could not be saved. Please try again.'); return; }
+      await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
     }
     setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
@@ -184,6 +398,7 @@ export default function Home() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let assistantReply = '';
       let buffer = '';
       while (true) {
         const { value, done } = await reader.read();
@@ -204,6 +419,7 @@ export default function Home() {
                 ? chunk.choices[0].delta.content
                 : '';
             if (token) {
+              assistantReply += token;
               setMessages((current) => current.map((item, index) =>
                 index === current.length - 1 && item.role === 'assistant'
                   ? { ...item, content: item.content + token }
@@ -211,6 +427,78 @@ export default function Home() {
               ));
             }
           } catch {}
+        }
+      }
+      if (authUser?.id && conversationId && assistantReply) {
+        const { error: saveError } = await supabase.from('baybble_messages').insert({
+          conversation_id: conversationId, user_id: authUser.id, role: 'assistant', content: assistantReply
+        });
+        if (saveError) setChatError('Reply received, but it could not be saved to your account.');
+        await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
+      }
+
+      if (isNewConversation && assistantReply && conversationId) {
+        try {
+          const titleResponse = await fetch('/api/title', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: [...history, { role: 'assistant', content: assistantReply }] })
+          });
+          if (titleResponse.ok && titleResponse.body) {
+            const titleReader = titleResponse.body.getReader();
+            const titleDecoder = new TextDecoder();
+            let generatedTitle = '';
+            let titleBuffer = '';
+            const processTitleEvents = (chunkText: string) => {
+              for (const line of chunkText.split(/\r?\n/)) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data:')) continue;
+                const payload = trimmed.slice(5).trim();
+                if (!payload || payload === '[DONE]') continue;
+                try {
+                  const chunk = JSON.parse(payload);
+                  const token = typeof chunk.response === 'string'
+                    ? chunk.response
+                    : typeof chunk.choices?.[0]?.delta?.content === 'string'
+                      ? chunk.choices[0].delta.content
+                      : '';
+                  generatedTitle += token;
+                } catch {}
+              }
+            };
+            while (true) {
+              const { value, done } = await titleReader.read();
+              if (done) break;
+              titleBuffer += titleDecoder.decode(value, { stream: true });
+              const lastNewline = titleBuffer.lastIndexOf('\n');
+              if (lastNewline >= 0) {
+                processTitleEvents(titleBuffer.slice(0, lastNewline));
+                titleBuffer = titleBuffer.slice(lastNewline + 1);
+              }
+            }
+            titleBuffer += titleDecoder.decode();
+            if (titleBuffer.trim()) processTitleEvents(titleBuffer);
+            const cleanTitle = generatedTitle
+              .trim()
+              .replace(/^title:\s*/i, '')
+              .replace(/^["']|["']$/g, '')
+              .replace(/[.!?]+$/g, '')
+              .slice(0, 55)
+              .trim();
+            if (cleanTitle) {
+              setSessions((current) => current.map((session) =>
+                session.id === conversationId ? { ...session, title: cleanTitle } : session
+              ));
+              if (authUser?.id && !conversationId.startsWith('chat-')) {
+                await supabase.from('baybble_conversations')
+                  .update({ title: cleanTitle })
+                  .eq('id', conversationId)
+                  .eq('user_id', authUser.id);
+              }
+            }
+          }
+        } catch (titleError) {
+          console.warn('Baybble could not generate a conversation title:', titleError);
         }
       }
     } catch (error) {
@@ -235,35 +523,158 @@ export default function Home() {
 
   const gradientAngle = gradientRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
+  useEffect(() => {
+    Animated.timing(megaMenuAnimation, {
+      toValue: activeMegaMenu ? 1 : 0,
+      duration: activeMegaMenu ? 260 : 180,
+      useNativeDriver: true
+    }).start();
+    return () => {
+      if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    };
+  }, [activeMegaMenu, megaMenuAnimation]);
+
+  const moveNavCapsule = (item: string) => {
+    const layout = navItemLayouts.current[item];
+    if (!layout) return;
+    Animated.parallel([
+      Animated.spring(navCapsuleX, { toValue: layout.x, speed: 24, bounciness: 5, useNativeDriver: false }),
+      Animated.spring(navCapsuleWidth, { toValue: layout.width, speed: 24, bounciness: 5, useNativeDriver: false }),
+      Animated.timing(navCapsuleOpacity, { toValue: 1, duration: 110, useNativeDriver: false })
+    ]).start();
+  };
+  const openMegaMenu = (item: string) => {
+    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    moveNavCapsule(item);
+    setActiveMegaMenu(item);
+  };
+  const scheduleCloseMegaMenu = () => {
+    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    megaMenuTimer.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+      Animated.parallel([
+        Animated.timing(navCapsuleOpacity, { toValue: 0, duration: 120, useNativeDriver: false }),
+        Animated.timing(navCapsuleWidth, { toValue: 0, duration: 160, useNativeDriver: false })
+      ]).start();
+    }, 220);
+  };
+
   return (
+    <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>
-          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <BaybbleLogo />
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
           {!compact && (
-            <View style={[styles.nav, styles.navCentered]}>
+            <View style={[styles.nav, styles.navCentered]} onHoverOut={scheduleCloseMegaMenu}>
+              <Animated.View pointerEvents="none" style={[styles.navActiveCapsule, { opacity: navCapsuleOpacity, width: navCapsuleWidth, transform: [{ translateX: navCapsuleX }] }]} />
               {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-                <Pressable key={item} style={styles.navLink}>
-                  <Text style={styles.navText}>{item}</Text>
+                <Pressable
+                  key={item}
+                  style={styles.navLink}
+                  onLayout={(event) => {
+                    const { x, width: itemWidth } = event.nativeEvent.layout;
+                    navItemLayouts.current[item] = { x, width: itemWidth };
+                    if (activeMegaMenu === item) moveNavCapsule(item);
+                  }}
+                  onHoverIn={() => openMegaMenu(item)}
+                  onHoverOut={scheduleCloseMegaMenu}
+                  onPress={() => activeMegaMenu === item ? scheduleCloseMegaMenu() : openMegaMenu(item)}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: activeMegaMenu === item }}
+                >
+                  <Text style={[styles.navText, activeMegaMenu === item && styles.navTextMenuOpen]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
           )}
 
           <View style={styles.headerActions}>
-            <Pressable style={styles.loginButton}>
-              <Text style={styles.loginText}>Log In</Text>
+            <Pressable
+              style={authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]}
+              onHoverIn={scheduleCloseMegaMenu}
+              onPress={() => setAuthOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
+            >
+              {authUser ? (
+                <View style={[styles.headerAvatar, !authUser.avatarUrl && { backgroundColor: profileAvatarColour(authUser.email), borderWidth: 0 }]}>
+                  {authUser.avatarUrl ? (
+                    <Image source={{ uri: authUser.avatarUrl }} style={styles.headerAvatarImage} resizeMode="cover" />
+                  ) : (
+                    <Text style={styles.headerAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
+                  )}
+                </View>
+              ) : (
+                <>
+                  <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
+                  <Text style={styles.loginText}>Log In</Text>
+                </>
+              )}
             </Pressable>
-            <Pressable style={styles.startButton}>
-              <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
-            </Pressable>
+            {!authUser && (
+              <Pressable style={styles.startButton} onHoverIn={scheduleCloseMegaMenu} onPress={() => setAuthOpen(true)}>
+                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       )}
+
+      {activeMegaMenu && !compact && !chatMode ? (
+        <>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close navigation menu"
+            onPress={() => setActiveMegaMenu(null)}
+            style={styles.megaMenuBackdrop}
+          />
+          <Animated.View
+            {...({
+              onMouseEnter: () => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); },
+              onMouseLeave: scheduleCloseMegaMenu
+            } as any)}
+            style={[
+              styles.megaMenuPanel,
+              {
+                opacity: megaMenuAnimation,
+                transform: [{ translateY: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }]
+              }
+            ]}
+          >
+            <View style={styles.megaMenuItems}>
+              {(megaMenuContent[activeMegaMenu]?.items ?? []).map((entry) => (
+                <Pressable
+                  key={entry.title}
+                  style={styles.megaMenuItem}
+                  onHoverIn={() => {
+                    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+                    setHoveredMegaLink(entry.title);
+                  }}
+                  onHoverOut={() => setHoveredMegaLink(null)}
+                  disabled={!entry.href}
+                  onPress={() => {
+                    if (entry.href) {
+                      setActiveMegaMenu(null);
+                      setHoveredMegaLink(null);
+                      window.location.href = entry.href;
+                    }
+                  }}
+                  accessibilityRole={entry.href ? 'link' : 'text'}
+                >
+                  <Text style={[styles.megaMenuItemTitle, hoveredMegaLink === entry.title && styles.megaMenuItemTitleHovered]}>
+                    {entry.title}
+                  </Text>
+                  {entry.status ? <Text style={styles.megaMenuStatus}>{entry.status}</Text> : null}
+                </Pressable>
+              ))}
+            </View>
+          </Animated.View>
+        </>
+      ) : null}
 
       {compact && !chatMode && (
         <View style={styles.mobileNav}>
@@ -300,6 +711,20 @@ export default function Home() {
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatBody}>
             <View style={styles.chatUtilityRail}>
+              <Pressable style={styles.railAction} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel="Account and sign in">
+                <View style={styles.railIconSlot}>
+                  {authUser?.avatarUrl ? (
+                    <Image source={{ uri: authUser.avatarUrl }} style={styles.railAvatarImage} resizeMode="cover" />
+                  ) : authUser ? (
+                    <View style={[styles.railAvatarFallback, { backgroundColor: profileAvatarColour(authUser.email) }]}>
+                      <Text style={styles.railAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
+                    </View>
+                  ) : (
+                    <Ionicons name="person-circle-outline" size={21} color="#eeeeee" />
+                  )}
+                </View>
+                <Text style={styles.railActionText}>{authUser ? 'Account' : 'Sign in'}</Text>
+              </Pressable>
               <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
                 <View style={styles.railIconSlot}>
                   <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='%23eeeeee' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
@@ -356,7 +781,7 @@ export default function Home() {
                     </View>
                   ))}
                 </ScrollView>
-                <Text style={styles.historyFootnote}>Saved in this browser</Text>
+                <Text style={styles.historyFootnote}>{authUser ? 'Synced to your Baybble account' : 'Saved in this browser'}</Text>
               </View>
             ) : null}
             <View style={styles.chatMain}>
@@ -395,7 +820,7 @@ export default function Home() {
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
-                      placeholder="Message Baybble"
+                      placeholder={messages.length > 0 ? 'Message Baybble' : animatedPlaceholder}
                       placeholderTextColor="#929292"
                       style={styles.composerInput}
                       multiline
@@ -404,8 +829,7 @@ export default function Home() {
                       onKeyPress={(event: any) => {
                         const key = event?.nativeEvent?.key ?? event?.key;
                         const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
-                        if (key === 'Enter' && !shift) {
-                          event?.preventDefault?.();
+                        if (key === 'Enter' && !shift) {                          event?.preventDefault?.();
                           sendMessage();
                         }
                       }}
@@ -421,13 +845,24 @@ export default function Home() {
       )}
 
     </ScrollView>
+    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setActiveSessionId(null); setAuthOpen(false); }} />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2, paddingVertical: 16 },
+  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: '#080808' },
+  navTextMenuOpen: { color: '#080808' },
+  navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
+  megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
+  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
+  megaMenuItem: { minWidth: 0, minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, paddingVertical: 2 },
+  megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  megaMenuItemTitleHovered: { textDecorationLine: 'underline' },
+  megaMenuStatus: { color: '#888888', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, flexShrink: 0 },
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
@@ -437,11 +872,15 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center' },
-  navLink: { paddingVertical: 10, paddingHorizontal: 3 },
+  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
+  navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
+  profileButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 19, overflow: 'hidden' },
+  headerAvatar: { width: 36, height: 36, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: '#292929', borderWidth: 1, borderColor: '#505050' },
+  headerAvatarImage: { width: '100%', height: '100%' },
+  headerAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
   loginText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
@@ -465,6 +904,9 @@ const styles = StyleSheet.create({
   chatUtilityRail: { width: 76, minHeight: '100%' as any, alignSelf: 'stretch', flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
   railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
+  railAvatarImage: { width: 24, height: 24, borderRadius: 12 },
+  railAvatarFallback: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#536A9B' },
+  railAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10 },
   railActionText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700', textAlign: 'center' },
 
   historySidebar: { width: 258, flexShrink: 0, backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 13, paddingTop: 13, paddingBottom: 12 },
