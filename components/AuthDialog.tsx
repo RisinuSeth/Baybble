@@ -10,6 +10,7 @@ type Profile = {
   fullName: string;
   username: string;
   avatarUrl: string;
+  avatarPath: string;
 };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
@@ -57,8 +58,13 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
         email: data.user.email ?? userEmail,
         fullName: typeof metadata.full_name === 'string' ? metadata.full_name : '',
         username: typeof metadata.username === 'string' ? metadata.username : (data.user.email ?? userEmail).split('@')[0],
-        avatarUrl: typeof metadata.avatar_url === 'string' ? metadata.avatar_url : ''
+        avatarUrl: '',
+        avatarPath: typeof metadata.avatar_path === 'string' ? metadata.avatar_path : ''
       };
+      if (next.avatarPath) {
+        const { data: signed } = await supabase.storage.from('baybble-avatars').createSignedUrl(next.avatarPath, 3600);
+        next.avatarUrl = signed?.signedUrl ?? '';
+      }
       setProfile(next);
       setNameDraft(next.fullName);
       setUsernameDraft(next.username);
@@ -135,11 +141,16 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
       if (uploadError) {
         setBusy(false); setError(uploadError.message); return;
       }
-      const { data: publicData } = supabase.storage.from('baybble-avatars').getPublicUrl(path);
-      const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_url: publicData.publicUrl } });
+      const { data: signed, error: signedError } = await supabase.storage.from('baybble-avatars').createSignedUrl(path, 3600);
+      if (signedError || !signed?.signedUrl) {
+        await supabase.storage.from('baybble-avatars').remove([path]);
+        setBusy(false); setError(signedError?.message || 'Could not prepare your profile picture.'); return;
+      }
+      const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: path, avatar_url: null } });
       setBusy(false);
-      if (metadataError) { setError(metadataError.message); return; }
-      setProfile({ ...profile, avatarUrl: publicData.publicUrl });
+      if (metadataError) { await supabase.storage.from('baybble-avatars').remove([path]); setError(metadataError.message); return; }
+      if (profile.avatarPath) await supabase.storage.from('baybble-avatars').remove([profile.avatarPath]);
+      setProfile({ ...profile, avatarUrl: signed.signedUrl, avatarPath: path });
       setNotice('Your profile picture has been updated.');
     };
     picker.click();
@@ -148,11 +159,40 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
   const removeAvatar = async () => {
     if (!profile?.avatarUrl) return;
     setBusy(true); setError(''); setNotice('');
-    const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: null } });
+    const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: null, avatar_path: null } });
+    if (updateError) { setBusy(false); setError(updateError.message); return; }
+    if (profile.avatarPath) {
+      const { error: removeError } = await supabase.storage.from('baybble-avatars').remove([profile.avatarPath]);
+      if (removeError) { setBusy(false); setError('Your picture was unlinked, but its stored file could not be removed.'); return; }
+    }
     setBusy(false);
-    if (updateError) { setError(updateError.message); return; }
-    setProfile({ ...profile, avatarUrl: '' });
+    setProfile({ ...profile, avatarUrl: '', avatarPath: '' });
     setNotice('Your initials avatar is back.');
+  };
+
+  const deleteAccount = async () => {
+    if (typeof window === 'undefined' || !profile) return;
+    if (!window.confirm('Permanently delete your Baybble account and saved conversations? This cannot be undone.')) return;
+    const confirmation = window.prompt('Type DELETE to permanently delete your account.');
+    if (confirmation !== 'DELETE') { setNotice('Account deletion cancelled.'); return; }
+    setBusy(true); setError(''); setNotice('');
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sessionData.session.access_token },
+        body: JSON.stringify({ confirmation: 'DELETE' })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Account deletion failed. Please try again.');
+      await supabase.auth.signOut();
+      setProfile(null);
+      onSignedOut();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Account deletion failed. Please try again.');
+    } finally { setBusy(false); }
   };
 
   const signOut = async () => {
@@ -208,9 +248,14 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
             </Pressable>
             <View style={styles.accountFooter}>
               <Text style={styles.footerHint}>Your conversations stay saved to this account.</Text>
-              <Pressable style={styles.signOut} onPress={signOut} disabled={busy}>
-                <Text style={styles.signOutText}>Sign out</Text>
-              </Pressable>
+              <View style={{ alignItems: 'flex-end', gap: 8 }}>
+                <Pressable style={styles.signOut} onPress={signOut} disabled={busy}>
+                  <Text style={styles.signOutText}>Sign out</Text>
+                </Pressable>
+                <Pressable style={styles.signOut} onPress={deleteAccount} disabled={busy}>
+                  <Text style={[styles.signOutText, { color: '#e58c8c' }]}>Delete account</Text>
+                </Pressable>
+              </View>
             </View>
           </ScrollView>
         ) : (
