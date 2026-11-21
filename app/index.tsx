@@ -10,7 +10,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDim
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
-type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
+type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
 
@@ -248,7 +248,8 @@ export default function Home() {
           id: conversation.id,
           title: conversation.title,
           messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
-          updatedAt: new Date(conversation.updated_at).getTime()
+          updatedAt: new Date(conversation.updated_at).getTime(),
+          pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
       }
       if (!cancelled) setSessions(cloud);
@@ -549,9 +550,17 @@ export default function Home() {
     }).start();
   }, [sidebarCollapsed, sidebarWidth]);
 
-  const visibleSessions = sessions.filter((session) =>
-    session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase())
-  );
+  const visibleSessions = sessions
+    .filter((session) => session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase()))
+    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt);
+
+  const togglePinActiveChat = () => {
+    if (!activeSessionId) return;
+    setSessions((current) => current.map((session) =>
+      session.id === activeSessionId ? { ...session, pinned: !session.pinned } : session
+    ));
+    setChatMenuOpen(false);
+  };
 
   useEffect(() => {
     const animation = Animated.loop(Animated.timing(gradientRotation, { toValue: 1, duration: 6500, useNativeDriver: false }));
@@ -931,7 +940,18 @@ export default function Home() {
                 <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
                   {activeSessionId ? (sessions.find((session) => session.id === activeSessionId)?.title || 'Conversation') : 'New conversation'}
                 </Text>
-                <Pressable
+                <View style={styles.chatTopbarActions}>
+                  <Pressable
+                    style={styles.chatShareButton}
+                    onPress={shareChat}
+                    disabled={messages.length === 0}
+                    accessibilityRole="button"
+                    accessibilityLabel="Share conversation"
+                  >
+                    <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
+                    <Text style={[styles.chatShareText, messages.length === 0 && styles.chatOptionsDisabled]}>Share</Text>
+                  </Pressable>
+                  <Pressable
                   style={styles.chatMenuTrigger}
                   onPress={() => setChatMenuOpen((open) => !open)}
                   accessibilityRole="button"
@@ -939,16 +959,27 @@ export default function Home() {
                 >
                   <Ionicons name="ellipsis-horizontal" size={21} color="#d0d0d0" />
                 </Pressable>
+                </View>
                 {chatMenuOpen ? (
                   <>
                     <Pressable style={styles.chatMenuDismiss} onPress={() => setChatMenuOpen(false)} />
                     <View style={styles.chatOptionsMenu}>
-                      <Pressable style={styles.chatOptionsItem} onPress={shareChat} disabled={messages.length === 0}>
-                        <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
-                        <Text style={[styles.chatOptionsText, messages.length === 0 && styles.chatOptionsDisabled]}>Share chat</Text>
-                      </Pressable>
                       {activeSessionId ? (
                         <>
+                          <Pressable style={styles.chatOptionsItem} onPress={togglePinActiveChat}>
+                            <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color="#e5e5e5" />
+                            <Text style={styles.chatOptionsText}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                          </Pressable>
+                          <Pressable
+                            style={styles.chatOptionsItem}
+                            onPress={() => {
+                              setChatMenuOpen(false);
+                              window.alert('Projects are coming soon. You will be able to organise conversations into projects here.');
+                            }}
+                          >
+                            <Ionicons name="folder-outline" size={16} color="#e5e5e5" />
+                            <Text style={styles.chatOptionsText}>Add to project</Text>
+                          </Pressable>
                           <Pressable
                             style={styles.chatOptionsItem}
                             onPress={() => {
@@ -1129,7 +1160,10 @@ const styles = StyleSheet.create({
   sidebarCollapsedActions: { alignItems: 'center', gap: 8, paddingTop: 7 },
   sidebarCollapsedAction: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
   workspaceTopbar: { width: '100%', minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, borderBottomWidth: 1, borderBottomColor: '#202020', position: 'relative' as any, zIndex: 12 },
-  chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9, marginLeft: 12 },
+  chatTopbarActions: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  chatShareButton: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 11, borderRadius: 9 },
+  chatShareText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
+  chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
   chatMenuDismiss: { position: 'absolute' as any, top: 0, left: 0, right: 0, bottom: -10000, zIndex: 1 },
   chatOptionsMenu: { position: 'absolute' as any, top: 46, right: 18, width: 190, paddingVertical: 6, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#353535', zIndex: 3, shadowColor: '#000000', shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
   chatOptionsItem: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13 },
