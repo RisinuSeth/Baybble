@@ -94,6 +94,7 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   const [chatMode, setChatMode] = useState(false);
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -117,6 +118,53 @@ export default function Home() {
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!chatMode || draft) {
+      setAnimatedPlaceholder('');
+      return;
+    }
+
+    const examples = [
+      'Help me plan a dinner party...',
+      'Help me think through a difficult decision...',
+      'Turn this idea into a practical plan...',
+      'Explain a complex topic in simple terms...',
+      'Explore different ways to solve this problem...'
+    ];
+    let phraseIndex = 0;
+    let characterIndex = 0;
+    let deleting = false;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const animate = () => {
+      const phrase = examples[phraseIndex];
+      if (!deleting) {
+        characterIndex += 1;
+        setAnimatedPlaceholder(phrase.slice(0, characterIndex));
+        if (characterIndex >= phrase.length) {
+          deleting = true;
+          timeout = setTimeout(animate, 1500);
+          return;
+        }
+        timeout = setTimeout(animate, 58);
+        return;
+      }
+
+      characterIndex -= 1;
+      setAnimatedPlaceholder(phrase.slice(0, characterIndex));
+      if (characterIndex <= 0) {
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % examples.length;
+        timeout = setTimeout(animate, 320);
+        return;
+      }
+      timeout = setTimeout(animate, 28);
+    };
+
+    timeout = setTimeout(animate, 500);
+    return () => clearTimeout(timeout);
+  }, [chatMode, draft]);
 
   useEffect(() => {
     let alive = true;
@@ -706,7 +754,7 @@ export default function Home() {
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
-                      placeholder="Message Baybble"
+                      placeholder={animatedPlaceholder}
                       placeholderTextColor="#929292"
                       style={styles.composerInput}
                       multiline
