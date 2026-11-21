@@ -123,6 +123,9 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+  const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
+  const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
@@ -523,7 +526,9 @@ export default function Home() {
     if ((!message && pendingAttachments.length === 0) || isSending) return;
     const filesToSend = [...pendingAttachments];
     const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
-    const history = [...messages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
+    const baseMessages = editingMessageIndex !== null ? messages.slice(0, editingMessageIndex) : messages;
+    const history = [...baseMessages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
+    if (editingMessageIndex !== null) setEditingMessageIndex(null);
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
@@ -1184,7 +1189,6 @@ export default function Home() {
                         <Text style={styles.sidebarAccountPlan}>{authUser ? 'Baybble account' : 'Sign in to sync chats'}</Text>
                       </View>
                     ) : null}
-                    {!sidebarCollapsed || compact ? <Ionicons name="ellipsis-horizontal" size={17} color="#888888" /> : null}
                   </Pressable>
                 </View>
               </Animated.View>
@@ -1281,29 +1285,53 @@ export default function Home() {
                 ) : (
                   <View style={styles.messageList}>
                     {messages.map((message, index) => (
-                      message.role === 'user' ? (
-                        <View key={index} style={styles.userMessage}>
-                          {message.attachments?.length ? (
-                            <View style={styles.messageFileList}>
-                              {message.attachments.map((file) => (
-                                <View key={file.id} style={styles.messageFileChip}>
-                                  <Ionicons name="document-text-outline" size={14} color="#dddddd" />
-                                  <Text numberOfLines={1} style={styles.messageFileName}>{file.name}</Text>
-                                </View>
-                              ))}
-                            </View>
-                          ) : null}
-                          <Text style={styles.userMessageText}>{message.content}</Text>
-                        </View>
-                      ) : (
-                        <View key={index} style={styles.assistantMessage}>
-                          {message.content ? (
-                            <MarkdownMessage content={message.content} />
-                          ) : isSending ? (
-                            <Text style={styles.thinkingText}>Baybble is thinking...</Text>
-                          ) : null}
-                        </View>
-                      )
+                      <View
+                        key={index}
+                        style={message.role === 'user' ? styles.userMessageGroup : styles.assistantMessageGroup}
+                        onMouseEnter={() => setHoveredMessageIndex(index)}
+                        onMouseLeave={() => setHoveredMessageIndex((current) => current === index ? null : current)}
+                      >
+                        {message.role === 'user' ? (
+                          <View style={styles.userMessage}>
+                            {message.attachments?.length ? (
+                              <View style={styles.messageFileList}>
+                                {message.attachments.map((file) => (
+                                  <View key={file.id} style={styles.messageFileChip}>
+                                    <Ionicons name="document-text-outline" size={14} color="#dddddd" />
+                                    <Text numberOfLines={1} style={styles.messageFileName}>{file.name}</Text>
+                                  </View>
+                                ))}
+                              </View>
+                            ) : null}
+                            <Text style={styles.userMessageText}>{message.content}</Text>
+                          </View>
+                        ) : (
+                          <View style={styles.assistantMessage}>
+                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
+                          </View>
+                        )}
+                        {hoveredMessageIndex === index && message.content ? (
+                          <View style={[styles.messageActions, message.role === 'user' && styles.messageActionsUser]}>
+                            <Pressable style={styles.messageActionButton} onPress={() => { void navigator.clipboard?.writeText(message.content); }} accessibilityRole="button" accessibilityLabel="Copy message">
+                              <Ionicons name="copy-outline" size={15} color="#a0a0a0" />
+                            </Pressable>
+                            {message.role === 'user' ? (
+                              <Pressable style={styles.messageActionButton} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                                <Ionicons name="create-outline" size={15} color="#a0a0a0" />
+                              </Pressable>
+                            ) : (
+                              <>
+                                <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
+                                  <Ionicons name={messageFeedback[index] === 'up' ? 'thumbs-up' : 'thumbs-up-outline'} size={15} color={messageFeedback[index] === 'up' ? '#eeeeee' : '#a0a0a0'} />
+                                </Pressable>
+                                <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
+                                  <Ionicons name={messageFeedback[index] === 'down' ? 'thumbs-down' : 'thumbs-down-outline'} size={15} color={messageFeedback[index] === 'down' ? '#eeeeee' : '#a0a0a0'} />
+                                </Pressable>
+                              </>
+                            )}
+                          </View>
+                        ) : null}
+                      </View>
                     ))}
                     {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
                   </View>
@@ -1507,6 +1535,11 @@ const styles = StyleSheet.create({
   chatSubheading: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23, textAlign: 'center', maxWidth: 470, marginTop: 14 },
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
   messageList: { width: '100%', gap: 18, paddingBottom: 30 },
+  userMessageGroup: { alignSelf: 'flex-end', maxWidth: '82%', alignItems: 'flex-end' },
+  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start' },
+  messageActions: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingTop: 7, paddingHorizontal: 2 },
+  messageActionsUser: { justifyContent: 'flex-end' },
+  messageActionButton: { width: 27, height: 26, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
   assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 3 },
