@@ -124,6 +124,7 @@ export default function Home() {
   const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
   const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+  const [hoveredMessageAction, setHoveredMessageAction] = useState<string | null>(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
   const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
   const [authOpen, setAuthOpen] = useState(false);
@@ -1341,19 +1342,19 @@ export default function Home() {
                             { opacity: hoveredMessageIndex === index && message.content ? 1 : 0 }
                           ]}
                         >
-                          <Pressable style={styles.messageActionButton} onPress={() => { void copyMessage(message.content); }} accessibilityRole="button" accessibilityLabel="Copy message">
+                          <Pressable style={[styles.messageActionButton, hoveredMessageAction === `${index}-copy` && styles.messageActionButtonHovered]} onHoverIn={() => setHoveredMessageAction(`${index}-copy`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { void copyMessage(message.content); }} accessibilityRole="button" accessibilityLabel="Copy message">
                             <Ionicons name="copy-outline" size={14} color="#a0a0a0" />
                           </Pressable>
                           {message.role === 'user' ? (
-                            <Pressable style={styles.messageActionButton} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                            <Pressable style={[styles.messageActionButton, hoveredMessageAction === `${index}-edit` && styles.messageActionButtonHovered]} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
                               <Ionicons name="create-outline" size={14} color="#a0a0a0" />
                             </Pressable>
                           ) : (
                             <>
-                              <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
+                              <Pressable style={[styles.messageActionButton, hoveredMessageAction === `${index}-up` && styles.messageActionButtonHovered]} onHoverIn={() => setHoveredMessageAction(`${index}-up`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
                                 <Ionicons name={messageFeedback[index] === 'up' ? 'thumbs-up' : 'thumbs-up-outline'} size={14} color={messageFeedback[index] === 'up' ? '#eeeeee' : '#a0a0a0'} />
                               </Pressable>
-                              <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
+                              <Pressable style={[styles.messageActionButton, hoveredMessageAction === `${index}-down` && styles.messageActionButtonHovered]} onHoverIn={() => setHoveredMessageAction(`${index}-down`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
                                 <Ionicons name={messageFeedback[index] === 'down' ? 'thumbs-down' : 'thumbs-down-outline'} size={14} color={messageFeedback[index] === 'down' ? '#eeeeee' : '#a0a0a0'} />
                               </Pressable>
                             </>
@@ -1567,10 +1568,11 @@ const styles = StyleSheet.create({
   assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 25 },
   messageActions: { position: 'absolute', left: 0, bottom: 0, height: 23, flexDirection: 'row', alignItems: 'center', gap: 2 },
   messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
-  messageActionButton: { width: 25, height: 23, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
+  messageActionButton: { width: 27, height: 27, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
+  messageActionButtonHovered: { backgroundColor: '#292929' },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
-  assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 3 },
+  assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 0 },
   assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
   thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
   chatError: { color: '#ff9b9b', fontFamily: 'Manrope', fontSize: 12, lineHeight: 19, textAlign: 'center', marginTop: 8 },
