@@ -1215,9 +1215,6 @@ export default function Home() {
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
-                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
-                      <Ionicons name="attach-outline" size={21} color={isSending ? "#666666" : "#bcbcbc"} />
-                    </Pressable>
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
@@ -1236,6 +1233,9 @@ export default function Home() {
                       }}
                       onSubmitEditing={sendMessage}
                     />
+                    <Pressable style={[styles.attachButton, { marginRight: 0, marginLeft: 5 }]} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
+                      <Ionicons name="attach-outline" size={21} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
+                    </Pressable>
                   </View>
                 </View>
                 {isPreparingFiles ? <Text style={styles.filePreparingText}>Reading your files…</Text> : null}
