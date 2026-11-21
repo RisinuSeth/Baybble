@@ -242,16 +242,31 @@ export default function Home() {
       }
       const cloud: ChatSession[] = [];
       for (const conversation of conversations ?? []) {
-        const { data: rows } = await supabase
-          .from('baybble_messages')
-          .select('role,content')
-          .eq('conversation_id', conversation.id)
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: true });
+        const [{ data: rows }, { data: fileRows }] = await Promise.all([
+          supabase.from('baybble_messages')
+            .select('id,role,content')
+            .eq('conversation_id', conversation.id)
+            .eq('user_id', authUser.id)
+            .order('created_at', { ascending: true }),
+          supabase.from('baybble_attachments')
+            .select('id,message_id,filename,mime_type,file_size')
+            .eq('conversation_id', conversation.id)
+            .eq('user_id', authUser.id)
+        ]);
+        const filesByMessage = new Map<string, ChatFileBadge[]>();
+        for (const file of fileRows || []) {
+          const current = filesByMessage.get(file.message_id) || [];
+          current.push({ id: file.id, name: file.filename, mimeType: file.mime_type, size: file.file_size });
+          filesByMessage.set(file.message_id, current);
+        }
         cloud.push({
           id: conversation.id,
           title: conversation.title,
-          messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
+          messages: (rows ?? []).map((row: any) => ({
+            role: row.role,
+            content: row.content,
+            ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
+          })),
           updatedAt: new Date(conversation.updated_at).getTime(),
           pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
@@ -1146,6 +1161,16 @@ export default function Home() {
                     {messages.map((message, index) => (
                       message.role === 'user' ? (
                         <View key={index} style={styles.userMessage}>
+                          {message.attachments?.length ? (
+                            <View style={styles.messageFileList}>
+                              {message.attachments.map((file) => (
+                                <View key={file.id} style={styles.messageFileChip}>
+                                  <Ionicons name="document-text-outline" size={14} color="#dddddd" />
+                                  <Text numberOfLines={1} style={styles.messageFileName}>{file.name}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          ) : null}
                           <Text style={styles.userMessageText}>{message.content}</Text>
                         </View>
                       ) : (
@@ -1163,9 +1188,25 @@ export default function Home() {
                 )}
               </ScrollView>
               <View style={styles.composerArea}>
+                {pendingAttachments.length ? (
+                  <View style={styles.pendingFiles}>
+                    {pendingAttachments.map((file) => (
+                      <View key={file.id} style={styles.pendingFileChip}>
+                        <Ionicons name="document-text-outline" size={14} color="#d8d8d8" />
+                        <Text numberOfLines={1} style={styles.pendingFileName}>{file.name}</Text>
+                        <Pressable onPress={() => setPendingAttachments((current) => current.filter((item) => item.id !== file.id))} accessibilityRole="button" accessibilityLabel={`Remove ${file.name}`}>
+                          <Ionicons name="close" size={15} color="#999999" />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
+                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
+                      <Ionicons name="attach-outline" size={21} color={isSending ? "#666666" : "#bcbcbc"} />
+                    </Pressable>
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
@@ -1341,7 +1382,14 @@ const styles = StyleSheet.create({
   chatError: { color: '#ff9b9b', fontFamily: 'Manrope', fontSize: 12, lineHeight: 19, textAlign: 'center', marginTop: 8 },
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
-  composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 20, paddingRight: 10, zIndex: 1 },
+  composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
+  attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 5 },
+  pendingFiles: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 9 },
+  pendingFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#242424', borderWidth: 1, borderColor: '#383838' },
+  pendingFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
+  messageFileList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  messageFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 8, borderRadius: 9, backgroundColor: '#353535' },
+  messageFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
   sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
