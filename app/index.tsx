@@ -109,6 +109,7 @@ export default function Home() {
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
+  const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -325,6 +326,27 @@ export default function Home() {
     setSessions((current) => current.filter((session) => session.id !== sessionId));
     if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
     if (activeSessionId === sessionId) createNewChat();
+  };
+
+  const shareChat = async () => {
+    setChatMenuOpen(false);
+    const activeSession = sessions.find((session) => session.id === activeSessionId);
+    const title = activeSession?.title || 'Baybble conversation';
+    const transcript = messages.map((message) => `${message.role === 'user' ? 'You' : 'Baybble'}:\n${message.content}`).join('\n\n');
+    const shareText = `${title}\n\n${transcript}`;
+    try {
+      const shareApi = (navigator as any).share;
+      if (shareApi) {
+        await shareApi.call(navigator, { title, text: shareText });
+      } else if ((navigator as any).clipboard?.writeText) {
+        await (navigator as any).clipboard.writeText(shareText);
+        window.alert('Conversation copied to clipboard.');
+      } else {
+        window.prompt('Copy your conversation:', shareText);
+      }
+    } catch (error) {
+      if ((error as Error)?.name !== 'AbortError') window.alert('Could not share this conversation. Please try again.');
+    }
   };
   const openChat = () => {
     if (chatMode || isTransitioning) return;
@@ -863,7 +885,6 @@ export default function Home() {
                         </View>
                       ))}
                     </ScrollView>
-                    <Text style={styles.sidebarFootnote}>{authUser ? 'Synced to your Baybble account' : 'Saved in this browser'}</Text>
                   </>
                 ) : (
                   <View style={styles.sidebarCollapsedActions}>
@@ -910,7 +931,52 @@ export default function Home() {
                 <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
                   {activeSessionId ? (sessions.find((session) => session.id === activeSessionId)?.title || 'Conversation') : 'New conversation'}
                 </Text>
-                <Text style={styles.workspaceTopbarCaption}>BAYBBLE WORKSPACE</Text>
+                <Pressable
+                  style={styles.chatMenuTrigger}
+                  onPress={() => setChatMenuOpen((open) => !open)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Conversation options"
+                >
+                  <Ionicons name="ellipsis-horizontal" size={21} color="#d0d0d0" />
+                </Pressable>
+                {chatMenuOpen ? (
+                  <>
+                    <Pressable style={styles.chatMenuDismiss} onPress={() => setChatMenuOpen(false)} />
+                    <View style={styles.chatOptionsMenu}>
+                      <Pressable style={styles.chatOptionsItem} onPress={shareChat} disabled={messages.length === 0}>
+                        <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, messages.length === 0 && styles.chatOptionsDisabled]}>Share chat</Text>
+                      </Pressable>
+                      {activeSessionId ? (
+                        <>
+                          <Pressable
+                            style={styles.chatOptionsItem}
+                            onPress={() => {
+                              const session = sessions.find((item) => item.id === activeSessionId);
+                              setChatMenuOpen(false);
+                              if (session) beginRename(session);
+                              setSidebarCollapsed(false);
+                            }}
+                          >
+                            <Ionicons name="pencil-outline" size={16} color="#e5e5e5" />
+                            <Text style={styles.chatOptionsText}>Rename</Text>
+                          </Pressable>
+                          <View style={styles.chatOptionsDivider} />
+                          <Pressable
+                            style={styles.chatOptionsItem}
+                            onPress={() => {
+                              setChatMenuOpen(false);
+                              void deleteChat(activeSessionId);
+                            }}
+                          >
+                            <Ionicons name="trash-outline" size={16} color="#f08b8b" />
+                            <Text style={styles.chatOptionsDanger}>Delete chat</Text>
+                          </Pressable>
+                        </>
+                      ) : null}
+                    </View>
+                  </>
+                ) : null}
               </View>
               <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
                 {messages.length === 0 ? (
@@ -1062,7 +1128,15 @@ const styles = StyleSheet.create({
   sidebarAccountPlan: { color: '#777777', fontFamily: 'Manrope', fontSize: 9 },
   sidebarCollapsedActions: { alignItems: 'center', gap: 8, paddingTop: 7 },
   sidebarCollapsedAction: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
-  workspaceTopbar: { width: '100%', minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, borderBottomWidth: 1, borderBottomColor: '#202020' },
+  workspaceTopbar: { width: '100%', minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, borderBottomWidth: 1, borderBottomColor: '#202020', position: 'relative' as any, zIndex: 12 },
+  chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9, marginLeft: 12 },
+  chatMenuDismiss: { position: 'absolute' as any, top: 0, left: 0, right: 0, bottom: -10000, zIndex: 1 },
+  chatOptionsMenu: { position: 'absolute' as any, top: 46, right: 18, width: 190, paddingVertical: 6, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#353535', zIndex: 3, shadowColor: '#000000', shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
+  chatOptionsItem: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13 },
+  chatOptionsText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
+  chatOptionsDisabled: { color: '#666666' },
+  chatOptionsDanger: { color: '#f08b8b', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
+  chatOptionsDivider: { height: 1, backgroundColor: '#333333', marginVertical: 5 },
   workspaceTopbarCompact: { paddingLeft: 64 },
   workspaceTopbarTitle: { flex: 1, color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
   workspaceTopbarCaption: { color: '#656565', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, marginLeft: 12 },
