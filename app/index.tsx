@@ -10,7 +10,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDim
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
 type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
-type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number };
+type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
 
@@ -101,12 +101,15 @@ export default function Home() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarSearch, setSidebarSearch] = useState('');
   const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
+  const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -245,7 +248,8 @@ export default function Home() {
           id: conversation.id,
           title: conversation.title,
           messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
-          updatedAt: new Date(conversation.updated_at).getTime()
+          updatedAt: new Date(conversation.updated_at).getTime(),
+          pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
       }
       if (!cancelled) setSessions(cloud);
@@ -323,6 +327,27 @@ export default function Home() {
     setSessions((current) => current.filter((session) => session.id !== sessionId));
     if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
     if (activeSessionId === sessionId) createNewChat();
+  };
+
+  const shareChat = async () => {
+    setChatMenuOpen(false);
+    const activeSession = sessions.find((session) => session.id === activeSessionId);
+    const title = activeSession?.title || 'Baybble conversation';
+    const transcript = messages.map((message) => `${message.role === 'user' ? 'You' : 'Baybble'}:\n${message.content}`).join('\n\n');
+    const shareText = `${title}\n\n${transcript}`;
+    try {
+      const shareApi = (navigator as any).share;
+      if (shareApi) {
+        await shareApi.call(navigator, { title, text: shareText });
+      } else if ((navigator as any).clipboard?.writeText) {
+        await (navigator as any).clipboard.writeText(shareText);
+        window.alert('Conversation copied to clipboard.');
+      } else {
+        window.prompt('Copy your conversation:', shareText);
+      }
+    } catch (error) {
+      if ((error as Error)?.name !== 'AbortError') window.alert('Could not share this conversation. Please try again.');
+    }
   };
   const openChat = () => {
     if (chatMode || isTransitioning) return;
@@ -515,6 +540,27 @@ export default function Home() {
     }
   };
   const gradientRotation = useRef(new Animated.Value(0)).current;
+  const sidebarWidth = useRef(new Animated.Value(270)).current;
+
+  useEffect(() => {
+    Animated.timing(sidebarWidth, {
+      toValue: sidebarCollapsed ? 70 : 270,
+      duration: 220,
+      useNativeDriver: false
+    }).start();
+  }, [sidebarCollapsed, sidebarWidth]);
+
+  const visibleSessions = sessions
+    .filter((session) => session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase()))
+    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt);
+
+  const togglePinActiveChat = () => {
+    if (!activeSessionId) return;
+    setSessions((current) => current.map((session) =>
+      session.id === activeSessionId ? { ...session, pinned: !session.pinned } : session
+    ));
+    setChatMenuOpen(false);
+  };
 
   useEffect(() => {
     const animation = Animated.loop(Animated.timing(gradientRotation, { toValue: 1, duration: 6500, useNativeDriver: false }));
@@ -711,81 +757,266 @@ export default function Home() {
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatBody}>
-            <View style={styles.chatUtilityRail}>
-              <Pressable style={styles.railAction} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel="Account and sign in">
-                <View style={styles.railIconSlot}>
-                  {authUser?.avatarUrl ? (
-                    <Image source={{ uri: authUser.avatarUrl }} style={styles.railAvatarImage} resizeMode="cover" />
-                  ) : authUser ? (
-                    <View style={[styles.railAvatarFallback, { backgroundColor: profileAvatarColour(authUser.email) }]}>
-                      <Text style={styles.railAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
-                    </View>
+            {compact && !historyOpen ? (
+              <Pressable
+                style={styles.mobileSidebarTrigger}
+                onPress={() => setHistoryOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Open workspace sidebar"
+              >
+                <Ionicons name="menu-outline" size={22} color="#eeeeee" />
+              </Pressable>
+            ) : null}
+            {compact && historyOpen ? (
+              <Pressable
+                style={styles.sidebarBackdrop}
+                onPress={() => setHistoryOpen(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Close workspace sidebar"
+              />
+            ) : null}
+            {!compact || historyOpen ? (
+              <Animated.View
+                style={[
+                  styles.workspaceSidebar,
+                  compact && styles.workspaceSidebarOverlay,
+                  !compact && { width: sidebarWidth }
+                ]}
+              >
+                <View style={styles.sidebarBrandRow}>
+                  {!sidebarCollapsed || compact ? (
+                    <>
+                      <View style={styles.sidebarBrand}>
+                        <BaybbleLogo />
+                        <Text style={styles.sidebarWordmark}>Baybble</Text>
+                      </View>
+                      <Pressable
+                        style={styles.sidebarIconButton}
+                        onPress={() => compact ? setHistoryOpen(false) : setSidebarCollapsed((value) => !value)}
+                        accessibilityRole="button"
+                        accessibilityLabel={compact ? "Close sidebar" : "Collapse sidebar"}
+                      >
+                        <Ionicons name={compact ? "close" : "chevron-back"} size={18} color="#a8a8a8" />
+                      </Pressable>
+                    </>
                   ) : (
-                    <Ionicons name="person-circle-outline" size={21} color="#eeeeee" />
+                    <Pressable
+                      style={styles.sidebarCollapsedBrandToggle}
+                      onPress={() => setSidebarCollapsed(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Expand sidebar"
+                    >
+                      <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                    </Pressable>
                   )}
                 </View>
-                <Text style={styles.railActionText}>{authUser ? 'Account' : 'Sign in'}</Text>
-              </Pressable>
-              <Pressable style={styles.railAction} onPress={createNewChat} accessibilityRole="button" accessibilityLabel="Start a new chat">
-                <View style={styles.railIconSlot}>
-                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='%23eeeeee' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
-                </View>
-                <Text style={styles.railActionText}>New chat</Text>
-              </Pressable>
-              <Pressable style={styles.railAction} onPress={() => setHistoryOpen((open) => !open)} accessibilityRole="button" accessibilityLabel="Toggle conversation history">
-                <View style={styles.railIconSlot}>
-                  <Image source={{ uri: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23eeeeee' stroke-width='1.8'/%3E%3Cpath d='M12 7v5l3 2' fill='none' stroke='%23eeeeee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" }} style={{ width: 20, height: 20 }} resizeMode="contain" />
-                </View>
-                <Text style={styles.railActionText}>History</Text>
-              </Pressable>
-            </View>
-            {historyOpen ? (
-              <View style={[styles.historySidebar, compact && styles.historySidebarCompact]}>
-                <View style={styles.historyHeadingRow}>
-                  <Text style={styles.historyHeading}>Your conversations</Text>
-                  <Pressable onPress={() => setHistoryOpen(false)} accessibilityLabel="Close history">
-                    <Ionicons name="close" size={19} color="#aaaaaa" />
+
+                <Pressable
+                  style={[styles.sidebarNewButton, sidebarCollapsed && !compact && styles.sidebarNewButtonCollapsed]}
+                  onPress={createNewChat}
+                  accessibilityRole="button"
+                  accessibilityLabel="Start a new conversation"
+                >
+                  <Ionicons name="add" size={19} color="#080808" />
+                  {!sidebarCollapsed || compact ? <Text style={styles.sidebarNewText}>New conversation</Text> : null}
+                </Pressable>
+
+                {!sidebarCollapsed || compact ? (
+                  <>
+                    <View style={styles.sidebarSearch}>
+                      <Ionicons name="search-outline" size={17} color="#858585" />
+                      <TextInput
+                        value={sidebarSearch}
+                        onChangeText={setSidebarSearch}
+                        placeholder="Search conversations"
+                        placeholderTextColor="#777777"
+                        style={styles.sidebarSearchInput}
+                        accessibilityLabel="Search conversations"
+                        returnKeyType="search"
+                      />
+                      {sidebarSearch ? (
+                        <Pressable onPress={() => setSidebarSearch('')} accessibilityLabel="Clear conversation search">
+                          <Ionicons name="close-circle" size={15} color="#777777" />
+                        </Pressable>
+                      ) : null}
+                    </View>
+
+                    <View style={styles.sidebarQuickLinks}>
+                      <View style={styles.sidebarQuickLink}>
+                        <Ionicons name="folder-outline" size={17} color="#777777" />
+                        <Text style={styles.sidebarQuickLinkText}>Projects</Text>
+                        <Text style={styles.sidebarComingSoon}>SOON</Text>
+                      </View>
+                      <View style={styles.sidebarQuickLink}>
+                        <Ionicons name="library-outline" size={17} color="#777777" />
+                        <Text style={styles.sidebarQuickLinkText}>Library</Text>
+                        <Text style={styles.sidebarComingSoon}>SOON</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.sidebarSectionHeading}>
+                      <Text style={styles.sidebarSectionLabel}>{sidebarSearch ? 'SEARCH RESULTS' : 'RECENT'}</Text>
+                    </View>
+                    <ScrollView style={styles.sidebarConversationList} showsVerticalScrollIndicator={false}>
+                      {visibleSessions.length === 0 ? (
+                        <Text style={styles.sidebarEmpty}>
+                          {sidebarSearch ? 'No conversations match your search.' : 'Your recent conversations will appear here.'}
+                        </Text>
+                      ) : visibleSessions.map((session) => (
+                        <View key={session.id} style={[styles.historyItem, activeSessionId === session.id && styles.historyItemActive]}>
+                          {renamingSessionId === session.id ? (
+                            <View style={styles.renameRow}>
+                              <TextInput
+                                value={renameDraft}
+                                onChangeText={setRenameDraft}
+                                onSubmitEditing={saveRename}
+                                autoFocus
+                                style={styles.renameInput}
+                                accessibilityLabel="Conversation name"
+                              />
+                              <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
+                                <Ionicons name="checkmark" size={17} color="#ffffff" />
+                              </Pressable>
+                            </View>
+                          ) : (
+                            <>
+                              <Pressable style={styles.historyTitleButton} onPress={() => openSavedChat(session)}>
+                                <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
+                              </Pressable>
+                              <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
+                                <Ionicons name="create-outline" size={14} color="#888888" />
+                              </Pressable>
+                              <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
+                                <Ionicons name="trash-outline" size={13} color="#888888" />
+                              </Pressable>
+                            </>
+                          )}
+                        </View>
+                      ))}
+                    </ScrollView>
+                  </>
+                ) : (
+                  <View style={styles.sidebarCollapsedActions}>
+                    <Pressable style={styles.sidebarCollapsedAction} onPress={() => setSidebarCollapsed(false)} accessibilityLabel="Search conversations">
+                      <Ionicons name="search-outline" size={19} color="#bdbdbd" />
+                    </Pressable>
+                    <View style={styles.sidebarCollapsedAction}>
+                      <Ionicons name="folder-outline" size={19} color="#666666" />
+                    </View>
+                    <View style={styles.sidebarCollapsedAction}>
+                      <Ionicons name="library-outline" size={19} color="#666666" />
+                    </View>
+                  </View>
+                )}
+
+                <View style={styles.sidebarBottom}>
+                  {!sidebarCollapsed || compact ? (
+                    <Pressable style={styles.sidebarBottomLink} onPress={() => setAuthOpen(true)} accessibilityRole="button">
+                      <Ionicons name="settings-outline" size={17} color="#a0a0a0" />
+                      <Text style={styles.sidebarBottomText}>Settings</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable style={styles.sidebarAccount} onPress={() => setAuthOpen(true)} accessibilityRole="button" accessibilityLabel="Account and settings">
+                    {authUser?.avatarUrl ? (
+                      <Image source={{ uri: authUser.avatarUrl }} style={styles.sidebarAvatar} resizeMode="cover" />
+                    ) : (
+                      <View style={[styles.sidebarAvatar, { backgroundColor: authUser ? profileAvatarColour(authUser.email) : '#303030' }]}>
+                        {authUser ? <Text style={styles.sidebarAvatarText}>{profileInitials(authUser.fullName, authUser.email)}</Text> : <Ionicons name="person" size={14} color="#eeeeee" />}
+                      </View>
+                    )}
+                    {!sidebarCollapsed || compact ? (
+                      <View style={styles.sidebarAccountCopy}>
+                        <Text numberOfLines={1} style={styles.sidebarAccountName}>{authUser?.fullName || authUser?.email || 'Your account'}</Text>
+                        <Text style={styles.sidebarAccountPlan}>{authUser ? 'Baybble account' : 'Sign in to sync chats'}</Text>
+                      </View>
+                    ) : null}
+                    {!sidebarCollapsed || compact ? <Ionicons name="ellipsis-horizontal" size={17} color="#888888" /> : null}
                   </Pressable>
                 </View>
-                <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
-                  {sessions.length === 0 ? (
-                    <Text style={styles.historyEmpty}>Your saved conversations will appear here.</Text>
-                  ) : sessions.map((session) => (
-                    <View key={session.id} style={[styles.historyItem, activeSessionId === session.id && styles.historyItemActive]}>
-                      {renamingSessionId === session.id ? (
-                        <View style={styles.renameRow}>
-                          <TextInput
-                            value={renameDraft}
-                            onChangeText={setRenameDraft}
-                            onSubmitEditing={saveRename}
-                            autoFocus
-                            style={styles.renameInput}
-                            accessibilityLabel="Conversation name"
-                          />
-                          <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
-                            <Ionicons name="checkmark" size={18} color="#ffffff" />
-                          </Pressable>
-                        </View>
-                      ) : (
-                        <>
-                          <Pressable style={styles.historyTitleButton} onPress={() => openSavedChat(session)}>
-                            <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
-                          </Pressable>
-                          <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
-                            <Ionicons name="create-outline" size={14} color="#999999" />
-                          </Pressable>
-                          <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
-                            <Ionicons name="trash-outline" size={14} color="#999999" />
-                          </Pressable>
-                        </>
-                      )}
-                    </View>
-                  ))}
-                </ScrollView>
-                <Text style={styles.historyFootnote}>{authUser ? 'Synced to your Baybble account' : 'Saved in this browser'}</Text>
-              </View>
+              </Animated.View>
             ) : null}
             <View style={styles.chatMain}>
+              <View style={[styles.workspaceTopbar, compact && styles.workspaceTopbarCompact]}>
+                <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
+                  {activeSessionId ? (sessions.find((session) => session.id === activeSessionId)?.title || 'Conversation') : 'New conversation'}
+                </Text>
+                {messages.length > 0 ? (
+                  <>
+                  <View style={styles.chatTopbarActions}>
+                    <Pressable
+                      style={styles.chatShareButton}
+                      onPress={shareChat}
+                      disabled={messages.length === 0}
+                      accessibilityRole="button"
+                      accessibilityLabel="Share conversation"
+                    >
+                      <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
+                      <Text style={[styles.chatShareText, messages.length === 0 && styles.chatOptionsDisabled]}>Share</Text>
+                    </Pressable>
+                    <Pressable
+                    style={styles.chatMenuTrigger}
+                    onPress={() => setChatMenuOpen((open) => !open)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Conversation options"
+                  >
+                    <Ionicons name="ellipsis-horizontal" size={21} color="#d0d0d0" />
+                  </Pressable>
+                  </View>
+                  {chatMenuOpen ? (
+                    <>
+                      <Pressable
+                        style={styles.chatOptionsBackdrop}
+                        onPress={() => setChatMenuOpen(false)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Close conversation options"
+                      />
+                      <View style={styles.chatOptionsMenu}>
+                      <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
+                        <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          setChatMenuOpen(false);
+                          window.alert('Projects are coming soon. You will be able to organise conversations into projects here.');
+                        }}
+                      >
+                        <Ionicons name="folder-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Add to project</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          const session = sessions.find((item) => item.id === activeSessionId);
+                          setChatMenuOpen(false);
+                          if (session) beginRename(session);
+                          setSidebarCollapsed(false);
+                        }}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Rename</Text>
+                      </Pressable>
+                      <View style={styles.chatOptionsDivider} />
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          setChatMenuOpen(false);
+                          if (activeSessionId) void deleteChat(activeSessionId);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={16} color={activeSessionId ? "#f08b8b" : "#666666"} />
+                        <Text style={[styles.chatOptionsDanger, !activeSessionId && styles.chatOptionsDisabled]}>Delete chat</Text>
+                      </Pressable>
+                      </View>
+                    </>
+                  ) : null}
+                  </>
+                ) : null}
+              </View>
               <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
                 {messages.length === 0 ? (
                   <View style={styles.emptyConversation}>
@@ -902,6 +1133,57 @@ const styles = StyleSheet.create({
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
   chatWorkspace: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 10, width: '100%', height: '100vh' as any, minHeight: '100vh' as any, flex: 1, backgroundColor: '#080808' },
   chatBody: { width: '100%', height: '100%' as any, flex: 1, minHeight: '100vh' as any, flexDirection: 'row', position: 'relative' },
+  mobileSidebarTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 16, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
+  sidebarBackdrop: { position: 'absolute' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 7, backgroundColor: 'rgba(0,0,0,0.58)' } as any,
+  workspaceSidebar: { width: 270, flexShrink: 0, minHeight: '100%' as any, alignSelf: 'stretch', backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 14, paddingTop: 15, paddingBottom: 12, zIndex: 8 } as any,
+  workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
+  sidebarBrandRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, paddingHorizontal: 3 },
+  sidebarBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  sidebarWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 19, letterSpacing: -0.7 },
+  sidebarIconButton: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  sidebarNewButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 10, backgroundColor: '#f2f2f2', paddingHorizontal: 12, marginBottom: 13 },
+  sidebarNewButtonCollapsed: { width: 42, height: 42, alignSelf: 'center', paddingHorizontal: 0 },
+  sidebarNewText: { color: '#090909', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12 },
+  sidebarSearch: { minHeight: 39, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 10, borderRadius: 9, backgroundColor: '#191919', borderWidth: 1, borderColor: '#292929', marginBottom: 14 },
+  sidebarSearchInput: { flex: 1, minWidth: 0, color: '#eeeeee', fontFamily: 'Manrope', fontSize: 11, paddingVertical: 8, outlineStyle: 'none' as any },
+  sidebarQuickLinks: { gap: 3, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: '#292929' },
+  sidebarQuickLink: { minHeight: 36, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8, borderRadius: 8 },
+  sidebarQuickLinkText: { flex: 1, color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, fontWeight: '600' },
+  sidebarComingSoon: { color: '#666666', fontFamily: 'Manrope', fontSize: 7, fontWeight: '800', letterSpacing: 0.8 },
+  sidebarSectionHeading: { paddingHorizontal: 8, paddingTop: 17, paddingBottom: 8 },
+  sidebarSectionLabel: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, fontWeight: '800', letterSpacing: 1.2 },
+  sidebarConversationList: { flex: 1, minHeight: 0 },
+  sidebarEmpty: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, paddingHorizontal: 8, paddingTop: 10 },
+  sidebarFootnote: { color: '#626262', fontFamily: 'Manrope', fontSize: 9, paddingTop: 9, paddingHorizontal: 7 },
+  sidebarBottom: { borderTopWidth: 1, borderTopColor: '#292929', paddingTop: 10, gap: 9 },
+  sidebarBottomLink: { minHeight: 34, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
+  sidebarBottomText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, fontWeight: '600' },
+  sidebarAccount: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 7, borderRadius: 9, backgroundColor: '#171717' },
+  sidebarAvatar: { width: 29, height: 29, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  sidebarAvatarText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10 },
+  sidebarAccountCopy: { flex: 1, minWidth: 0, gap: 2 },
+  sidebarAccountName: { color: '#eeeeee', fontFamily: 'Manrope', fontWeight: '700', fontSize: 10 },
+  sidebarAccountPlan: { color: '#777777', fontFamily: 'Manrope', fontSize: 9 },
+  sidebarCollapsedActions: { alignItems: 'center', gap: 8, paddingTop: 7 },
+  sidebarCollapsedAction: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
+  workspaceTopbar: { width: '100%', minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, borderBottomWidth: 1, borderBottomColor: '#202020', position: 'relative' as any, zIndex: 12 },
+  chatTopbarActions: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  chatShareButton: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 11, borderRadius: 9 },
+  chatShareText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
+  chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
+  chatOptionsBackdrop: { position: 'fixed' as any, top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 },
+  chatOptionsMenu: { position: 'fixed' as any, top: 58, right: 18, width: 220, paddingVertical: 8, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#353535', zIndex: 9999, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 24 },
+  chatOptionsItemDisabled: { opacity: 0.55 },
+  chatOptionsItem: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13 },
+  chatOptionsText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
+  chatOptionsDisabled: { color: '#666666' },
+  chatOptionsDanger: { color: '#f08b8b', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
+  chatOptionsDivider: { height: 1, backgroundColor: '#333333', marginVertical: 5 },
+  workspaceTopbarCompact: { paddingLeft: 64 },
+  workspaceTopbarTitle: { flex: 1, color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
+  workspaceTopbarCaption: { color: '#656565', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, marginLeft: 12 },
+
   chatUtilityRail: { width: 76, minHeight: '100%' as any, alignSelf: 'stretch', flexShrink: 0, alignItems: 'center', gap: 12, paddingTop: 18, paddingHorizontal: 7, borderRightWidth: 1, borderRightColor: '#202020', backgroundColor: '#0b0b0b' },
   railAction: { width: '100%', minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 10, paddingVertical: 8 },
   railIconSlot: { width: 28, height: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
