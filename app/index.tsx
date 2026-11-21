@@ -98,6 +98,7 @@ export default function Home() {
   const compact = width < 760;
   const [draft, setDraft] = useState('');
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [isPreparingFiles, setIsPreparingFiles] = useState(false);
   const [conversationAttachments, setConversationAttachments] = useState<Array<{ name: string; text: string }>>([]);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   const [chatMode, setChatMode] = useState(false);
@@ -300,42 +301,45 @@ export default function Home() {
     if (event?.target) event.target.value = '';
     if (!selected.length) return;
     const remaining = Math.max(0, 5 - pendingAttachments.length);
-    if (selected.length > remaining) {
-      setChatError('You can attach up to five files to a message.');
-    }
-    for (const file of selected.slice(0, remaining)) {
-      const extension = String(file.name || '').split('.').pop()?.toLowerCase();
-      if (!['pdf', 'docx', 'txt', 'csv'].includes(extension)) {
-        setChatError('Supported files are PDF, DOCX, TXT and CSV.');
-        continue;
+    if (selected.length > remaining) setChatError('You can attach up to five files to a message.');
+    setIsPreparingFiles(true);
+    try {
+      for (const file of selected.slice(0, remaining)) {
+        const extension = String(file.name || '').split('.').pop()?.toLowerCase();
+        if (!['pdf', 'docx', 'txt', 'csv'].includes(extension)) {
+          setChatError('Supported files are PDF, DOCX, TXT and CSV.');
+          continue;
+        }
+        if (!file.size || file.size > 10 * 1024 * 1024) {
+          setChatError('Each file must be 10 MB or smaller.');
+          continue;
+        }
+        try {
+          const form = new FormData();
+          form.append('file', file);
+          const response = await fetch('/api/extract', { method: 'POST', body: form });
+          const result = await response.json();
+          if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not read this file.');
+          if (typeof result.text !== 'string' || !result.text.trim()) throw new Error('No readable text was found in this file.');
+          const attachment: PendingAttachment = {
+            id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            file,
+            name: result.name || file.name,
+            mimeType: result.mimeType || file.type || 'application/octet-stream',
+            size: file.size,
+            extractedText: result.text,
+            pageCount: result.pageCount
+          };
+          setPendingAttachments((current) => [...current, attachment].slice(0, 5));
+          setChatError('');
+        } catch (error) {
+          setChatError(error instanceof Error ? error.message : 'Baybble could not read this file.');
+        }
       }
-      if (!file.size || file.size > 10 * 1024 * 1024) {
-        setChatError('Each file must be 10 MB or smaller.');
-        continue;
-      }
-      try {
-        const form = new FormData();
-        form.append('file', file);
-        const response = await fetch('/api/extract', { method: 'POST', body: form });
-        const result = await response.json();
-        if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not read this file.');
-        const attachment: PendingAttachment = {
-          id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          file,
-          name: result.name || file.name,
-          mimeType: result.mimeType || file.type || 'application/octet-stream',
-          size: file.size,
-          extractedText: result.text,
-          pageCount: result.pageCount
-        };
-        setPendingAttachments((current) => [...current, attachment].slice(0, 5));
-        setChatError('');
-      } catch (error) {
-        setChatError(error instanceof Error ? error.message : 'Baybble could not read this file.');
-      }
+    } finally {
+      setIsPreparingFiles(false);
     }
   };
-
   const pickFiles = () => {
     if (typeof document === 'undefined') return;
     const input = document.createElement('input');
@@ -460,6 +464,7 @@ export default function Home() {
 
   const sendMessage = async () => {
     const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
+    if (isPreparingFiles) { setChatError('Please wait while Baybble reads your files.'); return; }
     if ((!message && pendingAttachments.length === 0) || isSending) return;
     const filesToSend = [...pendingAttachments];
     const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
@@ -1210,7 +1215,7 @@ export default function Home() {
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
-                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
+                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Attach a PDF, DOCX, TXT or CSV file">
                       <Ionicons name="attach-outline" size={21} color={isSending ? "#666666" : "#bcbcbc"} />
                     </Pressable>
                     <TextInput
@@ -1233,6 +1238,7 @@ export default function Home() {
                     />
                   </View>
                 </View>
+                {isPreparingFiles ? <Text style={styles.filePreparingText}>Reading your files…</Text> : null}
                 <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
               </View>
             </View>
@@ -1399,6 +1405,7 @@ const styles = StyleSheet.create({
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
   sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
+  filePreparingText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 8 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
   featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
   featureIntroLabel: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2, marginBottom: 18 },
