@@ -940,76 +940,80 @@ export default function Home() {
                 <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
                   {activeSessionId ? (sessions.find((session) => session.id === activeSessionId)?.title || 'Conversation') : 'New conversation'}
                 </Text>
-                <View style={styles.chatTopbarActions}>
-                  <Pressable
-                    style={styles.chatShareButton}
-                    onPress={shareChat}
-                    disabled={messages.length === 0}
-                    accessibilityRole="button"
-                    accessibilityLabel="Share conversation"
-                  >
-                    <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
-                    <Text style={[styles.chatShareText, messages.length === 0 && styles.chatOptionsDisabled]}>Share</Text>
-                  </Pressable>
-                  <Pressable
-                  style={styles.chatMenuTrigger}
-                  onPress={() => setChatMenuOpen((open) => !open)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Conversation options"
-                >
-                  <Ionicons name="ellipsis-horizontal" size={21} color="#d0d0d0" />
-                </Pressable>
-                </View>
-                {chatMenuOpen ? (
+                {messages.length > 0 ? (
                   <>
+                  <View style={styles.chatTopbarActions}>
                     <Pressable
-                      style={styles.chatOptionsBackdrop}
-                      onPress={() => setChatMenuOpen(false)}
+                      style={styles.chatShareButton}
+                      onPress={shareChat}
+                      disabled={messages.length === 0}
                       accessibilityRole="button"
-                      accessibilityLabel="Close conversation options"
-                    />
-                    <View style={styles.chatOptionsMenu}>
-                    <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
-                      <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
-                      <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                      accessibilityLabel="Share conversation"
+                    >
+                      <Ionicons name="share-outline" size={16} color={messages.length ? "#e5e5e5" : "#666666"} />
+                      <Text style={[styles.chatShareText, messages.length === 0 && styles.chatOptionsDisabled]}>Share</Text>
                     </Pressable>
                     <Pressable
-                      style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
-                      disabled={!activeSessionId}
-                      onPress={() => {
-                        setChatMenuOpen(false);
-                        window.alert('Projects are coming soon. You will be able to organise conversations into projects here.');
-                      }}
-                    >
-                      <Ionicons name="folder-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
-                      <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Add to project</Text>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
-                      disabled={!activeSessionId}
-                      onPress={() => {
-                        const session = sessions.find((item) => item.id === activeSessionId);
-                        setChatMenuOpen(false);
-                        if (session) beginRename(session);
-                        setSidebarCollapsed(false);
-                      }}
-                    >
-                      <Ionicons name="pencil-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
-                      <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Rename</Text>
-                    </Pressable>
-                    <View style={styles.chatOptionsDivider} />
-                    <Pressable
-                      style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
-                      disabled={!activeSessionId}
-                      onPress={() => {
-                        setChatMenuOpen(false);
-                        if (activeSessionId) void deleteChat(activeSessionId);
-                      }}
-                    >
-                      <Ionicons name="trash-outline" size={16} color={activeSessionId ? "#f08b8b" : "#666666"} />
-                      <Text style={[styles.chatOptionsDanger, !activeSessionId && styles.chatOptionsDisabled]}>Delete chat</Text>
-                    </Pressable>
-                    </View>
+                    style={styles.chatMenuTrigger}
+                    onPress={() => setChatMenuOpen((open) => !open)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Conversation options"
+                  >
+                    <Ionicons name="ellipsis-horizontal" size={21} color="#d0d0d0" />
+                  </Pressable>
+                  </View>
+                  {chatMenuOpen ? (
+                    <>
+                      <Pressable
+                        style={styles.chatOptionsBackdrop}
+                        onPress={() => setChatMenuOpen(false)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Close conversation options"
+                      />
+                      <View style={styles.chatOptionsMenu}>
+                      <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
+                        <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          setChatMenuOpen(false);
+                          window.alert('Projects are coming soon. You will be able to organise conversations into projects here.');
+                        }}
+                      >
+                        <Ionicons name="folder-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Add to project</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          const session = sessions.find((item) => item.id === activeSessionId);
+                          setChatMenuOpen(false);
+                          if (session) beginRename(session);
+                          setSidebarCollapsed(false);
+                        }}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>Rename</Text>
+                      </Pressable>
+                      <View style={styles.chatOptionsDivider} />
+                      <Pressable
+                        style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
+                        disabled={!activeSessionId}
+                        onPress={() => {
+                          setChatMenuOpen(false);
+                          if (activeSessionId) void deleteChat(activeSessionId);
+                        }}
+                      >
+                        <Ionicons name="trash-outline" size={16} color={activeSessionId ? "#f08b8b" : "#666666"} />
+                        <Text style={[styles.chatOptionsDanger, !activeSessionId && styles.chatOptionsDisabled]}>Delete chat</Text>
+                      </Pressable>
+                      </View>
+                    </>
+                  ) : null}
                   </>
                 ) : null}
               </View>
