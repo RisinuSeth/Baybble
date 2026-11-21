@@ -520,6 +520,30 @@ export default function Home() {
     ));
   };
 
+  const copyMessage = async (content: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(content);
+        return;
+      }
+      if (typeof document !== 'undefined') {
+        const temporaryInput = document.createElement('textarea');
+        temporaryInput.value = content;
+        temporaryInput.setAttribute('readonly', '');
+        temporaryInput.style.position = 'fixed';
+        temporaryInput.style.opacity = '0';
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(temporaryInput);
+        if (copied) return;
+      }
+      setChatError('Copy is not available in this browser.');
+    } catch {
+      setChatError('Could not copy this message.');
+    }
+  };
+
   const sendMessage = async () => {
     const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
     if (isPreparingFiles) { setChatError('Please wait while Baybble reads your files.'); return; }
@@ -1309,27 +1333,32 @@ export default function Home() {
                             {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
                           </View>
                         )}
-                        {hoveredMessageIndex === index && message.content ? (
-                          <View style={[styles.messageActions, message.role === 'user' && styles.messageActionsUser]}>
-                            <Pressable style={styles.messageActionButton} onPress={() => { void navigator.clipboard?.writeText(message.content); }} accessibilityRole="button" accessibilityLabel="Copy message">
-                              <Ionicons name="copy-outline" size={15} color="#a0a0a0" />
+                        <View
+                          pointerEvents={hoveredMessageIndex === index && message.content ? 'auto' : 'none'}
+                          style={[
+                            styles.messageActions,
+                            message.role === 'user' && styles.messageActionsUser,
+                            { opacity: hoveredMessageIndex === index && message.content ? 1 : 0 }
+                          ]}
+                        >
+                          <Pressable style={styles.messageActionButton} onPress={() => { void copyMessage(message.content); }} accessibilityRole="button" accessibilityLabel="Copy message">
+                            <Ionicons name="copy-outline" size={14} color="#a0a0a0" />
+                          </Pressable>
+                          {message.role === 'user' ? (
+                            <Pressable style={styles.messageActionButton} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                              <Ionicons name="create-outline" size={14} color="#a0a0a0" />
                             </Pressable>
-                            {message.role === 'user' ? (
-                              <Pressable style={styles.messageActionButton} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
-                                <Ionicons name="create-outline" size={15} color="#a0a0a0" />
+                          ) : (
+                            <>
+                              <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
+                                <Ionicons name={messageFeedback[index] === 'up' ? 'thumbs-up' : 'thumbs-up-outline'} size={14} color={messageFeedback[index] === 'up' ? '#eeeeee' : '#a0a0a0'} />
                               </Pressable>
-                            ) : (
-                              <>
-                                <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
-                                  <Ionicons name={messageFeedback[index] === 'up' ? 'thumbs-up' : 'thumbs-up-outline'} size={15} color={messageFeedback[index] === 'up' ? '#eeeeee' : '#a0a0a0'} />
-                                </Pressable>
-                                <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
-                                  <Ionicons name={messageFeedback[index] === 'down' ? 'thumbs-down' : 'thumbs-down-outline'} size={15} color={messageFeedback[index] === 'down' ? '#eeeeee' : '#a0a0a0'} />
-                                </Pressable>
-                              </>
-                            )}
-                          </View>
-                        ) : null}
+                              <Pressable style={styles.messageActionButton} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
+                                <Ionicons name={messageFeedback[index] === 'down' ? 'thumbs-down' : 'thumbs-down-outline'} size={14} color={messageFeedback[index] === 'down' ? '#eeeeee' : '#a0a0a0'} />
+                              </Pressable>
+                            </>
+                          )}
+                        </View>
                       </View>
                     ))}
                     {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
@@ -1533,12 +1562,12 @@ const styles = StyleSheet.create({
   chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
   chatSubheading: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23, textAlign: 'center', maxWidth: 470, marginTop: 14 },
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
-  messageList: { width: '100%', gap: 18, paddingBottom: 30 },
-  userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end' },
-  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start' },
-  messageActions: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingTop: 7, paddingHorizontal: 2 },
-  messageActionsUser: { justifyContent: 'flex-end' },
-  messageActionButton: { width: 27, height: 26, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
+  messageList: { width: '100%', gap: 9, paddingBottom: 30 },
+  userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end', position: 'relative', paddingBottom: 25 },
+  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 25 },
+  messageActions: { position: 'absolute', left: 0, bottom: 0, height: 23, flexDirection: 'row', alignItems: 'center', gap: 2 },
+  messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
+  messageActionButton: { width: 25, height: 23, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
   assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 3 },
