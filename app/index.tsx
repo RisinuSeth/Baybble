@@ -455,7 +455,7 @@ export default function Home() {
           </Pressable>
 
           {!compact && (
-            <View style={[styles.nav, styles.navCentered]}>
+            <View style={[styles.nav, styles.navCentered]} onHoverOut={scheduleCloseMegaMenu}>
               <Animated.View pointerEvents="none" style={[styles.navActiveCapsule, { opacity: navCapsuleOpacity, width: navCapsuleWidth, transform: [{ translateX: navCapsuleX }] }]} />
               {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
                 <Pressable
@@ -514,7 +514,6 @@ export default function Home() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close navigation menu"
-            onHoverIn={scheduleCloseMegaMenu}
             onPress={() => setActiveMegaMenu(null)}
             style={styles.megaMenuBackdrop}
           />
