@@ -47,12 +47,24 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   if (!messages.length) return Response.json({ error: "Empty conversation." }, { status: 400 });
 
+  const userMessages = messages.filter((message) => message.role === "user");
+  const greetingOnly = userMessages.length === 1 && /^(hi|hello|hey|hiya|yo|good morning|good afternoon|good evening|howdy)[!,.?\\s]*$/i.test(userMessages[0].content);
+  const socialOnly = userMessages.length > 0 && userMessages.every((message) =>
+    /^(hi|hello|hey|hiya|yo|good morning|good afternoon|good evening|how are you|how's it going|what's up|im good|i'm good|thanks|thank you|nice to meet you)[!,.?\\s]*$/i.test(message.content)
+  );
+
+  if (greetingOnly) {
+    return new Response('data: {"response":"A Fresh Start"}\\n\\ndata: [DONE]\\n\\n', {
+      headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform" }
+    });
+  }
+
   try {
     const stream = await env.AI.run(MODEL, {
       messages: [
         {
           role: "system",
-          content: "Create a concise title for this conversation. Identify its central topic from the full conversation, not just the first message. Return only the title, with no quotation marks, prefix, punctuation at the end, or explanation. Use 3 to 7 words, natural title case, and keep it under 55 characters."
+          content: "Create a concise, natural title for this conversation in Baybble's own voice. Understand the central topic from the full conversation, not just the first message. If it is casual small talk with no meaningful subject, use the neutral title A Little Conversation. If it is about a clear question, challenge, idea, decision, or plan, name that actual subject directly. Never invent a topic or imply the user discussed something they did not. Return only the title, with no quotation marks, prefix, punctuation at the end, or explanation. Use 2 to 7 words, natural title case, and keep it under 55 characters."
         },
         ...messages
       ],
