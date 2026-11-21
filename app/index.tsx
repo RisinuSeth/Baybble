@@ -925,7 +925,11 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
+          <View pointerEvents="none" style={styles.heroHorizon}>
+            <View style={styles.heroHorizonArc} />
+            <View style={styles.heroHorizonAtmosphere} />
+          </View>
+          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86, zIndex: 1 }]} onPress={openChat}>
             <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
             <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
               <TextInput
@@ -1340,7 +1344,10 @@ const styles = StyleSheet.create({
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808' },
+  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808', overflow: 'hidden' },
+  heroHorizon: { position: 'absolute' as any, width: '150%', height: 470, left: '-25%' as any, top: '43%' as any, alignItems: 'center', justifyContent: 'flex-start', pointerEvents: 'none' as any, zIndex: 0 },
+  heroHorizonArc: { width: '100%', height: 390, borderTopWidth: 1.5, borderTopColor: 'rgba(150,195,255,0.42)', borderTopLeftRadius: '50%' as any, borderTopRightRadius: '50%' as any, shadowColor: '#6aaeff', shadowOpacity: 0.42, shadowRadius: 22, shadowOffset: { width: 0, height: -5 }, elevation: 3 },
+  heroHorizonAtmosphere: { position: 'absolute' as any, top: -38, left: 0, right: 0, height: 180, backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(68,132,218,0.18) 0%, rgba(35,83,145,0.09) 32%, rgba(8,8,8,0) 72%)' } as any,
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
