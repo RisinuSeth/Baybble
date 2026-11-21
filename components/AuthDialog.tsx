@@ -157,7 +157,7 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
   };
 
   const removeAvatar = async () => {
-    if (!profile?.avatarUrl) return;
+    if (!profile?.avatarPath) return;
     setBusy(true); setError(''); setNotice('');
     const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: null, avatar_path: null } });
     if (updateError) { setBusy(false); setError(updateError.message); return; }
@@ -257,6 +257,9 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
                 </Pressable>
               </View>
             </View>
+            <Pressable onPress={() => { if (typeof window !== 'undefined') window.location.assign('/privacy'); }} style={{ paddingVertical: 12, alignSelf: 'flex-start' }}>
+              <Text style={styles.link}>Privacy policy</Text>
+            </Pressable>
           </ScrollView>
         ) : (
           <>
