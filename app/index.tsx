@@ -519,8 +519,10 @@ export default function Home() {
             style={styles.megaMenuBackdrop}
           />
           <Animated.View
-            onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
-            onHoverOut={scheduleCloseMegaMenu}
+            {...({
+              onMouseEnter: () => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); },
+              onMouseLeave: scheduleCloseMegaMenu
+            } as any)}
             style={[
               styles.megaMenuPanel,
               {
