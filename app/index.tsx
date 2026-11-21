@@ -477,9 +477,10 @@ export default function Home() {
             </View>
           )}
 
-          <View style={styles.headerActions} onMouseEnter={scheduleCloseMegaMenu}>
+          <View style={styles.headerActions}>
             <Pressable
               style={authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]}
+              onHoverIn={scheduleCloseMegaMenu}
               onPress={() => setAuthOpen(true)}
               accessibilityRole="button"
               accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
@@ -500,7 +501,7 @@ export default function Home() {
               )}
             </Pressable>
             {!authUser && (
-              <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
+              <Pressable style={styles.startButton} onHoverIn={scheduleCloseMegaMenu} onPress={() => setAuthOpen(true)}>
                 <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
               </Pressable>
             )}
