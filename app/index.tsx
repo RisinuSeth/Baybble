@@ -106,6 +106,10 @@ export default function Home() {
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const megaMenuAnimation = useRef(new Animated.Value(0)).current;
+  const navItemLayouts = useRef<Record<string, { x: number; width: number }>>({});
+  const navCapsuleX = useRef(new Animated.Value(0)).current;
+  const navCapsuleWidth = useRef(new Animated.Value(0)).current;
+  const navCapsuleOpacity = useRef(new Animated.Value(0)).current;
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -413,37 +417,59 @@ export default function Home() {
     };
   }, [activeMegaMenu, megaMenuAnimation]);
 
+  const moveNavCapsule = (item: string) => {
+    const layout = navItemLayouts.current[item];
+    if (!layout) return;
+    Animated.parallel([
+      Animated.spring(navCapsuleX, { toValue: layout.x, speed: 24, bounciness: 5, useNativeDriver: false }),
+      Animated.spring(navCapsuleWidth, { toValue: layout.width, speed: 24, bounciness: 5, useNativeDriver: false }),
+      Animated.timing(navCapsuleOpacity, { toValue: 1, duration: 110, useNativeDriver: false })
+    ]).start();
+  };
   const openMegaMenu = (item: string) => {
     if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+    moveNavCapsule(item);
     setActiveMegaMenu(item);
   };
   const scheduleCloseMegaMenu = () => {
     if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
-    megaMenuTimer.current = setTimeout(() => setActiveMegaMenu(null), 170);
+    megaMenuTimer.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+      Animated.parallel([
+        Animated.timing(navCapsuleOpacity, { toValue: 0, duration: 120, useNativeDriver: false }),
+        Animated.timing(navCapsuleWidth, { toValue: 0, duration: 160, useNativeDriver: false })
+      ]).start();
+    }, 170);
   };
 
   return (
     <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, activeMegaMenu && !compact && styles.headerMenuOpen, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
-            <BaybbleLogo dark={!!activeMegaMenu && !compact} />
-            <Text style={[styles.wordmark, activeMegaMenu && !compact && styles.wordmarkMenuOpen]}>Baybble</Text>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" style={styles.brand}>
+            <BaybbleLogo />
+            <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
           {!compact && (
             <View style={[styles.nav, styles.navCentered]}>
+              <Animated.View pointerEvents="none" style={[styles.navActiveCapsule, { opacity: navCapsuleOpacity, width: navCapsuleWidth, transform: [{ translateX: navCapsuleX }] }]} />
               {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
                 <Pressable
                   key={item}
                   style={styles.navLink}
+                  onLayout={(event) => {
+                    const { x, width: itemWidth } = event.nativeEvent.layout;
+                    navItemLayouts.current[item] = { x, width: itemWidth };
+                    if (activeMegaMenu === item) moveNavCapsule(item);
+                  }}
                   onHoverIn={() => openMegaMenu(item)}
                   onHoverOut={scheduleCloseMegaMenu}
-                  onPress={() => activeMegaMenu === item ? setActiveMegaMenu(null) : openMegaMenu(item)}
+                  onPress={() => activeMegaMenu === item ? scheduleCloseMegaMenu() : openMegaMenu(item)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: activeMegaMenu === item }}
                 >
-                  <Text style={[styles.navText, activeMegaMenu && styles.navTextMenuOpen]}>{item}</Text>
+                  <Text style={[styles.navText, activeMegaMenu === item && styles.navTextMenuOpen]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
@@ -466,14 +492,14 @@ export default function Home() {
                 </View>
               ) : (
                 <>
-                  <Ionicons name="person-circle-outline" size={19} color={activeMegaMenu && !compact ? '#080808' : '#eeeeee'} />
-                  <Text style={[styles.loginText, activeMegaMenu && !compact && styles.loginTextMenuOpen]}>Log In</Text>
+                  <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
+                  <Text style={styles.loginText}>Log In</Text>
                 </>
               )}
             </Pressable>
             {!authUser && (
-              <Pressable style={[styles.startButton, activeMegaMenu && !compact && styles.startButtonMenuOpen]} onPress={() => setAuthOpen(true)}>
-                <Text style={[styles.startText, activeMegaMenu && !compact && styles.startTextMenuOpen]}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+              <Pressable style={styles.startButton} onPress={() => setAuthOpen(true)}>
+                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
               </Pressable>
             )}
           </View>
@@ -695,12 +721,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: '#080808' },
-  headerMenuOpen: { backgroundColor: '#ffffff' },
-  wordmarkMenuOpen: { color: '#080808' },
   navTextMenuOpen: { color: '#080808' },
-  loginTextMenuOpen: { color: '#080808' },
-  startButtonMenuOpen: { backgroundColor: '#080808' },
-  startTextMenuOpen: { color: '#ffffff' },
+  navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
   megaMenuPanel: { position: 'absolute' as any, top: 92, left: 52, right: 52, zIndex: 7, borderRadius: 25, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 34, flexDirection: 'row', alignItems: 'stretch', gap: 42, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuIntro: { flex: 1, minWidth: 230, maxWidth: 330, justifyContent: 'center', paddingRight: 8 },
@@ -721,8 +743,8 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center' },
-  navLink: { paddingVertical: 10, paddingHorizontal: 3 },
+  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
+  navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
