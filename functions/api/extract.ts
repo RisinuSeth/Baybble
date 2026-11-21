@@ -30,7 +30,44 @@ function cleanXmlText(xml: string): string {
     .trim();
 }
 
+function validateDocxArchive(bytes: Uint8Array): void {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const minOffset = Math.max(0, bytes.length - 65_557);
+  let endRecord = -1;
+  for (let offset = bytes.length - 22; offset >= minOffset; offset -= 1) {
+    if (view.getUint32(offset, true) === 0x06054b50) {
+      endRecord = offset;
+      break;
+    }
+  }
+  if (endRecord < 0) throw new Error("Invalid DOCX archive.");
+  const entryCount = view.getUint16(endRecord + 10, true);
+  let offset = view.getUint32(endRecord + 16, true);
+  let totalUncompressed = 0;
+  let foundDocument = false;
+  for (let index = 0; index < entryCount; index += 1) {
+    if (offset + 46 > bytes.length || view.getUint32(offset, true) !== 0x02014b50) {
+      throw new Error("Invalid DOCX archive directory.");
+    }
+    const uncompressedSize = view.getUint32(offset + 24, true);
+    const nameLength = view.getUint16(offset + 28, true);
+    const extraLength = view.getUint16(offset + 30, true);
+    const commentLength = view.getUint16(offset + 32, true);
+    if (uncompressedSize === 0xffffffff) throw new Error("DOCX ZIP64 files are not supported.");
+    totalUncompressed += uncompressedSize;
+    if (totalUncompressed > 20 * 1024 * 1024) throw new Error("The expanded DOCX content is too large.");
+    const nameStart = offset + 46;
+    const nameEnd = nameStart + nameLength;
+    if (nameEnd > bytes.length) throw new Error("Invalid DOCX archive entry.");
+    const name = new TextDecoder().decode(bytes.slice(nameStart, nameEnd));
+    if (name === "word/document.xml") foundDocument = true;
+    offset = nameEnd + extraLength + commentLength;
+  }
+  if (!foundDocument) throw new Error("This DOCX file does not contain a readable document body.");
+}
+
 async function extractDocx(bytes: Uint8Array): Promise<string> {
+  validateDocxArchive(bytes);
   const files = unzipSync(bytes);
   const documentXml = files["word/document.xml"];
   if (!documentXml) throw new Error("This DOCX file does not contain a readable document body.");
@@ -66,12 +103,15 @@ export const onRequestPost: PagesFunction = async ({ request }) => {
         return jsonError("This file does not appear to be a valid PDF.", 400);
       }
       const pdf = await getDocumentProxy(bytes, { isEvalSupported: false, maxImageSize: 16_777_216 });
-      if (pdf.numPages > 60) return jsonError("PDFs are limited to 60 pages in this release.", 413);
-      const result = await extractText(pdf, { mergePages: false });
-      const pages = Array.isArray(result.text) ? result.text : [result.text];
-      pageCount = result.totalPages;
-      text = pages.map((page, index) => `[Page ${index + 1}]\n${page}`).join("\n\n");
-      await pdf.destroy();
+      try {
+        if (pdf.numPages > 60) return jsonError("PDFs are limited to 60 pages in this release.", 413);
+        const result = await extractText(pdf, { mergePages: false });
+        const pages = Array.isArray(result.text) ? result.text : [result.text];
+        pageCount = result.totalPages;
+        text = pages.map((page, index) => `[Page ${index + 1}]\n${page}`).join("\n\n");
+      } finally {
+        await pdf.destroy();
+      }
     } else if (extension === "docx") {
       if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
         return jsonError("This file does not appear to be a valid DOCX document.", 400);
