@@ -1585,7 +1585,7 @@ const styles = StyleSheet.create({
   messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
   messageActionWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
   messageActionButton: { width: 27, height: 27, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
-  messageActionTooltip: { position: 'absolute', bottom: 34, left: '50%' as any, transform: [{ translateX: -42 }], minWidth: 84, textAlign: 'center', color: '#f0f0f0', backgroundColor: '#292929', borderWidth: 1, borderColor: '#414141', borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, fontFamily: 'Manrope', fontSize: 10, fontWeight: '600', zIndex: 20, overflow: 'hidden' }
+  messageActionTooltip: { position: 'absolute', bottom: 34, left: '50%' as any, transform: [{ translateX: -42 }], minWidth: 84, textAlign: 'center', color: '#f0f0f0', backgroundColor: '#292929', borderWidth: 1, borderColor: '#414141', borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, fontFamily: 'Manrope', fontSize: 10, fontWeight: '600', zIndex: 20, overflow: 'hidden' },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
   assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 0 },
