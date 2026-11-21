@@ -8,7 +8,7 @@
     "web": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "build:web": "node scripts/copy-ionicons-font.js && expo export --platform web"
+    "build:web": "node scripts/copy-ionicons-font.js && expo export --platform web && node scripts/copy-favicon.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
