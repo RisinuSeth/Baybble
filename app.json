@@ -16,7 +16,8 @@
       "bundler": "metro",
       "name": "Baybble",
       "shortName": "Baybble",
-      "description": "Your language. Your companion."
+      "description": "Your language. Your companion.",
+      "favicon": "./assets/favicon.png"
     }
   }
 }
