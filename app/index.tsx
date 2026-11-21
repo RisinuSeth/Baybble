@@ -844,7 +844,7 @@ export default function Home() {
                                 <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
                               </Pressable>
                               <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
-                                <Ionicons name="ellipsis-horizontal" size={15} color="#888888" />
+                                <Ionicons name="create-outline" size={14} color="#888888" />
                               </Pressable>
                               <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
                                 <Ionicons name="trash-outline" size={13} color="#888888" />
@@ -882,7 +882,7 @@ export default function Home() {
                       <Image source={{ uri: authUser.avatarUrl }} style={styles.sidebarAvatar} resizeMode="cover" />
                     ) : (
                       <View style={[styles.sidebarAvatar, { backgroundColor: authUser ? profileAvatarColour(authUser.email) : '#303030' }]}>
-                        <Text style={styles.sidebarAvatarText}>{authUser ? profileInitials(authUser.fullName, authUser.email) : 'S'}</Text>
+                        {authUser ? <Text style={styles.sidebarAvatarText}>{profileInitials(authUser.fullName, authUser.email)}</Text> : <Ionicons name="person" size={14} color="#eeeeee" />}
                       </View>
                     )}
                     {!sidebarCollapsed || compact ? (
@@ -897,7 +897,7 @@ export default function Home() {
               </Animated.View>
             ) : null}
             <View style={styles.chatMain}>
-              <View style={styles.workspaceTopbar}>
+              <View style={[styles.workspaceTopbar, compact && styles.workspaceTopbarCompact]}>
                 <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
                   {activeSessionId ? (sessions.find((session) => session.id === activeSessionId)?.title || 'Conversation') : 'New conversation'}
                 </Text>
@@ -1053,6 +1053,7 @@ const styles = StyleSheet.create({
   sidebarCollapsedActions: { alignItems: 'center', gap: 8, paddingTop: 7 },
   sidebarCollapsedAction: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
   workspaceTopbar: { width: '100%', minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, borderBottomWidth: 1, borderBottomColor: '#202020' },
+  workspaceTopbarCompact: { paddingLeft: 64 },
   workspaceTopbarTitle: { flex: 1, color: '#eeeeee', fontFamily: 'Manrope', fontSize: 12, fontWeight: '700' },
   workspaceTopbarCaption: { color: '#656565', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, marginLeft: 12 },
 
