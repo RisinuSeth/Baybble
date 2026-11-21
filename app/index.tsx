@@ -467,7 +467,6 @@ export default function Home() {
                     if (activeMegaMenu === item) moveNavCapsule(item);
                   }}
                   onHoverIn={() => openMegaMenu(item)}
-                  onHoverOut={scheduleCloseMegaMenu}
                   onPress={() => activeMegaMenu === item ? scheduleCloseMegaMenu() : openMegaMenu(item)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: activeMegaMenu === item }}
@@ -514,7 +513,6 @@ export default function Home() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close navigation menu"
-            onHoverIn={scheduleCloseMegaMenu}
             onPress={() => setActiveMegaMenu(null)}
             style={styles.megaMenuBackdrop}
           />
