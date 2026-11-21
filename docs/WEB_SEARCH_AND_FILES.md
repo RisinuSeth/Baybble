@@ -2,18 +2,15 @@
 
 Baybble's automatic web search uses the Tavily Search API from the server-side chat function.
 
-## Configure the key
+## Web search access
 
-1. Create or access a Tavily account and obtain an API key.
-2. In Cloudflare, open **Workers & Pages → baybble → Settings → Variables and Secrets**.
-3. Add `TAVILY_API_KEY` as an encrypted/secret variable for both **Preview** and **Production** environments.
-4. Redeploy the relevant Pages deployment so the function receives the secret.
+The integration uses Tavily's rate-limited keyless Search access by default, so a secret is not required for the initial preview. Tavily documents keyless Search and Extract access when the request includes `X-Tavily-Access-Mode: keyless`. Keyless access is rate-limited and its availability/limits may change.
 
-Never add the key to frontend environment variables, source code, GitHub commits, or chat messages.
+For higher and more predictable usage, an account owner can optionally create a Tavily API key and add `TAVILY_API_KEY` as an encrypted/secret variable in Cloudflare under **Workers & Pages → baybble → Settings → Variables and Secrets**, for both **Preview** and **Production** environments. Redeploy after adding it.
 
-The Tavily Researcher tier currently advertises 1,000 free API credits per month. Basic search requests consume one credit; availability and limits may change. Baybble does not enable paid overages automatically.
+Never add the key to frontend environment variables, source code, GitHub commits, or chat messages. The current code does not enable paid overages automatically.
 
-If the key is missing or search fails, Baybble continues with its normal model response while clearly telling the user that live web research was unavailable. It must not invent citations.
+If search is rate-limited, unavailable or returns no usable sources, Baybble continues with its normal model response while clearly telling the user that live web research was unavailable. It must not invent citations.
 
 ## Document attachments
 
