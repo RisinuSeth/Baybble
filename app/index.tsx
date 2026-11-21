@@ -106,6 +106,7 @@ export default function Home() {
   const [chatError, setChatError] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const megaMenuAnimation = useRef(new Animated.Value(0)).current;
   const navItemLayouts = useRef<Record<string, { x: number; width: number }>>({});
@@ -523,35 +524,34 @@ export default function Home() {
               styles.megaMenuPanel,
               {
                 opacity: megaMenuAnimation,
-                transform: [{ translateY: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }), scale: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.985, 1] }) }]
+                transform: [{ translateY: megaMenuAnimation.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }]
               }
             ]}
           >
-            <View style={styles.megaMenuIntro}>
-              <Text style={styles.megaMenuEyebrow}>{megaMenuContent[activeMegaMenu]?.eyebrow}</Text>
-              <Text style={styles.megaMenuTitle}>{megaMenuContent[activeMegaMenu]?.title}</Text>
-              <Text style={styles.megaMenuDescription}>{megaMenuContent[activeMegaMenu]?.description}</Text>
-            </View>
             <View style={styles.megaMenuItems}>
-              {(megaMenuContent[activeMegaMenu]?.items ?? []).map((entry, index) => (
+              {(megaMenuContent[activeMegaMenu]?.items ?? []).map((entry) => (
                 <Pressable
                   key={entry.title}
                   style={styles.megaMenuItem}
-                  onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
+                  onHoverIn={() => {
+                    if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current);
+                    setHoveredMegaLink(entry.title);
+                  }}
+                  onHoverOut={() => setHoveredMegaLink(null)}
                   disabled={!entry.href}
                   onPress={() => {
                     if (entry.href) {
                       setActiveMegaMenu(null);
+                      setHoveredMegaLink(null);
                       window.location.href = entry.href;
                     }
                   }}
                   accessibilityRole={entry.href ? 'link' : 'text'}
                 >
-                  <View style={styles.megaMenuItemCopy}>
-                    <Text style={styles.megaMenuItemTitle}>{entry.title}</Text>
-                    <Text style={styles.megaMenuItemDescription}>{entry.description}</Text>
-                  </View>
-                  {entry.status ? <Text style={styles.megaMenuStatus}>{entry.status}</Text> : <Text style={styles.megaMenuLinkArrow}>↗</Text>}
+                  <Text style={[styles.megaMenuItemTitle, hoveredMegaLink === entry.title && styles.megaMenuItemTitleHovered]}>
+                    {entry.title}
+                  </Text>
+                  {entry.status ? <Text style={styles.megaMenuStatus}>{entry.status}</Text> : null}
                 </Pressable>
               ))}
             </View>
@@ -740,18 +740,12 @@ const styles = StyleSheet.create({
   navTextMenuOpen: { color: '#080808' },
   navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
-  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 32, right: 32, zIndex: 7, borderRadius: 14, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 30, flexDirection: 'row', alignItems: 'stretch', gap: 48, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
-  megaMenuIntro: { flex: 0.85, minWidth: 230, maxWidth: 350, justifyContent: 'center', paddingRight: 8 },
-  megaMenuEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.8, marginBottom: 14 },
-  megaMenuTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 27, lineHeight: 33, letterSpacing: -1.1 },
-  megaMenuDescription: { color: '#666666', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 13 },
-  megaMenuItems: { flex: 1.5, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center' },
-  megaMenuItem: { minWidth: 0, minHeight: 55, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#e9e9e9' },
-  megaMenuItemCopy: { flex: 1, minWidth: 0 },
-  megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800', lineHeight: 18 },
-  megaMenuItemDescription: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 16, marginTop: 4 },
+  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
+  megaMenuItem: { minWidth: 0, minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, paddingVertical: 2 },
+  megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  megaMenuItemTitleHovered: { textDecorationLine: 'underline' },
   megaMenuStatus: { color: '#888888', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, flexShrink: 0 },
-  megaMenuLinkArrow: { color: '#555555', fontFamily: 'Manrope', fontSize: 15, flexShrink: 0 },
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
