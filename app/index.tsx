@@ -1288,8 +1288,7 @@ export default function Home() {
                       <View
                         key={index}
                         style={message.role === 'user' ? styles.userMessageGroup : styles.assistantMessageGroup}
-                        onMouseEnter={() => setHoveredMessageIndex(index)}
-                        onMouseLeave={() => setHoveredMessageIndex((current) => current === index ? null : current)}
+                        {...({ onMouseEnter: () => setHoveredMessageIndex(index), onMouseLeave: () => setHoveredMessageIndex((current) => current === index ? null : current) } as any)}
                       >
                         {message.role === 'user' ? (
                           <View style={styles.userMessage}>
