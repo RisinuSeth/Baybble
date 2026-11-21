@@ -518,6 +518,7 @@ export default function Home() {
           />
           <Animated.View
             onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
+            onHoverOut={scheduleCloseMegaMenu}
             style={[
               styles.megaMenuPanel,
               {
