@@ -346,6 +346,7 @@ export default function Home() {
     if (!message || isSending) return;
     const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
     let conversationId = activeSessionId;
+    const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
     if (!conversationId) {
       if (authUser?.id) {
@@ -434,6 +435,64 @@ export default function Home() {
         });
         if (saveError) setChatError('Reply received, but it could not be saved to your account.');
         await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
+      }
+
+      if (isNewConversation && assistantReply && conversationId) {
+        try {
+          const titleResponse = await fetch('/api/title', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: [...history, { role: 'assistant', content: assistantReply }] })
+          });
+          if (titleResponse.ok && titleResponse.body) {
+            const titleReader = titleResponse.body.getReader();
+            const titleDecoder = new TextDecoder();
+            let generatedTitle = '';
+            let titleBuffer = '';
+            while (true) {
+              const { value, done } = await titleReader.read();
+              if (done) break;
+              titleBuffer += titleDecoder.decode(value, { stream: true });
+              const lines = titleBuffer.split('\\n');
+              titleBuffer = lines.pop() ?? '';
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data:')) continue;
+                const payload = trimmed.slice(5).trim();
+                if (!payload || payload === '[DONE]') continue;
+                try {
+                  const chunk = JSON.parse(payload);
+                  const token = typeof chunk.response === 'string'
+                    ? chunk.response
+                    : typeof chunk.choices?.[0]?.delta?.content === 'string'
+                      ? chunk.choices[0].delta.content
+                      : '';
+                  generatedTitle += token;
+                } catch {}
+              }
+            }
+            const cleanTitle = generatedTitle
+              .trim()
+              .replace(/^title:\\s*/i, '')
+              .replace(/^["']|["']$/g, '')
+              .replace(/[.!?]+$/g, '')
+              .slice(0, 55)
+              .trim();
+            if (cleanTitle) {
+              setSessions((current) => current.map((session) =>
+                session.id === conversationId ? { ...session, title: cleanTitle } : session
+              ));
+              if (authUser?.id && !conversationId.startsWith('chat-')) {
+                await supabase.from('baybble_conversations')
+                  .update({ title: cleanTitle })
+                  .eq('id', conversationId)
+                  .eq('user_id', authUser.id);
+              }
+            }
+          }
+        } catch (titleError) {
+          console.warn('Baybble could not generate a conversation title:', titleError);
+        }
       }
     } catch (error) {
       if (!(error instanceof Error && error.name === 'AbortError')) {
