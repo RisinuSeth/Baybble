@@ -1306,7 +1306,7 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808', backgroundImage: "linear-gradient(rgba(8,8,8,0.16), rgba(8,8,8,0.28)), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS013/ISS013-E-8139.JPG')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808', backgroundImage: "linear-gradient(rgba(8,8,8,0.16), rgba(8,8,8,0.28)), url('https://upload.wikimedia.org/wikipedia/commons/e/e7/ISS030-E-247719_-_View_of_Earth.jpg')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: 'transparent' },
   navTextMenuOpen: { color: '#080808' },
