@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
   startButtonMenuOpen: { backgroundColor: '#080808' },
   startTextMenuOpen: { color: '#ffffff' },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
-  megaMenuPanel: { position: 'absolute' as any, top: 80, left: 52, right: 52, zIndex: 9, borderRadius: 25, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 34, flexDirection: 'row', alignItems: 'stretch', gap: 42, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 52, right: 52, zIndex: 7, borderRadius: 25, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 34, flexDirection: 'row', alignItems: 'stretch', gap: 42, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuIntro: { flex: 1, minWidth: 230, maxWidth: 330, justifyContent: 'center', paddingRight: 8 },
   megaMenuEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.8, marginBottom: 17 },
   megaMenuTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 29, lineHeight: 34, letterSpacing: -1.2 },
