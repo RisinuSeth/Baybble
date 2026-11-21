@@ -50,7 +50,7 @@ export default function AuthDialog({ visible, onClose, userEmail, onSignedOut }:
   useEffect(() => {
     if (!visible || !userEmail) return;
     let active = true;
-    supabase.auth.getUser().then(({ data, error: loadError }) => {
+    supabase.auth.getUser().then(async ({ data, error: loadError }) => {
       if (!active || loadError || !data.user) return;
       const metadata = data.user.user_metadata ?? {};
       const next = {
