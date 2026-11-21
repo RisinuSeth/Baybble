@@ -13,45 +13,47 @@ type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; upda
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
 
-const megaMenuContent: Record<string, { eyebrow: string; title: string; description: string; items: { title: string; description: string }[] }> = {
+const megaMenuContent: Record<string, { eyebrow: string; title: string; description: string; items: { title: string; description: string; status?: string; href?: string }[] }> = {
   Product: {
-    eyebrow: 'THE BAYBBLE WORKSPACE',
-    title: 'A clearer way to work through problems.',
-    description: 'Explore the tools that help turn questions, challenges and ideas into practical next steps.',
+    eyebrow: 'EXPLORE BAYBBLE',
+    title: 'One platform. More possibilities ahead.',
+    description: 'Discover the Baybble experience and what is coming next.',
     items: [
-      { title: 'Problem-solving workspace', description: 'Think through a challenge in one focused space.' },
-      { title: 'Conversation history', description: 'Return to previous discussions and pick up where you left off.' },
-      { title: 'A more considered answer', description: 'Explore context, options and useful next steps.' }
+      { title: 'Baybble Workspace', description: 'Think through challenges, explore ideas and find practical next steps.', status: 'AVAILABLE NOW' },
+      { title: 'More products', description: 'New tools and experiences are in development.', status: 'COMING SOON' },
+      { title: 'New capabilities', description: 'More ways to work through problems are on the way.', status: 'COMING SOON' }
     ]
   },
   'Use Cases': {
-    eyebrow: 'WHAT YOU CAN DO',
-    title: 'One workspace. Different ways forward.',
-    description: 'Bring Baybble the challenge you are working on, from an early idea to a decision that needs clarity.',
+    eyebrow: 'USE BAYBBLE TO',
+    title: 'A clearer way forward, whatever you are working on.',
+    description: 'Start with a question, an idea or a challenge. Use Baybble to make sense of it and decide what to do next.',
     items: [
-      { title: 'Understand', description: 'Break down unfamiliar topics and complex questions.' },
-      { title: 'Explore', description: 'Compare possibilities and think through alternatives.' },
-      { title: 'Plan', description: 'Turn an idea into clear, manageable next steps.' }
+      { title: 'Understand', description: 'Make complex topics and unfamiliar ideas easier to understand.' },
+      { title: 'Explore', description: 'Look at different perspectives, options and possibilities.' },
+      { title: 'Make decisions', description: 'Weigh up choices and think through the consequences.' },
+      { title: 'Plan next steps', description: 'Turn a broad goal into a clear, practical plan.' }
     ]
   },
   Pricing: {
     eyebrow: 'PLANS & ACCESS',
-    title: 'Find the right way to use Baybble.',
-    description: 'See the available options and choose the experience that fits the way you work.',
+    title: 'Straightforward access to Baybble.',
+    description: 'We are shaping the plans and features for the platform.',
     items: [
-      { title: 'Explore plans', description: 'See the available Baybble plans.' },
-      { title: 'Compare features', description: 'Understand what is included with each option.' },
-      { title: 'Account & billing', description: 'Manage your Baybble account and plan details.' }
+      { title: 'Plans & pricing', description: 'Plan details will be published here.', status: 'COMING SOON' },
+      { title: 'Feature comparison', description: 'A clear breakdown of plan features is on the way.', status: 'COMING SOON' }
     ]
   },
   Resources: {
-    eyebrow: 'BAYBBLE RESOURCES',
-    title: 'Helpful context, whenever you need it.',
-    description: 'Find guidance for getting started, making the most of Baybble and understanding the platform.',
+    eyebrow: 'RESOURCES',
+    title: 'Everything you need to get started.',
+    description: 'Useful information and updates to help you get more from Baybble.',
     items: [
-      { title: 'Getting started', description: 'Learn the basics of working with Baybble.' },
-      { title: 'Guides & ideas', description: 'Discover practical ways to approach everyday challenges.' },
-      { title: 'Help & support', description: 'Find answers to common questions about Baybble.' }
+      { title: 'Getting Started', description: 'A guide to using the Baybble workspace.', status: 'COMING SOON' },
+      { title: 'Latest News', description: 'Product announcements and platform updates.', status: 'COMING SOON' },
+      { title: 'Release Notes', description: 'See what is new and what has changed.', status: 'COMING SOON' },
+      { title: 'Help & Support', description: 'Find help with your Baybble account and experience.', status: 'COMING SOON' },
+      { title: 'Security & Privacy', description: 'Read how Baybble handles your information.', href: '/privacy' }
     ]
   }
 };
@@ -532,11 +534,24 @@ export default function Home() {
             </View>
             <View style={styles.megaMenuItems}>
               {(megaMenuContent[activeMegaMenu]?.items ?? []).map((entry, index) => (
-                <View key={entry.title} style={styles.megaMenuItem}>
-                  <Text style={styles.megaMenuIndex}>0{index + 1}</Text>
-                  <Text style={styles.megaMenuItemTitle}>{entry.title}</Text>
-                  <Text style={styles.megaMenuItemDescription}>{entry.description}</Text>
-                </View>
+                <Pressable
+                  key={entry.title}
+                  style={styles.megaMenuItem}
+                  disabled={!entry.href}
+                  onPress={() => {
+                    if (entry.href) {
+                      setActiveMegaMenu(null);
+                      window.location.href = entry.href;
+                    }
+                  }}
+                  accessibilityRole={entry.href ? 'link' : 'text'}
+                >
+                  <View style={styles.megaMenuItemCopy}>
+                    <Text style={styles.megaMenuItemTitle}>{entry.title}</Text>
+                    <Text style={styles.megaMenuItemDescription}>{entry.description}</Text>
+                  </View>
+                  {entry.status ? <Text style={styles.megaMenuStatus}>{entry.status}</Text> : <Text style={styles.megaMenuLinkArrow}>↗</Text>}
+                </Pressable>
               ))}
             </View>
           </Animated.View>
@@ -724,16 +739,18 @@ const styles = StyleSheet.create({
   navTextMenuOpen: { color: '#080808' },
   navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
-  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 52, right: 52, zIndex: 7, borderRadius: 25, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 34, flexDirection: 'row', alignItems: 'stretch', gap: 42, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
-  megaMenuIntro: { flex: 1, minWidth: 230, maxWidth: 330, justifyContent: 'center', paddingRight: 8 },
-  megaMenuEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.8, marginBottom: 17 },
-  megaMenuTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 29, lineHeight: 34, letterSpacing: -1.2 },
-  megaMenuDescription: { color: '#666666', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 14 },
-  megaMenuItems: { flex: 1.65, flexDirection: 'row', alignItems: 'stretch', gap: 12 },
-  megaMenuItem: { flex: 1, minWidth: 0, borderRadius: 15, backgroundColor: '#f5f5f5', paddingHorizontal: 17, paddingVertical: 19, justifyContent: 'center' },
-  megaMenuIndex: { color: '#929292', fontFamily: 'Manrope', fontSize: 9, fontWeight: '800', letterSpacing: 1.2, marginBottom: 24 },
+  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 32, right: 32, zIndex: 7, borderRadius: 14, backgroundColor: '#ffffff', paddingHorizontal: 38, paddingVertical: 30, flexDirection: 'row', alignItems: 'stretch', gap: 48, shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuIntro: { flex: 0.85, minWidth: 230, maxWidth: 350, justifyContent: 'center', paddingRight: 8 },
+  megaMenuEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 1.8, marginBottom: 14 },
+  megaMenuTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 27, lineHeight: 33, letterSpacing: -1.1 },
+  megaMenuDescription: { color: '#666666', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 13 },
+  megaMenuItems: { flex: 1.5, flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center' },
+  megaMenuItem: { minWidth: 0, minHeight: 55, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#e9e9e9' },
+  megaMenuItemCopy: { flex: 1, minWidth: 0 },
   megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 13, fontWeight: '800', lineHeight: 18 },
-  megaMenuItemDescription: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 16, marginTop: 8 },
+  megaMenuItemDescription: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 16, marginTop: 4 },
+  megaMenuStatus: { color: '#888888', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1.1, flexShrink: 0 },
+  megaMenuLinkArrow: { color: '#555555', fontFamily: 'Manrope', fontSize: 15, flexShrink: 0 },
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
