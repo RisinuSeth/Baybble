@@ -925,7 +925,6 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <View pointerEvents="none" style={styles.heroHorizonPhoto} />
           <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86, zIndex: 1 }]} onPress={openChat}>
             <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
             <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
@@ -1307,9 +1306,9 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808', backgroundImage: "linear-gradient(rgba(8,8,8,0.16), rgba(8,8,8,0.28)), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS013/ISS013-E-8139.JPG')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: '#080808' },
+  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: 'transparent' },
   navTextMenuOpen: { color: '#080808' },
   navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
@@ -1341,9 +1340,7 @@ const styles = StyleSheet.create({
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808', overflow: 'hidden' },
-  // NASA ISS023-E-57948 atmospheric limb, tightly cropped to a thin full-width horizon band.
-  heroHorizonPhoto: { position: 'absolute' as any, width: '100%', height: 190, left: 0, top: '27%' as any, pointerEvents: 'none' as any, zIndex: 0, opacity: 0.96, backgroundImage: "linear-gradient(to bottom, #080808 0%, rgba(8,8,8,0.18) 24%, rgba(8,8,8,0) 47%, rgba(8,8,8,0.12) 72%, #080808 100%), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS023/ISS023-E-57948.JPG')", backgroundSize: '100% 100%, 100% auto', backgroundPosition: 'center, center 59%', backgroundRepeat: 'no-repeat' } as any,
+  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
@@ -1484,7 +1481,7 @@ const styles = StyleSheet.create({
   featureCardBodyLight: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22, marginTop: 15, maxWidth: 300 },
   cardArrow: { color: '#f0f0f0', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
   cardArrowLight: { color: '#080808', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
-  splitSection: { width: '100%', paddingTop: 82, paddingBottom: 100, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 55, backgroundColor: '#111111' },
+  splitSection: { width: '100%', paddingTop: 82, paddingBottom: 100, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 55, backgroundColor: 'rgba(8,8,8,0.18)' },
   splitCopy: { flex: 1, minWidth: 250, maxWidth: 430 },
   eyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.9, marginBottom: 18 },
   splitTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 43, lineHeight: 49, letterSpacing: -2 },
@@ -1497,7 +1494,7 @@ const styles = StyleSheet.create({
   useCaseTitle: { color: '#f0f0f0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15 },
   useCaseBody: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 12, marginTop: 5, lineHeight: 19 },
   useCaseArrow: { color: '#f0f0f0', fontSize: 18 },
-  modelsSection: { width: '100%', backgroundColor: '#080808', paddingVertical: 100 },
+  modelsSection: { width: '100%', backgroundColor: 'rgba(8,8,8,0.18)', paddingVertical: 100 },
   modelsInner: { width: '100%' },
   modelsTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 48, lineHeight: 54, letterSpacing: -2.4 },
   modelsBody: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25, maxWidth: 620, marginTop: 18, marginBottom: 35 },
@@ -1510,7 +1507,7 @@ const styles = StyleSheet.create({
   modelStatus: { color: '#858585', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1, marginTop: 17 },
   modelDescription: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 13 },
   modelDisclaimer: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 16 },
-  processSection: { width: '100%', paddingTop: 90, paddingBottom: 100, backgroundColor: '#111111' },
+  processSection: { width: '100%', paddingTop: 90, paddingBottom: 100, backgroundColor: 'rgba(8,8,8,0.18)' },
   sectionHeading: { width: '100%', alignItems: 'flex-start', marginBottom: 38 },
   sectionTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 45, lineHeight: 51, letterSpacing: -2 },
   sectionTitleCompact: { fontSize: 35, lineHeight: 41 },
@@ -1520,14 +1517,14 @@ const styles = StyleSheet.create({
   processNumber: { color: '#858585', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700', width: 30 },
   processTitle: { color: '#f0f0f0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15, flex: 1, minWidth: 210 },
   processBody: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 12, flex: 1, minWidth: 200, lineHeight: 20 },
-  closing: { width: '100%', backgroundColor: '#101010', paddingTop: 95, paddingBottom: 100, alignItems: 'center' },
+  closing: { width: '100%', backgroundColor: 'rgba(8,8,8,0.24)', paddingTop: 95, paddingBottom: 100, alignItems: 'center' },
   closingEyebrow: { color: '#bcbcbc', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2, textAlign: 'center', marginBottom: 23 },
   closingTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 62, lineHeight: 67, letterSpacing: -3, textAlign: 'center' },
   closingTitleCompact: { fontSize: 43, lineHeight: 48 },
   closingBody: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 14, lineHeight: 24, maxWidth: 530, textAlign: 'center', marginTop: 20 },
   closingButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 14, paddingHorizontal: 21, marginTop: 29 },
   closingButtonText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12 },
-  footer: { width: '100%', paddingTop: 35, paddingBottom: 28, backgroundColor: '#080808' },
+  footer: { width: '100%', paddingTop: 35, paddingBottom: 28, backgroundColor: 'rgba(8,8,8,0.20)' },
   footerTop: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingBottom: 28 },
   footerBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   footerWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 21 },
