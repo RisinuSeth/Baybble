@@ -120,7 +120,7 @@ export default function Home() {
   const transition = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (!chatMode || draft) {
+    if (!chatMode || draft || messages.length > 0) {
       setAnimatedPlaceholder('');
       return;
     }
@@ -164,7 +164,7 @@ export default function Home() {
 
     timeout = setTimeout(animate, 500);
     return () => clearTimeout(timeout);
-  }, [chatMode, draft]);
+  }, [chatMode, draft, messages.length]);
 
   useEffect(() => {
     let alive = true;
@@ -813,7 +813,7 @@ export default function Home() {
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
-                      placeholder={animatedPlaceholder}
+                      placeholder={messages.length > 0 ? 'Message Baybble' : animatedPlaceholder}
                       placeholderTextColor="#929292"
                       style={styles.composerInput}
                       multiline
