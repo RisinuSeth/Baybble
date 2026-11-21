@@ -514,12 +514,12 @@ export default function Home() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close navigation menu"
+            onHoverIn={scheduleCloseMegaMenu}
             onPress={() => setActiveMegaMenu(null)}
             style={styles.megaMenuBackdrop}
           />
           <Animated.View
             onHoverIn={() => { if (megaMenuTimer.current) clearTimeout(megaMenuTimer.current); }}
-            onHoverOut={scheduleCloseMegaMenu}
             style={[
               styles.megaMenuPanel,
               {
