@@ -442,7 +442,7 @@ export default function Home() {
         Animated.timing(navCapsuleOpacity, { toValue: 0, duration: 120, useNativeDriver: false }),
         Animated.timing(navCapsuleWidth, { toValue: 0, duration: 160, useNativeDriver: false })
       ]).start();
-    }, 650);
+    }, 220);
   };
 
   return (
