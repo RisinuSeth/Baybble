@@ -9,7 +9,9 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDim
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
 
-type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
+type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
+type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
+type BaybbleMessage = { role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
@@ -95,6 +97,8 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [conversationAttachments, setConversationAttachments] = useState<Array<{ name: string; text: string }>>([]);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   const [chatMode, setChatMode] = useState(false);
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
@@ -276,12 +280,65 @@ export default function Home() {
     ));
   }, [messages, activeSessionId, historyReady]);
 
+  const handleFileSelection = async (event: any) => {
+    const selected = Array.from(event?.target?.files || []) as any[];
+    if (event?.target) event.target.value = '';
+    if (!selected.length) return;
+    const remaining = Math.max(0, 5 - pendingAttachments.length);
+    if (selected.length > remaining) {
+      setChatError('You can attach up to five files to a message.');
+    }
+    for (const file of selected.slice(0, remaining)) {
+      const extension = String(file.name || '').split('.').pop()?.toLowerCase();
+      if (!['pdf', 'docx', 'txt', 'csv'].includes(extension)) {
+        setChatError('Supported files are PDF, DOCX, TXT and CSV.');
+        continue;
+      }
+      if (!file.size || file.size > 10 * 1024 * 1024) {
+        setChatError('Each file must be 10 MB or smaller.');
+        continue;
+      }
+      try {
+        const form = new FormData();
+        form.append('file', file);
+        const response = await fetch('/api/extract', { method: 'POST', body: form });
+        const result = await response.json();
+        if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not read this file.');
+        const attachment: PendingAttachment = {
+          id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          name: result.name || file.name,
+          mimeType: result.mimeType || file.type || 'application/octet-stream',
+          size: file.size,
+          extractedText: result.text,
+          pageCount: result.pageCount
+        };
+        setPendingAttachments((current) => [...current, attachment].slice(0, 5));
+        setChatError('');
+      } catch (error) {
+        setChatError(error instanceof Error ? error.message : 'Baybble could not read this file.');
+      }
+    }
+  };
+
+  const pickFiles = () => {
+    if (typeof document === 'undefined') return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.docx,.txt,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv';
+    input.multiple = true;
+    input.onchange = (event) => { void handleFileSelection(event); };
+    input.click();
+  };
+
   const createNewChat = () => {
     abortController.current?.abort();
     abortController.current = null;
     setIsSending(false);
     setMessages([]);
     setDraft('');
+    setPendingAttachments([]);
+    setConversationAttachments([]);
     setChatError('');
     setActiveSessionId(null);
     setChatMode(true);
@@ -290,13 +347,23 @@ export default function Home() {
     transition.setValue(1);
   };
 
-  const openSavedChat = (session: ChatSession) => {
+  const openSavedChat = async (session: ChatSession) => {
     abortController.current?.abort();
     abortController.current = null;
     setIsSending(false);
     setActiveSessionId(session.id);
     setMessages(session.messages);
     setDraft('');
+    setPendingAttachments([]);
+    setConversationAttachments([]);
+    if (authUser?.id && !session.id.startsWith('chat-')) {
+      const { data: files } = await supabase.from('baybble_attachments')
+        .select('filename,extracted_text')
+        .eq('conversation_id', session.id)
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: true });
+      setConversationAttachments((files || []).map((file: any) => ({ name: file.filename, text: file.extracted_text })));
+    }
     setChatError('');    setChatMode(true);
     setHistoryOpen(false);
     setRenamingSessionId(null);
@@ -325,7 +392,15 @@ export default function Home() {
   const deleteChat = async (sessionId: string) => {
     if (typeof window !== 'undefined' && !window.confirm('Delete this conversation? This cannot be undone.')) return;
     setSessions((current) => current.filter((session) => session.id !== sessionId));
-    if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
+    if (authUser?.id && !sessionId.startsWith('chat-')) {
+      const { data: files } = await supabase.from('baybble_attachments')
+        .select('storage_path')
+        .eq('conversation_id', sessionId)
+        .eq('user_id', authUser.id);
+      const paths = (files || []).map((file: any) => file.storage_path).filter(Boolean);
+      if (paths.length) await supabase.storage.from('baybble-conversation-files').remove(paths);
+      await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
+    }
     if (activeSessionId === sessionId) createNewChat();
   };
 
@@ -368,9 +443,11 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    const message = draft.trim();
-    if (!message || isSending) return;
-    const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
+    const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
+    if ((!message && pendingAttachments.length === 0) || isSending) return;
+    const filesToSend = [...pendingAttachments];
+    const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
+    const history = [...messages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
@@ -391,13 +468,53 @@ export default function Home() {
         id: conversationId as string, title, messages: history, updatedAt: Date.now()
       }, ...current].slice(0, 50));
     }
+
+    let messageId: string | null = null;
+    const uploadedPaths: string[] = [];
     if (authUser?.id && conversationId) {
-      const { error } = await supabase.from('baybble_messages').insert({
-        conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message
-      });
-      if (error) { setChatError('Your message could not be saved. Please try again.'); return; }
+      const { data: savedMessage, error } = await supabase.from('baybble_messages')
+        .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
+        .select('id')
+        .single();
+      if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
+      messageId = savedMessage.id;
+
+      try {
+        for (const attachment of filesToSend) {
+          const safeName = attachment.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-100) || 'document';
+          const fileId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          const storagePath = `${authUser.id}/${conversationId}/${fileId}-${safeName}`;
+          const { error: uploadError } = await supabase.storage.from('baybble-conversation-files')
+            .upload(storagePath, attachment.file, { contentType: attachment.mimeType, upsert: false });
+          if (uploadError) throw new Error(uploadError.message || 'A file could not be uploaded.');
+          uploadedPaths.push(storagePath);
+          const { error: metadataError } = await supabase.from('baybble_attachments').insert({
+            message_id: messageId,
+            conversation_id: conversationId,
+            user_id: authUser.id,
+            filename: attachment.name,
+            mime_type: attachment.mimeType,
+            file_size: attachment.size,
+            storage_path: storagePath,
+            extracted_text: attachment.extractedText,
+            page_count: attachment.pageCount ?? null
+          });
+          if (metadataError) throw new Error(metadataError.message || 'File details could not be saved.');
+        }
+      } catch (error) {
+        if (uploadedPaths.length) await supabase.storage.from('baybble-conversation-files').remove(uploadedPaths);
+        await supabase.from('baybble_messages').delete().eq('id', messageId).eq('user_id', authUser.id);
+        setChatError(error instanceof Error ? error.message : 'The files could not be attached. Please try again.');
+        return;
+      }
       await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
     }
+
+    const attachmentContexts = [...conversationAttachments, ...filesToSend.map((file) => ({ name: file.name, text: file.extractedText }))].slice(-5);
+    setConversationAttachments(attachmentContexts);
+    setPendingAttachments([]);
     setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
     setChatError('');
@@ -409,7 +526,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, attachments: attachmentContexts }),
         signal: controller.signal
       });
       if (!response.ok) {
