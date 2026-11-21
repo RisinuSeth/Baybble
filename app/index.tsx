@@ -7,9 +7,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
-const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#ffffff"/><circle cx="43" cy="43" r="17" fill="#ffffff"/></g></svg>';
+const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#F1F1F1"/><circle cx="43" cy="43" r="17" fill="#F1F1F1"/></g></svg>';
 
-type BaybbleMessage = { role: 'user' | 'assistant'; content: string };
+type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
+type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
+type BaybbleMessage = { role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
@@ -75,8 +77,16 @@ function profileAvatarColour(email?: string) {
 function BaybbleLogo({ dark = false }: { dark?: boolean }) {
   return (
     <View style={styles.logoMark} accessibilityLabel="Baybble logo">
-      <View style={[styles.logoBubbleOne, dark && { backgroundColor: '#080808' }]} />
-      <View style={[styles.logoBubbleTwo, dark && { backgroundColor: '#080808', borderColor: '#ffffff' }]} />
+      <View style={styles.logoBubbleOne} />
+      <View style={styles.logoBubbleTwo} />
+    </View>
+  );
+}
+
+function SidebarToggleIcon() {
+  return (
+    <View style={styles.sidebarToggleFrame} accessibilityElementsHidden>
+      <View style={styles.sidebarToggleDivider} />
     </View>
   );
 }
@@ -95,6 +105,9 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [isPreparingFiles, setIsPreparingFiles] = useState(false);
+  const [conversationAttachments, setConversationAttachments] = useState<Array<{ name: string; text: string }>>([]);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
   const [chatMode, setChatMode] = useState(false);
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
@@ -107,7 +120,14 @@ export default function Home() {
   const [renameDraft, setRenameDraft] = useState('');
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+  const [hoveredMessageAction, setHoveredMessageAction] = useState<string | null>(null);
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
+  const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
+  const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
@@ -238,16 +258,31 @@ export default function Home() {
       }
       const cloud: ChatSession[] = [];
       for (const conversation of conversations ?? []) {
-        const { data: rows } = await supabase
-          .from('baybble_messages')
-          .select('role,content')
-          .eq('conversation_id', conversation.id)
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: true });
+        const [{ data: rows }, { data: fileRows }] = await Promise.all([
+          supabase.from('baybble_messages')
+            .select('id,role,content')
+            .eq('conversation_id', conversation.id)
+            .eq('user_id', authUser.id)
+            .order('created_at', { ascending: true }),
+          supabase.from('baybble_attachments')
+            .select('id,message_id,filename,mime_type,file_size')
+            .eq('conversation_id', conversation.id)
+            .eq('user_id', authUser.id)
+        ]);
+        const filesByMessage = new Map<string, ChatFileBadge[]>();
+        for (const file of fileRows || []) {
+          const current = filesByMessage.get(file.message_id) || [];
+          current.push({ id: file.id, name: file.filename, mimeType: file.mime_type, size: file.file_size });
+          filesByMessage.set(file.message_id, current);
+        }
         cloud.push({
           id: conversation.id,
           title: conversation.title,
-          messages: (rows ?? []).map((row: any) => ({ role: row.role, content: row.content })),
+          messages: (rows ?? []).map((row: any) => ({
+            role: row.role,
+            content: row.content,
+            ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
+          })),
           updatedAt: new Date(conversation.updated_at).getTime(),
           pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
@@ -276,12 +311,113 @@ export default function Home() {
     ));
   }, [messages, activeSessionId, historyReady]);
 
+  const handleFileSelection = async (event: any) => {
+    const selected = Array.from(event?.target?.files || []) as any[];
+    if (event?.target) event.target.value = '';
+    if (!selected.length) return;
+    const remaining = Math.max(0, 5 - pendingAttachments.length);
+    if (selected.length > remaining) setChatError('You can attach up to five files to a message.');
+    setIsPreparingFiles(true);
+    try {
+      for (const file of selected.slice(0, remaining)) {
+        const extension = String(file.name || '').split('.').pop()?.toLowerCase();
+        if (!['pdf', 'docx', 'txt', 'csv'].includes(extension)) {
+          setChatError('Supported files are PDF, DOCX, TXT and CSV.');
+          continue;
+        }
+        if (!file.size || file.size > 10 * 1024 * 1024) {
+          setChatError('Each file must be 10 MB or smaller.');
+          continue;
+        }
+        try {
+          const form = new FormData();
+          form.append('file', file);
+          const response = await fetch('/api/extract', { method: 'POST', body: form });
+          const result = await response.json();
+          if (!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Could not read this file.');
+          if (typeof result.text !== 'string' || !result.text.trim()) throw new Error('No readable text was found in this file.');
+          const attachment: PendingAttachment = {
+            id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            file,
+            name: result.name || file.name,
+            mimeType: result.mimeType || file.type || 'application/octet-stream',
+            size: file.size,
+            extractedText: result.text,
+            pageCount: result.pageCount
+          };
+          setPendingAttachments((current) => [...current, attachment].slice(0, 5));
+          setChatError('');
+        } catch (error) {
+          setChatError(error instanceof Error ? error.message : 'Baybble could not read this file.');
+        }
+      }
+    } finally {
+      setIsPreparingFiles(false);
+    }
+  };
+  const pickFiles = () => {
+    if (typeof document === 'undefined') return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.docx,.txt,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv';
+    input.multiple = true;
+    input.onchange = (event) => { void handleFileSelection(event); };
+    input.click();
+  };
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      speechRecognitionRef.current?.stop?.();
+      setIsListening(false);
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setChatError('Voice input is not supported in this browser. Try a recent version of Chrome.');
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      speechRecognitionRef.current = recognition;
+      recognition.lang = navigator.language || 'en-US';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          if (event.results[index].isFinal) transcript += event.results[index][0]?.transcript || '';
+        }
+        if (transcript.trim()) {
+          setDraft((current) => `${current}${current && !/\\s$/.test(current) ? ' ' : ''}${transcript.trim()}`);
+          setChatError('');
+        }
+      };
+      recognition.onerror = (event: any) => {
+        if (event?.error !== 'no-speech' && event?.error !== 'aborted') {
+          setChatError('Voice input could not start. Check your microphone permission and try again.');
+        }
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        speechRecognitionRef.current = null;
+      };
+      recognition.start();
+      setIsListening(true);
+      setChatError('');
+    } catch {
+      setIsListening(false);
+      setChatError('Voice input could not start. Check your microphone permission and try again.');
+    }
+  };
+
   const createNewChat = () => {
     abortController.current?.abort();
     abortController.current = null;
     setIsSending(false);
     setMessages([]);
     setDraft('');
+    setPendingAttachments([]);
+    setConversationAttachments([]);
     setChatError('');
     setActiveSessionId(null);
     setChatMode(true);
@@ -290,14 +426,25 @@ export default function Home() {
     transition.setValue(1);
   };
 
-  const openSavedChat = (session: ChatSession) => {
+  const openSavedChat = async (session: ChatSession) => {
     abortController.current?.abort();
     abortController.current = null;
     setIsSending(false);
     setActiveSessionId(session.id);
     setMessages(session.messages);
     setDraft('');
-    setChatError('');    setChatMode(true);
+    setPendingAttachments([]);
+    setConversationAttachments([]);
+    if (authUser?.id && !session.id.startsWith('chat-')) {
+      const { data: files } = await supabase.from('baybble_attachments')
+        .select('filename,extracted_text')
+        .eq('conversation_id', session.id)
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: true });
+      setConversationAttachments((files || []).map((file: any) => ({ name: file.filename, text: file.extracted_text })));
+    }
+    setChatError('');
+    setChatMode(true);
     setHistoryOpen(false);
     setRenamingSessionId(null);
     transition.setValue(1);
@@ -325,7 +472,15 @@ export default function Home() {
   const deleteChat = async (sessionId: string) => {
     if (typeof window !== 'undefined' && !window.confirm('Delete this conversation? This cannot be undone.')) return;
     setSessions((current) => current.filter((session) => session.id !== sessionId));
-    if (authUser?.id && !sessionId.startsWith('chat-')) await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
+    if (authUser?.id && !sessionId.startsWith('chat-')) {
+      const { data: files } = await supabase.from('baybble_attachments')
+        .select('storage_path')
+        .eq('conversation_id', sessionId)
+        .eq('user_id', authUser.id);
+      const paths = (files || []).map((file: any) => file.storage_path).filter(Boolean);
+      if (paths.length) await supabase.storage.from('baybble-conversation-files').remove(paths);
+      await supabase.from('baybble_conversations').delete().eq('id', sessionId).eq('user_id', authUser.id);
+    }
     if (activeSessionId === sessionId) createNewChat();
   };
 
@@ -367,10 +522,41 @@ export default function Home() {
     ));
   };
 
+  const copyMessage = async (content: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(content);
+        return true;
+      }
+      if (typeof document !== 'undefined') {
+        const temporaryInput = document.createElement('textarea');
+        temporaryInput.value = content;
+        temporaryInput.setAttribute('readonly', '');
+        temporaryInput.style.position = 'fixed';
+        temporaryInput.style.opacity = '0';
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(temporaryInput);
+        if (copied) return true;
+      }
+      setChatError('Copy is not available in this browser.');
+      return false;
+    } catch {
+      setChatError('Could not copy this message.');
+      return false;
+    }
+  };
+
   const sendMessage = async () => {
-    const message = draft.trim();
-    if (!message || isSending) return;
-    const history = [...messages, { role: 'user' as const, content: message }].slice(-20);
+    const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
+    if (isPreparingFiles) { setChatError('Please wait while Baybble reads your files.'); return; }
+    if ((!message && pendingAttachments.length === 0) || isSending) return;
+    const filesToSend = [...pendingAttachments];
+    const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
+    const baseMessages = editingMessageIndex !== null ? messages.slice(0, editingMessageIndex) : messages;
+    const history = [...baseMessages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
+    if (editingMessageIndex !== null) setEditingMessageIndex(null);
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
@@ -391,13 +577,58 @@ export default function Home() {
         id: conversationId as string, title, messages: history, updatedAt: Date.now()
       }, ...current].slice(0, 50));
     }
+
+    let messageId: string | null = null;
+    const uploadedPaths: string[] = [];
     if (authUser?.id && conversationId) {
-      const { error } = await supabase.from('baybble_messages').insert({
-        conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message
-      });
-      if (error) { setChatError('Your message could not be saved. Please try again.'); return; }
+      const { data: savedMessage, error } = await supabase.from('baybble_messages')
+        .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
+        .select('id')
+        .single();
+      if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
+      messageId = savedMessage.id;
+
+      try {
+        for (const attachment of filesToSend) {
+          const safeName = attachment.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-100) || 'document';
+          const fileId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          const storagePath = `${authUser.id}/${conversationId}/${fileId}-${safeName}`;
+          const { error: uploadError } = await supabase.storage.from('baybble-conversation-files')
+            .upload(storagePath, attachment.file, { contentType: attachment.mimeType, upsert: false });
+          if (uploadError) throw new Error(uploadError.message || 'A file could not be uploaded.');
+          uploadedPaths.push(storagePath);
+          const { error: metadataError } = await supabase.from('baybble_attachments').insert({
+            message_id: messageId,
+            conversation_id: conversationId,
+            user_id: authUser.id,
+            filename: attachment.name,
+            mime_type: attachment.mimeType,
+            file_size: attachment.size,
+            storage_path: storagePath,
+            extracted_text: attachment.extractedText,
+            page_count: attachment.pageCount ?? null
+          });
+          if (metadataError) throw new Error(metadataError.message || 'File details could not be saved.');
+        }
+      } catch (error) {
+        if (uploadedPaths.length) await supabase.storage.from('baybble-conversation-files').remove(uploadedPaths);
+        await supabase.from('baybble_messages').delete().eq('id', messageId).eq('user_id', authUser.id);
+        if (isNewConversation) {
+          await supabase.from('baybble_conversations').delete().eq('id', conversationId).eq('user_id', authUser.id);
+          setSessions((current) => current.filter((session) => session.id !== conversationId));
+          setActiveSessionId(null);
+        }
+        setChatError(error instanceof Error ? error.message : 'The files could not be attached. Please try again.');
+        return;
+      }
       await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
     }
+
+    const attachmentContexts = [...conversationAttachments, ...filesToSend.map((file) => ({ name: file.name, text: file.extractedText }))].slice(-5);
+    setConversationAttachments(attachmentContexts);
+    setPendingAttachments([]);
     setMessages([...history, { role: 'assistant', content: '' }]);
     setDraft('');
     setChatError('');
@@ -409,7 +640,7 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, attachments: attachmentContexts }),
         signal: controller.signal
       });
       if (!response.ok) {
@@ -541,6 +772,8 @@ export default function Home() {
   };
   const gradientRotation = useRef(new Animated.Value(0)).current;
   const sidebarWidth = useRef(new Animated.Value(270)).current;
+  const collapsedBrandHover = useRef(new Animated.Value(0)).current;
+  const collapsedBrandHoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     Animated.timing(sidebarWidth, {
@@ -549,6 +782,15 @@ export default function Home() {
       useNativeDriver: false
     }).start();
   }, [sidebarCollapsed, sidebarWidth]);
+
+  useEffect(() => {
+    if (collapsedBrandHoverTimer.current) {
+      clearTimeout(collapsedBrandHoverTimer.current);
+      collapsedBrandHoverTimer.current = null;
+    }
+    collapsedBrandHover.stopAnimation();
+    collapsedBrandHover.setValue(0);
+  }, [sidebarCollapsed, collapsedBrandHover]);
 
   const visibleSessions = sessions
     .filter((session) => session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase()))
@@ -611,7 +853,6 @@ export default function Home() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
-            <BaybbleLogo />
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -735,7 +976,7 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86 }]} onPress={openChat}>
+          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86, zIndex: 1 }]} onPress={openChat}>
             <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
             <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
               <TextInput
@@ -787,7 +1028,6 @@ export default function Home() {
                   {!sidebarCollapsed || compact ? (
                     <>
                       <View style={styles.sidebarBrand}>
-                        <BaybbleLogo />
                         <Text style={styles.sidebarWordmark}>Baybble</Text>
                       </View>
                       <Pressable
@@ -796,17 +1036,64 @@ export default function Home() {
                         accessibilityRole="button"
                         accessibilityLabel={compact ? "Close sidebar" : "Collapse sidebar"}
                       >
-                        <Ionicons name={compact ? "close" : "chevron-back"} size={18} color="#a8a8a8" />
+                        {compact ? (
+                          <Ionicons name="close" size={18} color="#a8a8a8" />
+                        ) : (
+                          <SidebarToggleIcon />
+                        )}
                       </Pressable>
                     </>
                   ) : (
                     <Pressable
                       style={styles.sidebarCollapsedBrandToggle}
-                      onPress={() => setSidebarCollapsed(false)}
+                      onPress={() => {
+                        if (collapsedBrandHoverTimer.current) {
+                          clearTimeout(collapsedBrandHoverTimer.current);
+                          collapsedBrandHoverTimer.current = null;
+                        }
+                        collapsedBrandHover.stopAnimation();
+                        collapsedBrandHover.setValue(0);
+                        setSidebarCollapsed(false);
+                      }}
+                      onHoverIn={() => {
+                        if (collapsedBrandHoverTimer.current) clearTimeout(collapsedBrandHoverTimer.current);
+                        collapsedBrandHoverTimer.current = setTimeout(() => {
+                          Animated.timing(collapsedBrandHover, { toValue: 1, duration: 170, useNativeDriver: true }).start();
+                          collapsedBrandHoverTimer.current = null;
+                        }, 180);
+                      }}
+                      onHoverOut={() => {
+                        if (collapsedBrandHoverTimer.current) {
+                          clearTimeout(collapsedBrandHoverTimer.current);
+                          collapsedBrandHoverTimer.current = null;
+                        }
+                        Animated.timing(collapsedBrandHover, { toValue: 0, duration: 170, useNativeDriver: true }).start();
+                      }}
                       accessibilityRole="button"
                       accessibilityLabel="Expand sidebar"
                     >
-                      <Ionicons name="chevron-forward" size={18} color="#a8a8a8" />
+                      <Animated.View
+                        style={[
+                          styles.sidebarCollapsedBrandLogo,
+                          {
+                            opacity: collapsedBrandHover.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+                            transform: [{ scale: collapsedBrandHover.interpolate({ inputRange: [0, 1], outputRange: [1, 0.82] }) }]
+                          }
+                        ]}
+                      >
+                        <View style={{ transform: [{ scale: 0.72 }] }}>
+                          <BaybbleLogo />
+                        </View>
+                      </Animated.View>
+                      <Animated.View
+                        pointerEvents="none"
+                        style={[
+                          styles.sidebarCollapsedBrandGlyph,
+                          { opacity: collapsedBrandHover }
+                        ]}
+                      >
+                        <SidebarToggleIcon />
+                      </Animated.View>
                     </Pressable>
                   )}
                 </View>
@@ -930,7 +1217,6 @@ export default function Home() {
                         <Text style={styles.sidebarAccountPlan}>{authUser ? 'Baybble account' : 'Sign in to sync chats'}</Text>
                       </View>
                     ) : null}
-                    {!sidebarCollapsed || compact ? <Ionicons name="ellipsis-horizontal" size={17} color="#888888" /> : null}
                   </Pressable>
                 </View>
               </Animated.View>
@@ -1027,25 +1313,88 @@ export default function Home() {
                 ) : (
                   <View style={styles.messageList}>
                     {messages.map((message, index) => (
-                      message.role === 'user' ? (
-                        <View key={index} style={styles.userMessage}>
-                          <Text style={styles.userMessageText}>{message.content}</Text>
+                      <View
+                        key={index}
+                        style={message.role === 'user' ? styles.userMessageGroup : styles.assistantMessageGroup}
+                        {...({ onMouseEnter: () => setHoveredMessageIndex(index), onMouseLeave: () => setHoveredMessageIndex((current) => current === index ? null : current) } as any)}
+                      >
+                        {message.role === 'user' ? (
+                          <View style={styles.userMessage}>
+                            {message.attachments?.length ? (
+                              <View style={styles.messageFileList}>
+                                {message.attachments.map((file) => (
+                                  <View key={file.id} style={styles.messageFileChip}>
+                                    <Ionicons name="document-text-outline" size={14} color="#dddddd" />
+                                    <Text numberOfLines={1} style={styles.messageFileName}>{file.name}</Text>
+                                  </View>
+                                ))}
+                              </View>
+                            ) : null}
+                            <Text style={styles.userMessageText}>{message.content}</Text>
+                          </View>
+                        ) : (
+                          <View style={styles.assistantMessage}>
+                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
+                          </View>
+                        )}
+                        <View
+                          pointerEvents={hoveredMessageIndex === index && message.content ? 'auto' : 'none'}
+                          style={[
+                            styles.messageActions,
+                            message.role === 'user' && styles.messageActionsUser,
+                            { opacity: hoveredMessageIndex === index && message.content ? 1 : 0 }
+                          ]}
+                        >
+                          <View style={styles.messageActionWrap}>
+                            <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-copy`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={async () => { const copied = await copyMessage(message.content); if (copied) { setCopiedMessageIndex(index); setTimeout(() => setCopiedMessageIndex((current) => current === index ? null : current), 1800); } }} accessibilityRole="button" accessibilityLabel={copiedMessageIndex === index ? "Message copied" : "Copy message"}>
+                              <Ionicons name={copiedMessageIndex === index ? "checkmark" : "copy-outline"} size={14} color={copiedMessageIndex === index ? "#8bd5a5" : "#a0a0a0"} />
+                            </Pressable>
+                            {hoveredMessageAction === `${index}-copy` ? <Text style={styles.messageActionTooltip}>Copy</Text> : null}
+                          </View>
+                          {message.role === 'user' ? (
+                            <View style={styles.messageActionWrap}>
+                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                                <Ionicons name="create-outline" size={14} color="#a0a0a0" />
+                              </Pressable>
+                              {hoveredMessageAction === `${index}-edit` ? <Text style={styles.messageActionTooltip}>Edit</Text> : null}
+                            </View>
+                          ) : (
+                            <>
+                              <View style={styles.messageActionWrap}>
+                                <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-up`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'up' ? undefined as any : 'up' }))} accessibilityRole="button" accessibilityLabel="Good response">
+                                  <Ionicons name={messageFeedback[index] === 'up' ? 'thumbs-up' : 'thumbs-up-outline'} size={14} color={messageFeedback[index] === 'up' ? '#eeeeee' : '#a0a0a0'} />
+                                </Pressable>
+                                {hoveredMessageAction === `${index}-up` ? <Text style={styles.messageActionTooltip}>Good response</Text> : null}
+                              </View>
+                              <View style={styles.messageActionWrap}>
+                                <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-down`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => setMessageFeedback((current) => ({ ...current, [index]: current[index] === 'down' ? undefined as any : 'down' }))} accessibilityRole="button" accessibilityLabel="Bad response">
+                                  <Ionicons name={messageFeedback[index] === 'down' ? 'thumbs-down' : 'thumbs-down-outline'} size={14} color={messageFeedback[index] === 'down' ? '#eeeeee' : '#a0a0a0'} />
+                                </Pressable>
+                                {hoveredMessageAction === `${index}-down` ? <Text style={styles.messageActionTooltip}>Bad response</Text> : null}
+                              </View>
+                            </>
+                          )}
                         </View>
-                      ) : (
-                        <View key={index} style={styles.assistantMessage}>
-                          {message.content ? (
-                            <MarkdownMessage content={message.content} />
-                          ) : isSending ? (
-                            <Text style={styles.thinkingText}>Baybble is thinking...</Text>
-                          ) : null}
-                        </View>
-                      )
+                      </View>
                     ))}
                     {chatError ? <Text style={styles.chatError}>{chatError}</Text> : null}
                   </View>
                 )}
               </ScrollView>
               <View style={styles.composerArea}>
+                {pendingAttachments.length ? (
+                  <View style={styles.pendingFiles}>
+                    {pendingAttachments.map((file) => (
+                      <View key={file.id} style={styles.pendingFileChip}>
+                        <Ionicons name="document-text-outline" size={14} color="#d8d8d8" />
+                        <Text numberOfLines={1} style={styles.pendingFileName}>{file.name}</Text>
+                        <Pressable onPress={() => setPendingAttachments((current) => current.filter((item) => item.id !== file.id))} accessibilityRole="button" accessibilityLabel={`Remove ${file.name}`}>
+                          <Ionicons name="close" size={15} color="#999999" />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
@@ -1067,8 +1416,18 @@ export default function Home() {
                       }}
                       onSubmitEditing={sendMessage}
                     />
+                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Add files">
+                      <Ionicons name="add" size={25} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
+                    </Pressable>
+                    <Pressable style={[styles.micButton, isListening && styles.micButtonActive]} onPress={toggleVoiceInput} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel={isListening ? "Stop voice input" : "Start voice input"}>
+                      <Ionicons name={isListening ? "stop" : "mic-outline"} size={19} color={isListening ? "#ffffff" : (isSending || isPreparingFiles ? "#666666" : "#bcbcbc")} />
+                    </Pressable>
+                    <Pressable style={[styles.sendButton, (isSending || (!draft.trim() && pendingAttachments.length === 0)) && styles.sendButtonDisabled]} onPress={sendMessage} disabled={isSending || (!draft.trim() && pendingAttachments.length === 0)} accessibilityRole="button" accessibilityLabel="Send message">
+                      <Ionicons name="arrow-up" size={22} color="#080808" />
+                    </Pressable>
                   </View>
                 </View>
+                {isPreparingFiles ? <Text style={styles.filePreparingText}>Reading your files…</Text> : null}
                 <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
               </View>
             </View>
@@ -1077,15 +1436,15 @@ export default function Home() {
       )}
 
     </ScrollView>
-    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setActiveSessionId(null); setAuthOpen(false); }} />
+    <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setPendingAttachments([]); setConversationAttachments([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808' },
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808', backgroundImage: "linear-gradient(rgba(8,8,8,0.16), rgba(8,8,8,0.28)), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS028/ISS028-E-43296.JPG')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: '#080808' },
+  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: 'transparent' },
   navTextMenuOpen: { color: '#080808' },
   navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
@@ -1098,11 +1457,11 @@ const styles = StyleSheet.create({
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36, gap: 9 },
   logoMark: { width: 32, height: 32, position: 'relative' },
-  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#ffffff', top: 0, left: 0 },
-  logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#ffffff', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
-  wordmark: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 25, letterSpacing: -1.2 },
+  logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#F1F1F1', top: 0, left: 0 },
+  logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
+  wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
@@ -1117,7 +1476,7 @@ const styles = StyleSheet.create({
   startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: '#080808' },
+  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
@@ -1139,7 +1498,11 @@ const styles = StyleSheet.create({
   workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
   sidebarBrandRow: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, paddingHorizontal: 3 },
   sidebarBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  sidebarCollapsedBrandToggle: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8, position: 'relative' as any, overflow: 'hidden' },
+  sidebarCollapsedBrandLogo: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  sidebarCollapsedBrandGlyph: { position: 'absolute' as any, top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+  sidebarToggleFrame: { width: 19, height: 16, borderWidth: 1.5, borderColor: '#a8a8a8', borderRadius: 4, flexDirection: 'row', padding: 2 },
+  sidebarToggleDivider: { width: 1.5, height: '100%', borderRadius: 1, backgroundColor: '#a8a8a8' },
   sidebarWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 19, letterSpacing: -0.7 },
   sidebarIconButton: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   sidebarNewButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 10, backgroundColor: '#f2f2f2', paddingHorizontal: 12, marginBottom: 13 },
@@ -1215,19 +1578,37 @@ const styles = StyleSheet.create({
   chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
   chatSubheading: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23, textAlign: 'center', maxWidth: 470, marginTop: 14 },
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
-  messageList: { width: '100%', gap: 18, paddingBottom: 30 },
+  messageList: { width: '100%', gap: 9, paddingBottom: 30 },
+  userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end', position: 'relative', paddingBottom: 34 },
+  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 34 },
+  messageActions: { position: 'absolute', left: 0, bottom: 0, height: 27, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
+  messageActionWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
+  messageActionButton: { width: 27, height: 27, alignItems: 'center', justifyContent: 'center', borderRadius: 6 },
+  messageActionTooltip: { position: 'absolute', bottom: 34, left: '50%' as any, transform: [{ translateX: -42 }], minWidth: 84, textAlign: 'center', color: '#f0f0f0', backgroundColor: '#292929', borderWidth: 1, borderColor: '#414141', borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, fontFamily: 'Manrope', fontSize: 10, fontWeight: '600', zIndex: 20, overflow: 'hidden' },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
-  assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 3 },
+  assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 0 },
   assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
   thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
   chatError: { color: '#ff9b9b', fontFamily: 'Manrope', fontSize: 12, lineHeight: 19, textAlign: 'center', marginTop: 8 },
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
-  composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 20, paddingRight: 10, zIndex: 1 },
+  composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
+  attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 2 },
+  micButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
+  micButtonActive: { backgroundColor: '#8b3434', borderRadius: 19 },
+  pendingFiles: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 9 },
+  pendingFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 12, backgroundColor: '#242424', borderWidth: 1, borderColor: '#383838' },
+  pendingFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
+  messageFileList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  messageFileChip: { maxWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 8, borderRadius: 9, backgroundColor: '#353535' },
+  messageFileName: { color: '#dddddd', fontFamily: 'Manrope', fontSize: 11, maxWidth: 150 },
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
-  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
+  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 7 },
+  sendButtonDisabled: { opacity: 0.55 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
+  filePreparingText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 8 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
   featureIntro: { width: '100%', paddingTop: 100, paddingBottom: 42, alignItems: 'flex-start' },
   featureIntroLabel: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2, marginBottom: 18 },
@@ -1247,7 +1628,7 @@ const styles = StyleSheet.create({
   featureCardBodyLight: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22, marginTop: 15, maxWidth: 300 },
   cardArrow: { color: '#f0f0f0', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
   cardArrowLight: { color: '#080808', fontSize: 21, marginTop: 'auto' as any, paddingTop: 25 },
-  splitSection: { width: '100%', paddingTop: 82, paddingBottom: 100, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 55, backgroundColor: '#111111' },
+  splitSection: { width: '100%', paddingTop: 82, paddingBottom: 100, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 55, backgroundColor: 'rgba(8,8,8,0.18)' },
   splitCopy: { flex: 1, minWidth: 250, maxWidth: 430 },
   eyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 1.9, marginBottom: 18 },
   splitTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 43, lineHeight: 49, letterSpacing: -2 },
@@ -1260,7 +1641,7 @@ const styles = StyleSheet.create({
   useCaseTitle: { color: '#f0f0f0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15 },
   useCaseBody: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 12, marginTop: 5, lineHeight: 19 },
   useCaseArrow: { color: '#f0f0f0', fontSize: 18 },
-  modelsSection: { width: '100%', backgroundColor: '#080808', paddingVertical: 100 },
+  modelsSection: { width: '100%', backgroundColor: 'rgba(8,8,8,0.18)', paddingVertical: 100 },
   modelsInner: { width: '100%' },
   modelsTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 48, lineHeight: 54, letterSpacing: -2.4 },
   modelsBody: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25, maxWidth: 620, marginTop: 18, marginBottom: 35 },
@@ -1273,7 +1654,7 @@ const styles = StyleSheet.create({
   modelStatus: { color: '#858585', fontFamily: 'Manrope', fontSize: 8, fontWeight: '800', letterSpacing: 1, marginTop: 17 },
   modelDescription: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 12, lineHeight: 20, marginTop: 13 },
   modelDisclaimer: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 16 },
-  processSection: { width: '100%', paddingTop: 90, paddingBottom: 100, backgroundColor: '#111111' },
+  processSection: { width: '100%', paddingTop: 90, paddingBottom: 100, backgroundColor: 'rgba(8,8,8,0.18)' },
   sectionHeading: { width: '100%', alignItems: 'flex-start', marginBottom: 38 },
   sectionTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 45, lineHeight: 51, letterSpacing: -2 },
   sectionTitleCompact: { fontSize: 35, lineHeight: 41 },
@@ -1283,14 +1664,14 @@ const styles = StyleSheet.create({
   processNumber: { color: '#858585', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700', width: 30 },
   processTitle: { color: '#f0f0f0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 15, flex: 1, minWidth: 210 },
   processBody: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 12, flex: 1, minWidth: 200, lineHeight: 20 },
-  closing: { width: '100%', backgroundColor: '#101010', paddingTop: 95, paddingBottom: 100, alignItems: 'center' },
+  closing: { width: '100%', backgroundColor: 'rgba(8,8,8,0.24)', paddingTop: 95, paddingBottom: 100, alignItems: 'center' },
   closingEyebrow: { color: '#bcbcbc', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2, textAlign: 'center', marginBottom: 23 },
   closingTitle: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 62, lineHeight: 67, letterSpacing: -3, textAlign: 'center' },
   closingTitleCompact: { fontSize: 43, lineHeight: 48 },
   closingBody: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 14, lineHeight: 24, maxWidth: 530, textAlign: 'center', marginTop: 20 },
   closingButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 14, paddingHorizontal: 21, marginTop: 29 },
   closingButtonText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12 },
-  footer: { width: '100%', paddingTop: 35, paddingBottom: 28, backgroundColor: '#080808' },
+  footer: { width: '100%', paddingTop: 35, paddingBottom: 28, backgroundColor: 'rgba(8,8,8,0.20)' },
   footerTop: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingBottom: 28 },
   footerBrand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   footerWordmark: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 21 },
