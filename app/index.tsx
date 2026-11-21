@@ -961,7 +961,14 @@ export default function Home() {
                 </Pressable>
                 </View>
                 {chatMenuOpen ? (
-                  <View style={styles.chatOptionsMenu}>
+                  <>
+                    <Pressable
+                      style={styles.chatOptionsBackdrop}
+                      onPress={() => setChatMenuOpen(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Close conversation options"
+                    />
+                    <View style={styles.chatOptionsMenu}>
                     <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
                       <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
                       <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
@@ -1002,7 +1009,8 @@ export default function Home() {
                       <Ionicons name="trash-outline" size={16} color={activeSessionId ? "#f08b8b" : "#666666"} />
                       <Text style={[styles.chatOptionsDanger, !activeSessionId && styles.chatOptionsDisabled]}>Delete chat</Text>
                     </Pressable>
-                  </View>
+                    </View>
+                  </>
                 ) : null}
               </View>
               <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
@@ -1160,6 +1168,7 @@ const styles = StyleSheet.create({
   chatShareButton: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 11, borderRadius: 9 },
   chatShareText: { color: '#e5e5e5', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
   chatMenuTrigger: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 9 },
+  chatOptionsBackdrop: { position: 'fixed' as any, top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 },
   chatOptionsMenu: { position: 'fixed' as any, top: 58, right: 18, width: 220, paddingVertical: 8, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#353535', zIndex: 9999, shadowColor: '#000000', shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 24 },
   chatOptionsItemDisabled: { opacity: 0.55 },
   chatOptionsItem: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13 },
