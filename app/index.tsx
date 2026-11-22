@@ -923,6 +923,18 @@ export default function Home() {
 
   return (
     <>
+    <View pointerEvents="none" style={styles.videoBackground}>
+      {React.createElement('video', {
+        src: 'https://videos.pexels.com/video-files/29848604/12817768_3840_2160_30fps.mp4',
+        autoPlay: true,
+        muted: true,
+        loop: true,
+        playsInline: true,
+        preload: 'metadata',
+        style: { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' },
+        'aria-hidden': true
+      } as any)}
+    </View>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
@@ -1573,7 +1585,8 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#030405', backgroundImage: "linear-gradient(rgba(3,4,5,0.08), rgba(3,4,5,0.16)), url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201920%201080%22%20width%3D%221920%22%20height%3D%221080%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22atmo%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%239bdcff%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%22.42%22%20stop-color%3D%22%2365b9ee%22%20stop-opacity%3D%22.28%22%2F%3E%3Cstop%20offset%3D%22.72%22%20stop-color%3D%22%23d7f3ff%22%20stop-opacity%3D%22.7%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238acfff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22edge%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237abde8%22%20stop-opacity%3D%22.12%22%2F%3E%3Cstop%20offset%3D%22.22%22%20stop-color%3D%22%23a9ddff%22%20stop-opacity%3D%22.65%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%23e5f7ff%22%20stop-opacity%3D%22.95%22%2F%3E%3Cstop%20offset%3D%22.78%22%20stop-color%3D%22%239bd8ff%22%20stop-opacity%3D%22.62%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236daedc%22%20stop-opacity%3D%22.1%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22planet%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2307101a%22%20stop-opacity%3D%22.94%22%2F%3E%3Cstop%20offset%3D%22.18%22%20stop-color%3D%22%2303070c%22%20stop-opacity%3D%22.99%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23010203%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22blur%22%20x%3D%22-20%25%22%20y%3D%22-200%25%22%20width%3D%22140%25%22%20height%3D%22500%25%22%3E%3CfeGaussianBlur%20stdDeviation%3D%2211%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Crect%20width%3D%221920%22%20height%3D%221080%22%20fill%3D%22%23030405%22%2F%3E%3Cpath%20d%3D%22M-120%20900%20Q960%20720%202040%20900%20L2040%201120%20L-120%201120Z%22%20fill%3D%22url(%23planet)%22%2F%3E%3Cpath%20d%3D%22M-120%20900%20Q960%20720%202040%20900%22%20fill%3D%22none%22%20stroke%3D%22%234ba7e3%22%20stroke-width%3D%2225%22%20opacity%3D%22.22%22%20filter%3D%22url(%23blur)%22%2F%3E%3Cpath%20d%3D%22M-120%20900%20Q960%20720%202040%20900%22%20fill%3D%22none%22%20stroke%3D%22url(%23atmo)%22%20stroke-width%3D%229%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M-120%20900%20Q960%20720%202040%20900%22%20fill%3D%22none%22%20stroke%3D%22url(%23edge)%22%20stroke-width%3D%221.7%22%2F%3E%3Cpath%20d%3D%22M-120%20907%20Q960%20727%202040%20907%22%20fill%3D%22none%22%20stroke%3D%22%236caed8%22%20stroke-width%3D%221%22%20opacity%3D%22.18%22%2F%3E%3C%2Fsvg%3E')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
+  videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: 'transparent' },
   navTextMenuOpen: { color: '#080808' },
