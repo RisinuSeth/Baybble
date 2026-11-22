@@ -1179,7 +1179,7 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityLabel="Start a new conversation"
                 >
-                  <Ionicons name="add" size={19} color="#080808" />
+                  <Text style={styles.sidebarNewPlus}>+</Text>
                   {!sidebarCollapsed || compact ? <Text style={styles.sidebarNewText}>New conversation</Text> : null}
                 </Pressable>
 
@@ -1306,7 +1306,7 @@ export default function Home() {
                     accessibilityLabel="Start a new conversation"
                     hitSlop={8}
                   >
-                    <Ionicons name="add" size={22} color="#eeeeee" />
+                    <Text style={styles.topbarNewPlus}>+</Text>
                   </Pressable>
                 ) : null}
                 <Text numberOfLines={1} style={styles.workspaceTopbarTitle}>
@@ -1636,6 +1636,7 @@ const styles = StyleSheet.create({
   chatBody: { width: '100%', height: '100%' as any, flex: 1, minHeight: '100vh' as any, flexDirection: 'row', position: 'relative' },
   mobileSidebarTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 16, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
   topbarNewChatButton: { width: 34, height: 34, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 9, backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030', marginRight: 12 },
+  topbarNewPlus: { color: '#eeeeee', fontFamily: 'Manrope', fontWeight: '700', fontSize: 24, lineHeight: 26 },
   sidebarBackdrop: { position: 'absolute' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 7, backgroundColor: 'rgba(0,0,0,0.58)' } as any,
   workspaceSidebar: { width: 270, flexShrink: 0, minHeight: '100%' as any, alignSelf: 'stretch', backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 14, paddingTop: 15, paddingBottom: 12, zIndex: 8 } as any,
   workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
@@ -1651,6 +1652,7 @@ const styles = StyleSheet.create({
   sidebarNewButton: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 10, backgroundColor: '#f2f2f2', paddingHorizontal: 12, marginBottom: 13 },
   sidebarNewButtonCollapsed: { width: 42, height: 42, alignSelf: 'center', paddingHorizontal: 0 },
   sidebarNewText: { color: '#090909', fontFamily: 'Manrope', fontWeight: '800', fontSize: 12 },
+  sidebarNewPlus: { color: '#090909', fontFamily: 'Manrope', fontWeight: '700', fontSize: 22, lineHeight: 23 },
   sidebarSearch: { minHeight: 39, flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 10, borderRadius: 9, backgroundColor: '#191919', borderWidth: 1, borderColor: '#292929', marginBottom: 14 },
   sidebarSearchInput: { flex: 1, minWidth: 0, color: '#eeeeee', fontFamily: 'Manrope', fontSize: 11, paddingVertical: 8, outlineStyle: 'none' as any },
   sidebarQuickLinks: { gap: 3, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: '#292929' },
