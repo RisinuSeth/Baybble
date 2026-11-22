@@ -141,6 +141,12 @@ export default function Home() {
   const navCapsuleOpacity = useRef(new Animated.Value(0)).current;
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
+  const conversationScrollRef = useRef<ScrollView | null>(null);
+  const isNearConversationBottomRef = useRef(true);
+  const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
+  const [isConversationScrolling, setIsConversationScrolling] = useState(false);
+  const [isScrollControlHovered, setIsScrollControlHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
 
@@ -231,9 +237,9 @@ export default function Home() {
     const loadCloudHistory = async () => {
       const { data: conversations, error } = await supabase
         .from('baybble_conversations')
-        .select('id,title,updated_at')
+        .select('id,title,created_at')
         .eq('user_id', authUser.id)
-        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
       if (error || cancelled) return;
       if (!conversations?.length && sessions.length) {
@@ -242,7 +248,7 @@ export default function Home() {
           const { data: created, error: createError } = await supabase
             .from('baybble_conversations')
             .insert({ user_id: authUser.id, title: old.title })
-            .select('id,updated_at')
+            .select('id,created_at')
             .single();
           if (createError || !created) continue;
           if (old.messages.length) {
@@ -251,7 +257,7 @@ export default function Home() {
             }));
             await supabase.from('baybble_messages').insert(rows);
           }
-          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.updated_at).getTime() });
+          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.created_at).getTime() });
           if (activeSessionId === old.id) setActiveSessionId(created.id);
         }
         if (!cancelled && migrated.length) setSessions(migrated);
@@ -285,7 +291,7 @@ export default function Home() {
             content: row.content,
             ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
           })),
-          updatedAt: new Date(conversation.updated_at).getTime(),
+          updatedAt: new Date(conversation.created_at).getTime(),
           pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
       }
@@ -308,7 +314,7 @@ export default function Home() {
     if (!historyReady || !activeSessionId || messages.length === 0) return;
     setSessions((current) => current.map((session) =>
       session.id === activeSessionId
-        ? { ...session, messages, updatedAt: Date.now() }
+        ? { ...session, messages }
         : session
     ));
   }, [messages, activeSessionId, historyReady]);
@@ -829,6 +835,55 @@ export default function Home() {
   }, [gradientRotation]);
 
   const gradientAngle = gradientRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const thinkingDotAnimations = useRef([
+    new Animated.Value(0.35),
+    new Animated.Value(0.35),
+    new Animated.Value(0.35)
+  ]).current;
+
+  const handleConversationScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+    const nearBottom = distanceFromBottom <= 90;
+    isNearConversationBottomRef.current = nearBottom;
+    setIsNearConversationBottom(nearBottom);
+    setIsConversationScrolling(true);
+    if (conversationScrollIdleTimer.current) clearTimeout(conversationScrollIdleTimer.current);
+    conversationScrollIdleTimer.current = setTimeout(() => setIsConversationScrolling(false), 450);
+  };
+
+  const handleConversationContentSizeChange = () => {
+    if (isNearConversationBottomRef.current) {
+      conversationScrollRef.current?.scrollToEnd({ animated: false });
+    }
+  };
+
+  const scrollToLatestMessage = () => {
+    conversationScrollRef.current?.scrollToEnd({ animated: true });
+    isNearConversationBottomRef.current = true;
+    setIsNearConversationBottom(true);
+    setIsConversationScrolling(false);
+  };
+
+  useEffect(() => {
+    if (!isSending || isNearConversationBottom || isConversationScrolling) return;
+    const animations = thinkingDotAnimations.map((value, index) =>
+      Animated.loop(Animated.sequence([
+        Animated.delay(index * 150),
+        Animated.timing(value, { toValue: 1, duration: 260, useNativeDriver: true }),
+        Animated.timing(value, { toValue: 0.35, duration: 260, useNativeDriver: true }),
+        Animated.delay((2 - index) * 150)
+      ]))
+    );
+    animations.forEach((animation) => animation.start());
+    return () => animations.forEach((animation) => animation.stop());
+  }, [isSending, isNearConversationBottom, isConversationScrolling, thinkingDotAnimations]);
+
+  useEffect(() => {
+    return () => {
+      if (conversationScrollIdleTimer.current) clearTimeout(conversationScrollIdleTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     Animated.timing(megaMenuAnimation, {
@@ -1321,7 +1376,15 @@ export default function Home() {
                   </>
                 ) : null}
               </View>
-              <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
+              <ScrollView
+                ref={conversationScrollRef}
+                style={styles.conversationScroll}
+                contentContainerStyle={styles.conversationContent}
+                showsVerticalScrollIndicator={false}
+                onScroll={handleConversationScroll}
+                onContentSizeChange={handleConversationContentSizeChange}
+                scrollEventThrottle={16}
+              >
                 {messages.length === 0 ? (
                   <View style={styles.emptyConversation}>
                     <Text style={styles.chatGreeting}>Where should we start?</Text>
@@ -1427,6 +1490,26 @@ export default function Home() {
                   </View>
                 )}
               </ScrollView>
+              {(isSending || !isNearConversationBottom) ? (
+                <Pressable
+                  style={styles.scrollFollowControl}
+                  onPress={scrollToLatestMessage}
+                  onHoverIn={() => setIsScrollControlHovered(true)}
+                  onHoverOut={() => setIsScrollControlHovered(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Scroll to latest message"
+                >
+                  {!isSending || isScrollControlHovered ? (
+                    <Ionicons name="arrow-down" size={14} color="#f2f2f2" />
+                  ) : (
+                    <View style={styles.thinkingDots}>
+                      {thinkingDotAnimations.map((opacity, index) => (
+                        <Animated.View key={index} style={[styles.thinkingDot, { opacity }]} />
+                      ))}
+                    </View>
+                  )}
+                </Pressable>
+              ) : null}
               <View style={styles.composerArea}>
                 {pendingAttachments.length ? (
                   <View style={styles.pendingFiles}>
@@ -1619,6 +1702,9 @@ const styles = StyleSheet.create({
   historyFootnote: { color: '#666666', fontFamily: 'Manrope', fontSize: 9, paddingTop: 10, paddingHorizontal: 5 },
   chatMain: { flex: 1, minWidth: 0, minHeight: 0, alignItems: 'center' },
   conversationScroll: { width: '100%', flex: 1 },
+  scrollFollowControl: { position: 'absolute' as any, left: '50%' as any, bottom: 148, transform: [{ translateX: -16 }], zIndex: 30, width: 32, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.2, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 6, cursor: 'pointer' as any },
+  thinkingDots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  thinkingDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#f2f2f2' },
   conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
   emptyConversation: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
   chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
