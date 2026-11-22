@@ -22,8 +22,8 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
     title: 'One platform. More possibilities ahead.',
     description: 'Discover the Baybble experience and what is coming next.',
     items: [
-      { title: 'Baybble Workspace', description: 'Think through challenges, explore ideas and find practical next steps.', status: 'AVAILABLE NOW' },
-      { title: 'More products', description: 'New tools and experiences are in development.', status: 'COMING SOON' },
+      { title: 'Open Baybble Workspace', description: 'Start a conversation and work through a challenge.', status: 'AVAILABLE NOW', href: '/' },
+      { title: 'About Baybble', description: 'Learn about the platform, its approach and what it is built to help with.', href: '/about' },
       { title: 'New capabilities', description: 'More ways to work through problems are on the way.', status: 'COMING SOON' }
     ]
   },
@@ -43,8 +43,8 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
     title: 'Straightforward access to Baybble.',
     description: 'We are shaping the plans and features for the platform.',
     items: [
-      { title: 'Plans & pricing', description: 'Plan details will be published here.', status: 'COMING SOON' },
-      { title: 'Feature comparison', description: 'A clear breakdown of plan features is on the way.', status: 'COMING SOON' }
+      { title: 'Plans & pricing', description: 'See the latest information about access and future plans.', href: '/pricing' },
+      { title: 'Pricing information', description: 'Find out how Baybble plans are taking shape.', href: '/pricing' }
     ]
   },
   Resources: {
@@ -52,10 +52,10 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
     title: 'Everything you need to get started.',
     description: 'Useful information and updates to help you get more from Baybble.',
     items: [
-      { title: 'Getting Started', description: 'A guide to using the Baybble workspace.', status: 'COMING SOON' },
-      { title: 'Latest News', description: 'Product announcements and platform updates.', status: 'COMING SOON' },
-      { title: 'Release Notes', description: 'See what is new and what has changed.', status: 'COMING SOON' },
-      { title: 'Help & Support', description: 'Find help with your Baybble account and experience.', status: 'COMING SOON' },
+      { title: 'Getting Started', description: 'A first look at using the Baybble workspace.', href: '/resources' },
+      { title: 'Latest News', description: 'Product announcements and platform updates.', href: '/resources' },
+      { title: 'Release Notes', description: 'See what is new and what has changed.', href: '/resources' },
+      { title: 'Help & Support', description: 'Find guidance for getting started with Baybble.', href: '/resources' },
       { title: 'Security & Privacy', description: 'Read how Baybble handles your information.', href: '/privacy' }
     ]
   }
@@ -925,7 +925,7 @@ export default function Home() {
     <>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} onPress={() => { window.location.href = '/'; }} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1040,7 +1040,7 @@ export default function Home() {
       {compact && !chatMode && (
         <View style={styles.mobileNav}>
           {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-            <Pressable key={item} style={styles.navLink}>
+            <Pressable key={item} style={styles.navLink} onPress={() => { window.location.href = item === 'Pricing' ? '/pricing' : item === 'Resources' ? '/resources' : '/about'; }}>
               <Text style={styles.navText}>{item}</Text>
             </Pressable>
           ))}
