@@ -1062,6 +1062,9 @@ export default function Home() {
                 onSubmitEditing={sendMessage}
                 accessibilityLabel="Start a conversation with Baybble"
               />
+              <View style={styles.heroSearchArrowCircle} pointerEvents="none">
+                <Ionicons name="arrow-forward" size={18} color="#f2f2f2" />
+              </View>
             </View>
           </Pressable>
           <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
@@ -1613,6 +1616,7 @@ const styles = StyleSheet.create({
   searchFrame: { width: '100%', maxWidth: 650, borderRadius: 14, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
 
   searchBar: { width: '100%', flexDirection: 'row', alignItems: 'center', borderRadius: 14, backgroundColor: '#d5d5d5', paddingHorizontal: 21, zIndex: 1 },
+  heroSearchArrowCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#292929', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
   searchIcon: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
   micIcon: { marginLeft: 12, marginRight: 2 },
   input: { flex: 1, minWidth: 0, color: '#292929', fontFamily: 'Manrope', fontWeight: '500', fontSize: 15, paddingVertical: 14, outlineStyle: 'none' as any },
