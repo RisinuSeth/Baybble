@@ -1061,6 +1061,7 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
+          <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
           <Pressable style={[styles.searchFrame, { minHeight: compact ? 56 : 62, zIndex: 1 }]} onPress={openChat}>
             <View style={[styles.searchBar, { minHeight: compact ? 56 : 62, paddingHorizontal: compact ? 16 : 21 }]}>
               <TextInput
@@ -1079,7 +1080,6 @@ export default function Home() {
               </View>
             </View>
           </Pressable>
-          <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
           <Text style={styles.heroFootnote}>A clearer way to think through challenges and possibilities.</Text>
         </Animated.View>
       ) : (
@@ -1621,6 +1621,8 @@ const styles = StyleSheet.create({
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
+  heroTagline: { color: '#f0ede7', fontFamily: 'Georgia', fontWeight: '400', fontSize: 38, lineHeight: 46, letterSpacing: -0.8, textAlign: 'center', maxWidth: 900, marginBottom: 25 },
+  heroTaglineCompact: { fontSize: 28, lineHeight: 35, marginBottom: 20, paddingHorizontal: 8 },
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
