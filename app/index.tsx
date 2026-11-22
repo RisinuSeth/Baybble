@@ -231,9 +231,9 @@ export default function Home() {
     const loadCloudHistory = async () => {
       const { data: conversations, error } = await supabase
         .from('baybble_conversations')
-        .select('id,title,updated_at')
+        .select('id,title,created_at')
         .eq('user_id', authUser.id)
-        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
       if (error || cancelled) return;
       if (!conversations?.length && sessions.length) {
@@ -242,7 +242,7 @@ export default function Home() {
           const { data: created, error: createError } = await supabase
             .from('baybble_conversations')
             .insert({ user_id: authUser.id, title: old.title })
-            .select('id,updated_at')
+            .select('id,created_at')
             .single();
           if (createError || !created) continue;
           if (old.messages.length) {
@@ -251,7 +251,7 @@ export default function Home() {
             }));
             await supabase.from('baybble_messages').insert(rows);
           }
-          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.updated_at).getTime() });
+          migrated.push({ ...old, id: created.id, updatedAt: new Date(created.created_at).getTime() });
           if (activeSessionId === old.id) setActiveSessionId(created.id);
         }
         if (!cancelled && migrated.length) setSessions(migrated);
@@ -285,7 +285,7 @@ export default function Home() {
             content: row.content,
             ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
           })),
-          updatedAt: new Date(conversation.updated_at).getTime(),
+          updatedAt: new Date(conversation.created_at).getTime(),
           pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
       }
@@ -303,15 +303,6 @@ export default function Home() {
       // Storage may be full or disabled; current chat remains usable.
     }
   }, [sessions, historyReady]);
-
-  useEffect(() => {
-    if (!historyReady || !activeSessionId || messages.length === 0) return;
-    setSessions((current) => current.map((session) =>
-      session.id === activeSessionId
-        ? { ...session, messages, updatedAt: Date.now() }
-        : session
-    ));
-  }, [messages, activeSessionId, historyReady]);
 
   const handleFileSelection = async (event: any) => {
     const selected = Array.from(event?.target?.files || []) as any[];
