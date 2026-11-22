@@ -1490,7 +1490,7 @@ export default function Home() {
                   </View>
                 )}
               </ScrollView>
-              {!isNearConversationBottom ? (
+              {(isSending || !isNearConversationBottom) ? (
                 <Pressable
                   style={styles.scrollFollowControl}
                   onPress={scrollToLatestMessage}
@@ -1499,7 +1499,7 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityLabel="Scroll to latest message"
                 >
-                  {!isSending || isConversationScrolling || isScrollControlHovered ? (
+                  {!isSending || isScrollControlHovered ? (
                     <Ionicons name="arrow-down" size={14} color="#f2f2f2" />
                   ) : (
                     <View style={styles.thinkingDots}>
