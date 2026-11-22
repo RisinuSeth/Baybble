@@ -11,7 +11,7 @@ const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6
 
 type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
 type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
-type BaybbleMessage = { role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
+type BaybbleMessage = { id?: string; role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
@@ -127,6 +127,7 @@ export default function Home() {
   const [hoveredMessageAction, setHoveredMessageAction] = useState<string | null>(null);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
+  const [editingMessageDraft, setEditingMessageDraft] = useState('');
   const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
@@ -279,6 +280,7 @@ export default function Home() {
           id: conversation.id,
           title: conversation.title,
           messages: (rows ?? []).map((row: any) => ({
+            id: row.id,
             role: row.role,
             content: row.content,
             ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
@@ -549,14 +551,16 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
+    const message = (editingMessageIndex !== null ? editingMessageDraft : draft).trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
     if (isPreparingFiles) { setChatError('Please wait while Baybble reads your files.'); return; }
     if ((!message && pendingAttachments.length === 0) || isSending) return;
     const filesToSend = [...pendingAttachments];
     const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
-    const baseMessages = editingMessageIndex !== null ? messages.slice(0, editingMessageIndex) : messages;
-    const history = [...baseMessages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
-    if (editingMessageIndex !== null) setEditingMessageIndex(null);
+    const isEditingMessage = editingMessageIndex !== null;
+    const editedMessage = isEditingMessage ? messages[editingMessageIndex!] : undefined;
+    const baseMessages = isEditingMessage ? messages.slice(0, editingMessageIndex!) : messages;
+    const history = [...baseMessages, { ...(editedMessage?.id ? { id: editedMessage.id } : {}), role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : editedMessage?.attachments?.length ? { attachments: editedMessage.attachments } : {}) }].slice(-20);
+    if (editingMessageIndex !== null) { setEditingMessageIndex(null); setEditingMessageDraft(''); }
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
@@ -581,12 +585,25 @@ export default function Home() {
     let messageId: string | null = null;
     const uploadedPaths: string[] = [];
     if (authUser?.id && conversationId) {
-      const { data: savedMessage, error } = await supabase.from('baybble_messages')
-        .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
-        .select('id')
-        .single();
-      if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
-      messageId = savedMessage.id;
+      if (isEditingMessage && editedMessage?.id) {
+        const { error: updateError } = await supabase.from('baybble_messages')
+          .update({ content: message }).eq('id', editedMessage.id).eq('user_id', authUser.id);
+        if (updateError) { setChatError('Your edited message could not be saved. Please try again.'); return; }
+        const laterIds = messages.slice(editingMessageIndex! + 1).map((item) => item.id).filter(Boolean) as string[];
+        if (laterIds.length) {
+          const { error: deleteError } = await supabase.from('baybble_messages').delete().in('id', laterIds).eq('user_id', authUser.id);
+          if (deleteError) { setChatError('The edited message was saved, but later replies could not be reset. Please refresh and try again.'); return; }
+        }
+        messageId = editedMessage.id;
+      } else {
+        const { data: savedMessage, error } = await supabase.from('baybble_messages')
+          .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
+          .select('id')
+          .single();
+        if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
+        messageId = savedMessage.id;
+        history[history.length - 1] = { ...history[history.length - 1], id: messageId };
+      }
 
       try {
         for (const attachment of filesToSend) {
@@ -687,10 +704,11 @@ export default function Home() {
         }
       }
       if (authUser?.id && conversationId && assistantReply) {
-        const { error: saveError } = await supabase.from('baybble_messages').insert({
+        const { data: savedReply, error: saveError } = await supabase.from('baybble_messages').insert({
           conversation_id: conversationId, user_id: authUser.id, role: 'assistant', content: assistantReply
-        });
+        }).select('id').single();
         if (saveError) setChatError('Reply received, but it could not be saved to your account.');
+        else if (savedReply?.id) setMessages((current) => current.map((item, index) => index === current.length - 1 && item.role === 'assistant' ? { ...item, id: savedReply.id } : item));
         await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
       }
 
@@ -1319,6 +1337,33 @@ export default function Home() {
                         {...({ onMouseEnter: () => setHoveredMessageIndex(index), onMouseLeave: () => setHoveredMessageIndex((current) => current === index ? null : current) } as any)}
                       >
                         {message.role === 'user' ? (
+                          editingMessageIndex === index ? (
+                            <View style={styles.inlineEditCard}>
+                              <TextInput
+                                value={editingMessageDraft}
+                                onChangeText={setEditingMessageDraft}
+                                style={styles.inlineEditInput}
+                                multiline
+                                autoFocus
+                                accessibilityLabel="Edit your message"
+                                onKeyPress={(event: any) => {
+                                  const key = event?.nativeEvent?.key ?? event?.key;
+                                  const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
+                                  if (key === 'Enter' && !shift && editingMessageDraft.trim() && !isSending) { event?.preventDefault?.(); sendMessage(); }
+                                  if (key === 'Escape') { setEditingMessageIndex(null); setEditingMessageDraft(''); }
+                                }}
+                              />
+                              <View style={styles.inlineEditActions}>
+                                <Pressable style={styles.inlineEditCancel} onPress={() => { setEditingMessageIndex(null); setEditingMessageDraft(''); }} accessibilityRole="button">
+                                  <Text style={styles.inlineEditCancelText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable style={[styles.inlineEditSave, (!editingMessageDraft.trim() || isSending) && styles.sendButtonDisabled]} onPress={sendMessage} disabled={!editingMessageDraft.trim() || isSending} accessibilityRole="button">
+                                  <Ionicons name="arrow-up" size={15} color="#080808" />
+                                  <Text style={styles.inlineEditSaveText}>Save</Text>
+                                </Pressable>
+                              </View>
+                            </View>
+                          ) : (
                           <View style={styles.userMessage}>
                             {message.attachments?.length ? (
                               <View style={styles.messageFileList}>
@@ -1332,17 +1377,18 @@ export default function Home() {
                             ) : null}
                             <Text style={styles.userMessageText}>{message.content}</Text>
                           </View>
+                          )
                         ) : (
                           <View style={styles.assistantMessage}>
                             {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
                           </View>
                         )}
                         <View
-                          pointerEvents={hoveredMessageIndex === index && message.content ? 'auto' : 'none'}
+                          pointerEvents={editingMessageIndex !== index && (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 'auto' : 'none'}
                           style={[
                             styles.messageActions,
                             message.role === 'user' && styles.messageActionsUser,
-                            { opacity: hoveredMessageIndex === index && message.content ? 1 : 0 }
+                            { opacity: editingMessageIndex !== index && (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 1 : 0 }
                           ]}
                         >
                           <View style={styles.messageActionWrap}>
@@ -1353,7 +1399,7 @@ export default function Home() {
                           </View>
                           {message.role === 'user' ? (
                             <View style={styles.messageActionWrap}>
-                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setEditingMessageDraft(message.content); setEditingMessageIndex(index); setHoveredMessageIndex(null); setHoveredMessageAction(null); }} accessibilityRole="button" accessibilityLabel="Edit message">
                                 <Ionicons name="create-outline" size={14} color="#a0a0a0" />
                               </Pressable>
                               {hoveredMessageAction === `${index}-edit` ? <Text style={styles.messageActionTooltip}>Edit</Text> : null}
@@ -1580,7 +1626,7 @@ const styles = StyleSheet.create({
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
   messageList: { width: '100%', gap: 9, paddingBottom: 30 },
   userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end', position: 'relative', paddingBottom: 34 },
-  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 34 },
+  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 27 },
   messageActions: { position: 'absolute', left: 0, bottom: 0, height: 27, flexDirection: 'row', alignItems: 'center', gap: 6 },
   messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
   messageActionWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
@@ -1588,6 +1634,13 @@ const styles = StyleSheet.create({
   messageActionTooltip: { position: 'absolute', bottom: 34, left: '50%' as any, transform: [{ translateX: -42 }], minWidth: 84, textAlign: 'center', color: '#f0f0f0', backgroundColor: '#292929', borderWidth: 1, borderColor: '#414141', borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, fontFamily: 'Manrope', fontSize: 10, fontWeight: '600', zIndex: 20, overflow: 'hidden' },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
+  inlineEditCard: { width: '100%', maxWidth: 620, alignSelf: 'flex-end', backgroundColor: '#202020', borderWidth: 1, borderColor: '#454545', borderRadius: 18, padding: 13, gap: 12 },
+  inlineEditInput: { width: '100%', minHeight: 74, maxHeight: 220, color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22, padding: 4, outlineStyle: 'none' as any },
+  inlineEditActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 9 },
+  inlineEditCancel: { minHeight: 34, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 9 },
+  inlineEditCancelText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
+  inlineEditSave: { minHeight: 34, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 13, borderRadius: 9, backgroundColor: '#ffffff' },
+  inlineEditSaveText: { color: '#080808', fontFamily: 'Manrope', fontSize: 11, fontWeight: '800' },
   assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 0 },
   assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
   thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
