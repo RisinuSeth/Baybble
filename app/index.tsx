@@ -109,7 +109,7 @@ export default function Home() {
   const [isPreparingFiles, setIsPreparingFiles] = useState(false);
   const [conversationAttachments, setConversationAttachments] = useState<Array<{ name: string; text: string }>>([]);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
-  const [chatMode, setChatMode] = useState(false);
+  const [chatMode, setChatMode] = useState(true);
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -148,7 +148,7 @@ export default function Home() {
   const [isConversationScrolling, setIsConversationScrolling] = useState(false);
   const [isScrollControlHovered, setIsScrollControlHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const transition = useRef(new Animated.Value(0)).current;
+  const transition = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!chatMode || draft || messages.length > 0) {
