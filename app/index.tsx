@@ -1607,7 +1607,7 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
+  navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
