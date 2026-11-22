@@ -175,7 +175,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   let body: { messages?: unknown; attachments?: unknown };
   try {
-    body = await request.json() as { messages?: unknown; attachments?: unknown };
+    body = await request.json() as { messages?: unknown; attachments?: unknown; forceSearchWeb?: unknown };
   } catch {
     return jsonError("The request was not valid JSON.", 400);
   }
@@ -221,7 +221,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       });
     }
 
-    if (shouldSearchWeb(latestQuestion)) {
+    if (body.forceSearchWeb === true || shouldSearchWeb(latestQuestion)) {
       try {
         const sources = await searchWeb(latestQuestion, env.TAVILY_API_KEY);
         if (sources.length) {
