@@ -64,8 +64,9 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
 function shouldSearchWebInClient(query: string): boolean {
   const text = query.toLowerCase();
   return /\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\b/.test(text)
-    || /\b(search the web|search online|look up|find sources|research online|on the internet|web search|latest developments|current events)\b/.test(text)
-    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text);
+    || /\b(search the web|search online|look up|find sources|find references|provide citations|cite sources|research online|on the internet|web search|latest developments|current events|scientific evidence|academic research|peer reviewed|studies show|research suggests)\b/.test(text)
+    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text)
+    || /\b(human origins|origin of (?:humans|humanity|life)|human evolution|evolution of (?:humans|humanity)|formation of (?:humans|humanity)|fossil record|genetic evidence)\b/.test(text);
 }
 
 function profileInitials(name?: string, email?: string) {
