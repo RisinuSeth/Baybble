@@ -63,9 +63,9 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
 
 function shouldSearchWebInClient(query: string): boolean {
   const text = query.toLowerCase();
-  return /\\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\\b/.test(text)
-    || /\\b(search the web|search online|look up|find sources|research online|on the internet|web search|latest developments|current events)\\b/.test(text)
-    || /\\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\\b/.test(text);
+  return /\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\b/.test(text)
+    || /\b(search the web|search online|look up|find sources|research online|on the internet|web search|latest developments|current events)\b/.test(text)
+    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text);
 }
 
 function profileInitials(name?: string, email?: string) {
@@ -673,7 +673,6 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, attachments: attachmentContexts }),
         body: JSON.stringify({ messages: history, attachments: attachmentContexts, forceSearchWeb: forceWebSearch }),
         signal: controller.signal
       });
