@@ -141,6 +141,11 @@ export default function Home() {
   const navCapsuleOpacity = useRef(new Animated.Value(0)).current;
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
+  const conversationScrollRef = useRef<ScrollView | null>(null);
+  const isNearConversationBottomRef = useRef(true);
+  const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
+  const [isConversationScrolling, setIsConversationScrolling] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
 
@@ -829,6 +834,55 @@ export default function Home() {
   }, [gradientRotation]);
 
   const gradientAngle = gradientRotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const thinkingDotAnimations = useRef([
+    new Animated.Value(0.35),
+    new Animated.Value(0.35),
+    new Animated.Value(0.35)
+  ]).current;
+
+  const handleConversationScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+    const nearBottom = distanceFromBottom <= 90;
+    isNearConversationBottomRef.current = nearBottom;
+    setIsNearConversationBottom(nearBottom);
+    setIsConversationScrolling(true);
+    if (conversationScrollIdleTimer.current) clearTimeout(conversationScrollIdleTimer.current);
+    conversationScrollIdleTimer.current = setTimeout(() => setIsConversationScrolling(false), 450);
+  };
+
+  const handleConversationContentSizeChange = () => {
+    if (isNearConversationBottomRef.current) {
+      conversationScrollRef.current?.scrollToEnd({ animated: false });
+    }
+  };
+
+  const scrollToLatestMessage = () => {
+    conversationScrollRef.current?.scrollToEnd({ animated: true });
+    isNearConversationBottomRef.current = true;
+    setIsNearConversationBottom(true);
+    setIsConversationScrolling(false);
+  };
+
+  useEffect(() => {
+    if (!isSending || isNearConversationBottom || isConversationScrolling) return;
+    const animations = thinkingDotAnimations.map((value, index) =>
+      Animated.loop(Animated.sequence([
+        Animated.delay(index * 150),
+        Animated.timing(value, { toValue: 1, duration: 260, useNativeDriver: true }),
+        Animated.timing(value, { toValue: 0.35, duration: 260, useNativeDriver: true }),
+        Animated.delay((2 - index) * 150)
+      ]))
+    );
+    animations.forEach((animation) => animation.start());
+    return () => animations.forEach((animation) => animation.stop());
+  }, [isSending, isNearConversationBottom, isConversationScrolling, thinkingDotAnimations]);
+
+  useEffect(() => {
+    return () => {
+      if (conversationScrollIdleTimer.current) clearTimeout(conversationScrollIdleTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     Animated.timing(megaMenuAnimation, {
@@ -1321,7 +1375,15 @@ export default function Home() {
                   </>
                 ) : null}
               </View>
-              <ScrollView style={styles.conversationScroll} contentContainerStyle={styles.conversationContent} showsVerticalScrollIndicator={false}>
+              <ScrollView
+                ref={conversationScrollRef}
+                style={styles.conversationScroll}
+                contentContainerStyle={styles.conversationContent}
+                showsVerticalScrollIndicator={false}
+                onScroll={handleConversationScroll}
+                onContentSizeChange={handleConversationContentSizeChange}
+                scrollEventThrottle={16}
+              >
                 {messages.length === 0 ? (
                   <View style={styles.emptyConversation}>
                     <Text style={styles.chatGreeting}>Where should we start?</Text>
@@ -1427,6 +1489,26 @@ export default function Home() {
                   </View>
                 )}
               </ScrollView>
+              {!isNearConversationBottom && (isSending ? isConversationScrolling : true) ? (
+                <Pressable
+                  style={styles.scrollFollowControl}
+                  onPress={scrollToLatestMessage}
+                  accessibilityRole="button"
+                  accessibilityLabel="Scroll to latest message"
+                >
+                  {isSending && isConversationScrolling ? (
+                    <Ionicons name="arrow-down" size={19} color="#f2f2f2" />
+                  ) : isSending ? (
+                    <View style={styles.thinkingDots}>
+                      {thinkingDotAnimations.map((opacity, index) => (
+                        <Animated.View key={index} style={[styles.thinkingDot, { opacity }]} />
+                      ))}
+                    </View>
+                  ) : (
+                    <Ionicons name="arrow-down" size={19} color="#f2f2f2" />
+                  )}
+                </Pressable>
+              ) : null}
               <View style={styles.composerArea}>
                 {pendingAttachments.length ? (
                   <View style={styles.pendingFiles}>
@@ -1619,6 +1701,9 @@ const styles = StyleSheet.create({
   historyFootnote: { color: '#666666', fontFamily: 'Manrope', fontSize: 9, paddingTop: 10, paddingHorizontal: 5 },
   chatMain: { flex: 1, minWidth: 0, minHeight: 0, alignItems: 'center' },
   conversationScroll: { width: '100%', flex: 1 },
+  scrollFollowControl: { position: 'absolute' as any, right: 28, bottom: 112, zIndex: 30, width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.28, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 8 },
+  thinkingDots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  thinkingDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#f2f2f2' },
   conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
   emptyConversation: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
   chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
