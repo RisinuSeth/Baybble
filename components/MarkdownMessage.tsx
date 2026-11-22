@@ -164,7 +164,7 @@ function faviconUrl(url: string) {
 }
 
 function splitSources(content: string) {
-  const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?Sources\s*:?\s*([\s\S]*)$/i);
+  const section = content.match(/(?:^|\\n)\\s*(?:#{1,3}\\s*)?(?:\\*\\*|__)?Sources(?:\\*\\*|__)?\\s*:?\\s*([\\s\\S]*)$/i);
   if (!section || section.index === undefined) return { answer: content, sources: [] as Array<{ url: string; title: string }> };
 
   const sourceText = section[1];
