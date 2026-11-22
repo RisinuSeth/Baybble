@@ -1553,6 +1553,16 @@ export default function Home() {
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
+                    <Pressable
+                      style={[styles.webSearchIconButton, forceWebSearch && styles.webSearchIconButtonActive]}
+                      onPress={() => setForceWebSearch((enabled) => !enabled)}
+                      disabled={isSending}
+                      accessibilityRole="switch"
+                      accessibilityState={{ checked: forceWebSearch }}
+                      accessibilityLabel="Force web search for messages"
+                    >
+                      <Ionicons name="globe-outline" size={17} color={forceWebSearch ? '#f0f0f0' : '#999999'} />
+                    </Pressable>
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
@@ -1582,23 +1592,8 @@ export default function Home() {
                     </Pressable>
                   </View>
                 </View>
-                <View style={styles.webSearchToggleRow}>
-                  <Pressable
-                    style={[styles.webSearchToggle, forceWebSearch && styles.webSearchToggleActive]}
-                    onPress={() => setForceWebSearch((enabled) => !enabled)}
-                    disabled={isSending}
-                    accessibilityRole="switch"
-                    accessibilityState={{ checked: forceWebSearch }}
-                    accessibilityLabel="Force web search for messages"
-                  >
-                    <Ionicons name="globe-outline" size={14} color={forceWebSearch ? '#eeeeee' : '#999999'} />
-                    <Text style={[styles.webSearchToggleText, forceWebSearch && styles.webSearchToggleTextActive]}>Search web</Text>
-                    <View style={[styles.webSearchToggleIndicator, forceWebSearch && styles.webSearchToggleIndicatorActive]} />
-                  </Pressable>
-                  <Text style={styles.webSearchAutoNote}>Automatic when useful</Text>
-                </View>
                 {isPreparingFiles ? <Text style={styles.filePreparingText}>Reading your files…</Text> : null}
-                <Text style={styles.composerDisclaimer}>Baybble can make mistakes. Check important information.</Text>
+                <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
               </View>
             </View>
           </View>
@@ -1800,6 +1795,8 @@ const styles = StyleSheet.create({
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
   composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
+  webSearchIconButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 7, backgroundColor: '#202020', borderWidth: 1, borderColor: '#333333' },
+  webSearchIconButtonActive: { backgroundColor: '#303030', borderColor: '#777777' },
   attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 2 },
   micButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
   micButtonActive: { backgroundColor: '#8b3434', borderRadius: 19 },
