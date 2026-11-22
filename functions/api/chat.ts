@@ -48,6 +48,8 @@ REASONING AND PROBLEM SOLVING
 
 ACCURACY AND HONESTY
 - Never invent facts, quotations, references, test results, or sources.
+- Never create numbered citations or a bibliography from memory. Only cite sources that were actually supplied in the live web-search results.
+- When no live search results are available, do not present named publications, dates, or numbered references as if they were verified sources. Answer from general knowledge without a fabricated reference list.
 - Distinguish established facts from estimates, interpretations, and suggestions.
 - State uncertainty plainly. If a question depends on current information you cannot access, say that you cannot verify it rather than guessing.
 - Do not claim to browse the web, inspect files, run code, use external tools, remember past chats, or perform actions unless those capabilities are actually available in this conversation.
@@ -71,8 +73,9 @@ type ResearchSource = { title: string; url: string; content: string; publishedDa
 function shouldSearchWeb(query: string): boolean {
   const text = query.toLowerCase();
   return /\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\b/.test(text)
-    || /\b(search the web|search online|look up|find sources|research online|on the internet|web search|latest developments|current events)\b/.test(text)
-    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text);
+    || /\b(search the web|search online|look up|find sources|find references|provide citations|cite sources|research online|on the internet|web search|latest developments|current events|scientific evidence|academic research|peer reviewed|studies show|research suggests)\b/.test(text)
+    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text)
+    || /\b(human origins|origin of (?:humans|humanity|life)|human evolution|evolution of (?:humans|humanity)|formation of (?:humans|humanity)|fossil record|genetic evidence)\b/.test(text);
 }
 
 async function searchWeb(query: string, apiKey?: string): Promise<ResearchSource[]> {
