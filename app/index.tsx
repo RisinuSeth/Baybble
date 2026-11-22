@@ -1072,14 +1072,24 @@ export default function Home() {
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatBody}>
             {compact && !historyOpen ? (
-              <Pressable
-                style={styles.mobileSidebarTrigger}
-                onPress={() => setHistoryOpen(true)}
-                accessibilityRole="button"
-                accessibilityLabel="Open workspace sidebar"
-              >
-                <Ionicons name="menu-outline" size={22} color="#eeeeee" />
-              </Pressable>
+              <>
+                <Pressable
+                  style={styles.mobileSidebarTrigger}
+                  onPress={() => setHistoryOpen(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open workspace sidebar"
+                >
+                  <Ionicons name="menu-outline" size={22} color="#eeeeee" />
+                </Pressable>
+                <Pressable
+                  style={styles.mobileNewChatTrigger}
+                  onPress={createNewChat}
+                  accessibilityRole="button"
+                  accessibilityLabel="Start a new conversation"
+                >
+                  <Ionicons name="add" size={23} color="#eeeeee" />
+                </Pressable>
+              </>
             ) : null}
             {compact && historyOpen ? (
               <Pressable
@@ -1622,6 +1632,7 @@ const styles = StyleSheet.create({
   chatWorkspace: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 10, width: '100%', height: '100vh' as any, minHeight: '100vh' as any, flex: 1, backgroundColor: '#080808' },
   chatBody: { width: '100%', height: '100%' as any, flex: 1, minHeight: '100vh' as any, flexDirection: 'row', position: 'relative' },
   mobileSidebarTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 16, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
+  mobileNewChatTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 60, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
   sidebarBackdrop: { position: 'absolute' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 7, backgroundColor: 'rgba(0,0,0,0.58)' } as any,
   workspaceSidebar: { width: 270, flexShrink: 0, minHeight: '100%' as any, alignSelf: 'stretch', backgroundColor: '#101010', borderRightWidth: 1, borderRightColor: '#292929', paddingHorizontal: 14, paddingTop: 15, paddingBottom: 12, zIndex: 8 } as any,
   workspaceSidebarOverlay: { position: 'absolute' as any, top: 0, bottom: 0, left: 0, width: 286, zIndex: 9, shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 20, elevation: 18 } as any,
