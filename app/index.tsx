@@ -146,6 +146,7 @@ export default function Home() {
   const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
   const [isConversationScrolling, setIsConversationScrolling] = useState(false);
+  const [isScrollControlHovered, setIsScrollControlHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
 
@@ -1489,23 +1490,23 @@ export default function Home() {
                   </View>
                 )}
               </ScrollView>
-              {!isNearConversationBottom && (isSending ? isConversationScrolling : true) ? (
+              {!isNearConversationBottom && isSending ? (
                 <Pressable
                   style={styles.scrollFollowControl}
                   onPress={scrollToLatestMessage}
+                  onHoverIn={() => setIsScrollControlHovered(true)}
+                  onHoverOut={() => setIsScrollControlHovered(false)}
                   accessibilityRole="button"
                   accessibilityLabel="Scroll to latest message"
                 >
-                  {isSending && isConversationScrolling ? (
-                    <Ionicons name="arrow-down" size={19} color="#f2f2f2" />
-                  ) : isSending ? (
+                  {isScrollControlHovered ? (
+                    <Ionicons name="arrow-down" size={14} color="#f2f2f2" />
+                  ) : (
                     <View style={styles.thinkingDots}>
                       {thinkingDotAnimations.map((opacity, index) => (
                         <Animated.View key={index} style={[styles.thinkingDot, { opacity }]} />
                       ))}
                     </View>
-                  ) : (
-                    <Ionicons name="arrow-down" size={19} color="#f2f2f2" />
                   )}
                 </Pressable>
               ) : null}
@@ -1701,9 +1702,9 @@ const styles = StyleSheet.create({
   historyFootnote: { color: '#666666', fontFamily: 'Manrope', fontSize: 9, paddingTop: 10, paddingHorizontal: 5 },
   chatMain: { flex: 1, minWidth: 0, minHeight: 0, alignItems: 'center' },
   conversationScroll: { width: '100%', flex: 1 },
-  scrollFollowControl: { position: 'absolute' as any, right: 28, bottom: 112, zIndex: 30, width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.28, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 8 },
-  thinkingDots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
-  thinkingDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#f2f2f2' },
+  scrollFollowControl: { position: 'absolute' as any, left: '50%' as any, bottom: 104, transform: [{ translateX: -16 }], zIndex: 30, width: 32, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.2, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 6, cursor: 'pointer' as any },
+  thinkingDots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  thinkingDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#f2f2f2' },
   conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
   emptyConversation: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
   chatGreeting: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 34, letterSpacing: -1.5, textAlign: 'center' },
