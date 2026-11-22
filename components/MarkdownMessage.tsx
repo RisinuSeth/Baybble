@@ -178,7 +178,7 @@ function splitSources(content: string) {
       const bracketLabel = line.match(/\[\d+\]\s*\[([^\]]+)\]/);
       sources.push({
         url,
-        title: markdownLabel?.[1] || bracketLabel?.[1] || \`Source \${sources.length + 1}\`,
+        title: markdownLabel?.[1] || bracketLabel?.[1] || ('Source ' + (sources.length + 1)),
       });
     }
   }
