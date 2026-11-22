@@ -1384,11 +1384,11 @@ export default function Home() {
                           </View>
                         )}
                         <View
-                          pointerEvents={hoveredMessageIndex === index && message.content ? 'auto' : 'none'}
+                          pointerEvents={(message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 'auto' : 'none'}
                           style={[
                             styles.messageActions,
                             message.role === 'user' && styles.messageActionsUser,
-                            { opacity: hoveredMessageIndex === index && message.content ? 1 : 0 }
+                            { opacity: (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 1 : 0 }
                           ]}
                         >
                           <View style={styles.messageActionWrap}>
@@ -1626,7 +1626,7 @@ const styles = StyleSheet.create({
   chatNotice: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, lineHeight: 17, textAlign: 'center', marginTop: 22, maxWidth: 520, alignSelf: 'center' },
   messageList: { width: '100%', gap: 9, paddingBottom: 30 },
   userMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-end', position: 'relative', paddingBottom: 34 },
-  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 34 },
+  assistantMessageGroup: { width: '100%', alignSelf: 'stretch', alignItems: 'flex-start', position: 'relative', paddingBottom: 27 },
   messageActions: { position: 'absolute', left: 0, bottom: 0, height: 27, flexDirection: 'row', alignItems: 'center', gap: 6 },
   messageActionsUser: { left: 'auto' as any, right: 0, justifyContent: 'flex-end' },
   messageActionWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
