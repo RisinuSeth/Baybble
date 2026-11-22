@@ -61,6 +61,13 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
   }
 };
 
+function shouldSearchWebInClient(query: string): boolean {
+  const text = query.toLowerCase();
+  return /\\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\\b/.test(text)
+    || /\\b(search the web|search online|look up|find sources|research online|on the internet|web search|latest developments|current events)\\b/.test(text)
+    || /\\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\\b/.test(text);
+}
+
 function profileInitials(name?: string, email?: string) {
   const source = name?.trim() || email?.split('@')[0] || 'B';
   const parts = source.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
@@ -120,6 +127,8 @@ export default function Home() {
   const [renameDraft, setRenameDraft] = useState('');
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [forceWebSearch, setForceWebSearch] = useState(false);
+  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
@@ -656,6 +665,7 @@ export default function Home() {
     setDraft('');
     setChatError('');
     setIsSending(true);
+    setIsSearchingWeb(forceWebSearch || shouldSearchWebInClient(message));
 
     const controller = new AbortController();
     abortController.current = controller;
@@ -664,8 +674,10 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history, attachments: attachmentContexts }),
+        body: JSON.stringify({ messages: history, attachments: attachmentContexts, forceSearchWeb: forceWebSearch }),
         signal: controller.signal
       });
+      setIsSearchingWeb(false);
       if (!response.ok) {
         let reason = 'Baybble could not respond. Please try again.';
         try {
@@ -791,6 +803,7 @@ export default function Home() {
       }
     } finally {
       if (abortController.current === controller) abortController.current = null;
+      setIsSearchingWeb(false);
       setIsSending(false);
     }
   };
@@ -1457,7 +1470,7 @@ export default function Home() {
                           )
                         ) : (
                           <View style={styles.assistantMessage}>
-                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
+                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>{isSearchingWeb ? 'Searching the web…' : 'Baybble is thinking...'}</Text> : null}
                           </View>
                         )}
                         <View
@@ -1570,8 +1583,23 @@ export default function Home() {
                     </Pressable>
                   </View>
                 </View>
+                <View style={styles.webSearchToggleRow}>
+                  <Pressable
+                    style={[styles.webSearchToggle, forceWebSearch && styles.webSearchToggleActive]}
+                    onPress={() => setForceWebSearch((enabled) => !enabled)}
+                    disabled={isSending}
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: forceWebSearch }}
+                    accessibilityLabel="Force web search for messages"
+                  >
+                    <Ionicons name="globe-outline" size={14} color={forceWebSearch ? '#eeeeee' : '#999999'} />
+                    <Text style={[styles.webSearchToggleText, forceWebSearch && styles.webSearchToggleTextActive]}>Search web</Text>
+                    <View style={[styles.webSearchToggleIndicator, forceWebSearch && styles.webSearchToggleIndicatorActive]} />
+                  </Pressable>
+                  <Text style={styles.webSearchAutoNote}>Automatic when useful</Text>
+                </View>
                 {isPreparingFiles ? <Text style={styles.filePreparingText}>Reading your files…</Text> : null}
-                <Text style={styles.composerDisclaimer}>Baybble can make mistakes once AI responses are enabled. Check important information.</Text>
+                <Text style={styles.composerDisclaimer}>Baybble can make mistakes. Check important information.</Text>
               </View>
             </View>
           </View>
@@ -1785,6 +1813,14 @@ const styles = StyleSheet.create({
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
   sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 7 },
   sendButtonDisabled: { opacity: 0.55 },
+  webSearchToggleRow: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, marginTop: 9 },
+  webSearchToggle: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#383838', borderRadius: 999, paddingVertical: 6, paddingHorizontal: 10, opacity: 1 },
+  webSearchToggleActive: { backgroundColor: '#292929', borderColor: '#5a5a5a' },
+  webSearchToggleText: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 10, fontWeight: '700' },
+  webSearchToggleTextActive: { color: '#f2f2f2' },
+  webSearchToggleIndicator: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#666666' },
+  webSearchToggleIndicatorActive: { backgroundColor: '#f2f2f2' },
+  webSearchAutoNote: { color: '#707070', fontFamily: 'Manrope', fontSize: 9 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
   filePreparingText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 8 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
