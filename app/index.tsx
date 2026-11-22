@@ -1384,11 +1384,11 @@ export default function Home() {
                           </View>
                         )}
                         <View
-                          pointerEvents={(message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 'auto' : 'none'}
+                          pointerEvents={editingMessageIndex !== index && (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 'auto' : 'none'}
                           style={[
                             styles.messageActions,
                             message.role === 'user' && styles.messageActionsUser,
-                            { opacity: (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 1 : 0 }
+                            { opacity: editingMessageIndex !== index && (message.role === 'assistant' || hoveredMessageIndex === index) && message.content ? 1 : 0 }
                           ]}
                         >
                           <View style={styles.messageActionWrap}>
@@ -1399,7 +1399,7 @@ export default function Home() {
                           </View>
                           {message.role === 'user' ? (
                             <View style={styles.messageActionWrap}>
-                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setEditingMessageDraft(message.content); setEditingMessageIndex(index); setHoveredMessageIndex(null); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setEditingMessageDraft(message.content); setEditingMessageIndex(index); setHoveredMessageIndex(null); setHoveredMessageAction(null); }} accessibilityRole="button" accessibilityLabel="Edit message">
                                 <Ionicons name="create-outline" size={14} color="#a0a0a0" />
                               </Pressable>
                               {hoveredMessageAction === `${index}-edit` ? <Text style={styles.messageActionTooltip}>Edit</Text> : null}
