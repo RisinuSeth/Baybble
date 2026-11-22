@@ -160,7 +160,7 @@ const sourceStyles = {
 };
 
 function splitSources(content: string) {
-  const section = content.match(/(?:^|\\n)\\s*(?:#{1,3}\\s*)?Sources\\s*:?\\s*([\\s\\S]*)$/i);
+  const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?Sources\s*:?\s*([\s\S]*)$/i);
   if (!section || section.index === undefined) return { answer: content, sources: [] as Array<{ url: string; title: string }> };
 
   const sourceText = section[1];
@@ -168,17 +168,17 @@ function splitSources(content: string) {
   const sources: Array<{ url: string; title: string }> = [];
   const seen = new Set<string>();
 
-  for (const line of sourceText.split('\\n')) {
-    const urls = line.match(/https?:\\/\\/[^\\s)\\]]+/g) || [];
+  for (const line of sourceText.split('\n')) {
+    const urls = line.match(/https?:\/\/[^\s)\]]+/g) || [];
     for (const rawUrl of urls) {
       const url = rawUrl.replace(/[.,;]+$/, '');
       if (seen.has(url)) continue;
       seen.add(url);
-      const markdownLabel = line.match(/\\[([^\\]]+)\\]\\(https?:\\/\\/[^)]+\\)/);
-      const bracketLabel = line.match(/\\[\\d+\\]\\s*\\[([^\\]]+)\\]/);
+      const markdownLabel = line.match(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/);
+      const bracketLabel = line.match(/\[\d+\]\s*\[([^\]]+)\]/);
       sources.push({
         url,
-        title: markdownLabel?.[1] || bracketLabel?.[1] || `Source ${sources.length + 1}`,
+        title: markdownLabel?.[1] || bracketLabel?.[1] || \`Source \${sources.length + 1}\`,
       });
     }
   }
