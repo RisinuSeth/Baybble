@@ -164,29 +164,53 @@ function faviconUrl(url: string) {
 }
 
 function splitSources(content: string) {
-  const section = content.match(/(?:^|\\n)\\s*(?:#{1,3}\\s*)?(?:\\*\\*|__)?Sources(?:\\*\\*|__)?\\s*:?\\s*([\\s\\S]*)$/i);
-  if (!section || section.index === undefined) return { answer: content, sources: [] as Array<{ url: string; title: string }> };
+  // Accept both plain and Markdown-formatted Sources headings, including headings
+  // that begin after a newline.
+  const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*\*|__)?Sources(?:\*\*|__)?\s*:?\s*([\s\S]*)$/i);
+  if (!section || section.index === undefined) {
+    return { answer: content, sources: [] as Array<{ url: string; title: string }> };
+  }
 
-  const sourceText = section[1];
   const answer = content.slice(0, section.index).trim();
+  const sourceText = section[1];
   const sources: Array<{ url: string; title: string }> = [];
   const seen = new Set<string>();
 
-  for (const line of sourceText.split('\n')) {
-    const urls = line.match(/https?:\/\/[^\s)\]]+/g) || [];
-    for (const rawUrl of urls) {
-      const url = rawUrl.replace(/[.,;]+$/, '');
-      if (seen.has(url)) continue;
-      seen.add(url);
-      const markdownLabel = line.match(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/);
-      const bracketLabel = line.match(/\[\d+\]\s*\[([^\]]+)\]/);
+  const addSource = (rawUrl: string, title?: string) => {
+    const cleanedUrl = rawUrl
+      .replace(/&amp;/g, '&')
+      .replace(/\\\(/g, '(')
+      .replace(/\\\)/g, ')')
+      .replace(/[.,;]+$/, '');
+    try {
+      const parsed = new URL(cleanedUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return;
+      const normalizedUrl = parsed.toString();
+      if (seen.has(normalizedUrl)) return;
+      seen.add(normalizedUrl);
       sources.push({
-        url,
-        title: markdownLabel?.[1] || bracketLabel?.[1] || (() => {
-          try { return new URL(url).hostname.replace(/^www\\./, ''); } catch { return 'Source ' + (sources.length + 1); }
-        })(),
+        url: normalizedUrl,
+        title: title?.trim() || parsed.hostname.replace(/^www\./, ''),
       });
+    } catch {
+      // Ignore malformed or non-web source references.
     }
+  };
+
+  // First parse Markdown links, including the common format:
+  // [1] [https://example.com](https://example.com)
+  const markdownLinkPattern = /\[(?:\d+)\]\s*\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = markdownLinkPattern.exec(sourceText)) !== null) {
+    addSource(match[2] || match[4], match[1] || match[3]);
+  }
+
+  // Also accept bare URLs and numbered URL references on the same or separate lines.
+  const bareUrlPattern = /https?:\/\/[^\s<>"']+/g;
+  while ((match = bareUrlPattern.exec(sourceText)) !== null) {
+    const preceding = sourceText.slice(0, match.index);
+    const isMarkdownDestination = /\]\($/.test(preceding);
+    if (!isMarkdownDestination) addSource(match[0]);
   }
 
   return { answer, sources };
