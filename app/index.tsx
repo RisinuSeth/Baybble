@@ -237,7 +237,7 @@ export default function Home() {
     const loadCloudHistory = async () => {
       const { data: conversations, error } = await supabase
         .from('baybble_conversations')
-        .select('id,title,created_at')
+        .select('id,title,created_at,is_pinned')
         .eq('user_id', authUser.id)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -247,7 +247,7 @@ export default function Home() {
         for (const old of sessions.slice(0, 50)) {
           const { data: created, error: createError } = await supabase
             .from('baybble_conversations')
-            .insert({ user_id: authUser.id, title: old.title })
+            .insert({ user_id: authUser.id, title: old.title, is_pinned: Boolean(old.pinned) })
             .select('id,created_at')
             .single();
           if (createError || !created) continue;
@@ -292,7 +292,7 @@ export default function Home() {
             ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
           })),
           updatedAt: new Date(conversation.created_at).getTime(),
-          pinned: Boolean(sessions.find((saved) => saved.id === conversation.id)?.pinned)
+          pinned: Boolean(conversation.is_pinned || sessions.find((saved) => saved.id === conversation.id)?.pinned)
         });
       }
       if (!cancelled) setSessions(cloud);
@@ -816,17 +816,73 @@ export default function Home() {
     collapsedBrandHover.setValue(0);
   }, [sidebarCollapsed, collapsedBrandHover]);
 
-  const visibleSessions = sessions
+  const filteredSessions = sessions
     .filter((session) => session.title.toLowerCase().includes(sidebarSearch.trim().toLowerCase()))
-    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt);
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+  const pinnedSessions = filteredSessions.filter((session) => Boolean(session.pinned));
+  const recentSessions = filteredSessions.filter((session) => !session.pinned);
+
+  const togglePinSession = async (sessionId: string) => {
+    const target = sessions.find((session) => session.id === sessionId);
+    if (!target) return;
+    const nextPinned = !target.pinned;
+    setSessions((current) => current.map((session) =>
+      session.id === sessionId ? { ...session, pinned: nextPinned } : session
+    ));
+    if (authUser?.id && !sessionId.startsWith('chat-')) {
+      const { error } = await supabase.from('baybble_conversations')
+        .update({ is_pinned: nextPinned })
+        .eq('id', sessionId)
+        .eq('user_id', authUser.id);
+      if (error) {
+        setSessions((current) => current.map((session) =>
+          session.id === sessionId ? { ...session, pinned: target.pinned } : session
+        ));
+        if (typeof window !== 'undefined') window.alert('Could not update this pin. Please try again.');
+      }
+    }
+  };
 
   const togglePinActiveChat = () => {
     if (!activeSessionId) return;
-    setSessions((current) => current.map((session) =>
-      session.id === activeSessionId ? { ...session, pinned: !session.pinned } : session
-    ));
+    void togglePinSession(activeSessionId);
     setChatMenuOpen(false);
   };
+
+  const renderHistorySession = (session: ChatSession) => (
+    <View key={session.id} style={[styles.historyItem, activeSessionId === session.id && styles.historyItemActive]}>
+      {renamingSessionId === session.id ? (
+        <View style={styles.renameRow}>
+          <TextInput
+            value={renameDraft}
+            onChangeText={setRenameDraft}
+            onSubmitEditing={saveRename}
+            autoFocus
+            style={styles.renameInput}
+            accessibilityLabel="Conversation name"
+          />
+          <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
+            <Ionicons name="checkmark" size={17} color="#ffffff" />
+          </Pressable>
+        </View>
+      ) : (
+        <>
+          <Pressable style={styles.historyTitleButton} onPress={() => openSavedChat(session)}>
+            <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
+          </Pressable>
+          <Pressable onPress={() => { void togglePinSession(session.id); }} accessibilityLabel={session.pinned ? `Unpin ${session.title}` : `Pin ${session.title}`} style={styles.historyAction}>
+            <Ionicons name={session.pinned ? "pin" : "pin-outline"} size={13} color={session.pinned ? "#e5e5e5" : "#888888"} />
+          </Pressable>
+          <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
+            <Ionicons name="create-outline" size={14} color="#888888" />
+          </Pressable>
+          <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
+            <Ionicons name="trash-outline" size={13} color="#888888" />
+          </Pressable>
+        </>
+      )}
+    </View>
+  );
 
   useEffect(() => {
     const animation = Animated.loop(Animated.timing(gradientRotation, { toValue: 1, duration: 6500, useNativeDriver: false }));
@@ -1214,45 +1270,23 @@ export default function Home() {
                       </View>
                     </View>
 
-                    <View style={styles.sidebarSectionHeading}>
-                      <Text style={styles.sidebarSectionLabel}>{sidebarSearch ? 'SEARCH RESULTS' : 'RECENT'}</Text>
-                    </View>
                     <ScrollView style={styles.sidebarConversationList} showsVerticalScrollIndicator={false}>
-                      {visibleSessions.length === 0 ? (
+                      {!sidebarSearch && pinnedSessions.length > 0 ? (
+                        <>
+                          <View style={styles.sidebarSectionHeading}>
+                            <Text style={styles.sidebarSectionLabel}>PINNED</Text>
+                          </View>
+                          {pinnedSessions.map(renderHistorySession)}
+                        </>
+                      ) : null}
+                      <View style={styles.sidebarSectionHeading}>
+                        <Text style={styles.sidebarSectionLabel}>{sidebarSearch ? 'SEARCH RESULTS' : 'RECENT'}</Text>
+                      </View>
+                      {filteredSessions.length === 0 ? (
                         <Text style={styles.sidebarEmpty}>
                           {sidebarSearch ? 'No conversations match your search.' : 'Your recent conversations will appear here.'}
                         </Text>
-                      ) : visibleSessions.map((session) => (
-                        <View key={session.id} style={[styles.historyItem, activeSessionId === session.id && styles.historyItemActive]}>
-                          {renamingSessionId === session.id ? (
-                            <View style={styles.renameRow}>
-                              <TextInput
-                                value={renameDraft}
-                                onChangeText={setRenameDraft}
-                                onSubmitEditing={saveRename}
-                                autoFocus
-                                style={styles.renameInput}
-                                accessibilityLabel="Conversation name"
-                              />
-                              <Pressable onPress={saveRename} accessibilityLabel="Save conversation name">
-                                <Ionicons name="checkmark" size={17} color="#ffffff" />
-                              </Pressable>
-                            </View>
-                          ) : (
-                            <>
-                              <Pressable style={styles.historyTitleButton} onPress={() => openSavedChat(session)}>
-                                <Text numberOfLines={1} style={styles.historyTitle}>{session.title}</Text>
-                              </Pressable>
-                              <Pressable onPress={() => beginRename(session)} accessibilityLabel={`Rename ${session.title}`} style={styles.historyAction}>
-                                <Ionicons name="create-outline" size={14} color="#888888" />
-                              </Pressable>
-                              <Pressable onPress={() => deleteChat(session.id)} accessibilityLabel={`Delete ${session.title}`} style={styles.historyAction}>
-                                <Ionicons name="trash-outline" size={13} color="#888888" />
-                              </Pressable>
-                            </>
-                          )}
-                        </View>
-                      ))}
+                      ) : (sidebarSearch ? filteredSessions : recentSessions).map(renderHistorySession)}
                     </ScrollView>
                   </>
                 ) : (
@@ -1332,7 +1366,7 @@ export default function Home() {
                       <View style={styles.chatOptionsMenu}>
                       <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
                         <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
-                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin conversation' : 'Pin conversation'}</Text>
                       </Pressable>
                       <Pressable
                         style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
