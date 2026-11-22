@@ -923,6 +923,18 @@ export default function Home() {
 
   return (
     <>
+    <View pointerEvents="none" style={styles.videoBackground}>
+      {React.createElement('video', {
+        src: 'https://videos.pexels.com/video-files/29848604/12817768_3840_2160_30fps.mp4',
+        autoPlay: true,
+        muted: true,
+        loop: true,
+        playsInline: true,
+        preload: 'metadata',
+        style: { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' },
+        'aria-hidden': true
+      } as any)}
+    </View>
     <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
@@ -1049,23 +1061,25 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 72 : 86, zIndex: 1 }]} onPress={openChat}>
-            <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
-            <View style={[styles.searchBar, { minHeight: compact ? 68 : 82, paddingHorizontal: compact ? 18 : 26 }]}>
+          <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
+          <Pressable style={[styles.searchFrame, { minHeight: compact ? 56 : 62, zIndex: 1 }]} onPress={openChat}>
+            <View style={[styles.searchBar, { minHeight: compact ? 56 : 62, paddingHorizontal: compact ? 16 : 21 }]}>
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
                 onFocus={openChat}
                 placeholder="What's on your mind?"
-                placeholderTextColor="#929292"
+                placeholderTextColor="#777777"
                 style={styles.input}
                 returnKeyType="send"
                 onSubmitEditing={sendMessage}
                 accessibilityLabel="Start a conversation with Baybble"
               />
+              <View style={styles.heroSearchArrowCircle} pointerEvents="none">
+                <Ionicons name="arrow-forward" size={18} color="#f2f2f2" />
+              </View>
             </View>
           </Pressable>
-          <Text style={styles.searchCaption}>Start with the challenge. Baybble helps you find a practical way forward.</Text>
           <Text style={styles.heroFootnote}>A clearer way to think through challenges and possibilities.</Text>
         </Animated.View>
       ) : (
@@ -1564,6 +1578,19 @@ export default function Home() {
         </Animated.View>
       )}
 
+      {!chatMode ? (
+        <View style={styles.quoteSection}>
+          <View pointerEvents="none" style={styles.quoteCurve} />
+          <View style={[styles.quoteContent, { paddingHorizontal: compact ? 26 : 90 }]}>
+            <Text style={[styles.quoteHeading, compact && styles.quoteHeadingCompact]}>Where Possibilities Begin.</Text>
+            <Text style={[styles.quoteBody, compact && styles.quoteBodyCompact]}>
+              There is more to every question than its first answer, more to every challenge than its apparent limits, and more to every idea than what we initially imagine. The moment we look beyond what is obvious, we begin to discover possibilities we never knew existed.
+            </Text>
+            <Text style={styles.quoteSignature}>— The Baybble Team</Text>
+          </View>
+        </View>
+      ) : null}
+
     </ScrollView>
     <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setPendingAttachments([]); setConversationAttachments([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
@@ -1571,13 +1598,14 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: '#080808', backgroundImage: "linear-gradient(rgba(8,8,8,0.16), rgba(8,8,8,0.28)), url('https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ISS028/ISS028-E-43296.JPG')", backgroundSize: 'cover', backgroundPosition: 'center 48%', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' } as any,
+  screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
+  videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { width: '100%', minHeight: 92, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 16, backgroundColor: 'transparent' },
+  header: { width: '100%', minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#191919', borderBottomWidth: 1, borderBottomColor: '#303030' },
   navTextMenuOpen: { color: '#080808' },
   navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
-  megaMenuPanel: { position: 'absolute' as any, top: 92, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuPanel: { position: 'absolute' as any, top: 58, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
   megaMenuItem: { minWidth: 0, minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, paddingVertical: 2 },
   megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 14, fontWeight: '600', lineHeight: 20 },
@@ -1592,7 +1620,7 @@ const styles = StyleSheet.create({
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
   wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
-  navCentered: { position: 'absolute', left: 0, right: 0, justifyContent: 'center', overflow: 'visible' },
+  navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
@@ -1606,19 +1634,30 @@ const styles = StyleSheet.create({
   startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
+  heroTagline: { color: '#f0ede7', fontFamily: 'Georgia', fontWeight: '400', fontSize: 38, lineHeight: 46, letterSpacing: -0.8, textAlign: 'center', maxWidth: 900, marginBottom: 25 },
+  heroTaglineCompact: { fontSize: 28, lineHeight: 35, marginBottom: 20, paddingHorizontal: 8 },
   heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
   heroDescription: { color: '#c8c8c8', fontFamily: 'Manrope', fontWeight: '500', fontSize: 16, lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 23, marginBottom: 36 },
   heroDescriptionCompact: { fontSize: 14, lineHeight: 24 },
-  searchFrame: { width: '100%', maxWidth: 790, borderRadius: 999, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: 2, backgroundColor: '#080808' },
-  searchGradient: { position: 'absolute', top: '50%', left: '50%', marginTop: -450, marginLeft: -450, width: 900, height: 900, backgroundImage: 'conic-gradient(from 0deg, #4285F4, #34A853, #FBBC05, #EA4335, #4285F4)' } as any,
-  searchBar: { width: '100%', flexDirection: 'row', alignItems: 'center', borderRadius: 999, backgroundColor: '#080808', paddingHorizontal: 26, zIndex: 1 },
+  searchFrame: { width: '100%', maxWidth: 650, borderRadius: 14, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
+
+  searchBar: { width: '100%', flexDirection: 'row', alignItems: 'center', borderRadius: 14, backgroundColor: '#d5d5d5', paddingHorizontal: 21, zIndex: 1 },
+  heroSearchArrowCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#292929', alignItems: 'center', justifyContent: 'center', marginLeft: 10 },
   searchIcon: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 31, marginRight: 15 },
   micIcon: { marginLeft: 12, marginRight: 2 },
-  input: { flex: 1, minWidth: 0, color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 16, paddingVertical: 20, outlineStyle: 'none' as any },
+  input: { flex: 1, minWidth: 0, color: '#292929', fontFamily: 'Manrope', fontWeight: '500', fontSize: 15, paddingVertical: 14, outlineStyle: 'none' as any },
   searchCaption: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
+  quoteSection: { width: '100%', position: 'relative' as any, marginTop: 240, paddingTop: 0, backgroundColor: 'transparent', overflow: 'visible' as any, zIndex: 2 },
+  quoteCurve: { position: 'absolute' as any, top: 0, left: '-15%' as any, width: '130%' as any, height: 220, borderRadius: 999, backgroundColor: '#ffffff' },
+  quoteContent: { width: '100%', alignItems: 'center', paddingTop: 220, paddingBottom: 145, backgroundColor: '#ffffff' },
+  quoteHeading: { color: '#111111', fontFamily: 'Georgia', fontWeight: '400', fontSize: 48, lineHeight: 58, letterSpacing: -1.2, textAlign: 'center', marginBottom: 36 },
+  quoteHeadingCompact: { fontSize: 34, lineHeight: 42, marginBottom: 26 },
+  quoteBody: { color: '#333333', fontFamily: 'Georgia', fontWeight: '400', fontSize: 25, lineHeight: 41, letterSpacing: -0.25, textAlign: 'center', maxWidth: 1040 },
+  quoteBodyCompact: { fontSize: 19, lineHeight: 31 },
+  quoteSignature: { color: '#777777', fontFamily: 'Manrope', fontSize: 13, fontWeight: '600', letterSpacing: 0.2, marginTop: 42 },
   chatWorkspace: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 10, width: '100%', height: '100vh' as any, minHeight: '100vh' as any, flex: 1, backgroundColor: '#080808' },
   chatBody: { width: '100%', height: '100%' as any, flex: 1, minHeight: '100vh' as any, flexDirection: 'row', position: 'relative' },
   mobileSidebarTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 16, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
