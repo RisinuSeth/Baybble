@@ -160,7 +160,7 @@ function faviconUrl(url: string) {
 function splitSources(content: string) {
   // Accept both plain and Markdown-formatted Sources headings, including headings
   // that begin after a newline.
-  const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*\*|__)?Sources(?:\*\*|__)?\s*:?\s*([\s\S]*)$/i);
+  const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*\*|__)?(?:Sources|References)(?:\*\*|__)?\s*:?\s*([\s\S]*)$/i);
   if (!section || section.index === undefined) {
     return { answer: content, sources: [] as Array<{ url: string; title: string }> };
   }
@@ -205,6 +205,12 @@ function splitSources(content: string) {
     const preceding = sourceText.slice(0, match.index);
     const isMarkdownDestination = /\]\($/.test(preceding);
     if (!isMarkdownDestination) addSource(match[0]);
+  }
+
+  // Keep a plain-text reference list visible if it contains no usable URLs.
+  // The source-icon row is rendered only when real, clickable web URLs were found.
+  if (sources.length === 0) {
+    return { answer: content, sources };
   }
 
   return { answer, sources };
