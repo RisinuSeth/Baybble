@@ -1366,7 +1366,7 @@ export default function Home() {
                       <View style={styles.chatOptionsMenu}>
                       <Pressable style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]} disabled={!activeSessionId} onPress={togglePinActiveChat}>
                         <Ionicons name={sessions.find((item) => item.id === activeSessionId)?.pinned ? "pin" : "pin-outline"} size={16} color={activeSessionId ? "#e5e5e5" : "#666666"} />
-                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin chat' : 'Pin chat'}</Text>
+                        <Text style={[styles.chatOptionsText, !activeSessionId && styles.chatOptionsDisabled]}>{sessions.find((item) => item.id === activeSessionId)?.pinned ? 'Unpin conversation' : 'Pin conversation'}</Text>
                       </Pressable>
                       <Pressable
                         style={[styles.chatOptionsItem, !activeSessionId && styles.chatOptionsItemDisabled]}
