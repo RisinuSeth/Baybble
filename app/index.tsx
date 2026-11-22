@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'expo-router';
 import { Modal } from 'react-native';
 import { supabase } from '../lib/supabase';
 import AuthDialog from '../components/AuthDialog';
@@ -102,6 +103,8 @@ function SectionHeading({ eyebrow, title, body, compact }: { eyebrow: string; ti
 }
 
 export default function Home() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const [draft, setDraft] = useState('');
@@ -109,7 +112,7 @@ export default function Home() {
   const [isPreparingFiles, setIsPreparingFiles] = useState(false);
   const [conversationAttachments, setConversationAttachments] = useState<Array<{ name: string; text: string }>>([]);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
-  const [chatMode, setChatMode] = useState(false);
+  const [chatMode, setChatMode] = useState(pathname !== '/about');
   const [messages, setMessages] = useState<BaybbleMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -513,6 +516,7 @@ export default function Home() {
     }
   };
   const openChat = () => {
+    if (pathname === '/about') { router.replace('/'); return; }
     if (chatMode || isTransitioning) return;
     setIsTransitioning(true);
     Animated.timing(transition, { toValue: 1, duration: 360, useNativeDriver: true }).start(() => {
@@ -1170,6 +1174,16 @@ export default function Home() {
                     </Pressable>
                   )}
                 </View>
+
+                <Pressable
+                  style={[styles.sidebarQuickLink, { marginTop: 12, paddingHorizontal: 10 }]}
+                  onPress={() => { setHistoryOpen(false); router.push('/about'); }}
+                  accessibilityRole="link"
+                  accessibilityLabel="About Baybble"
+                >
+                  <Ionicons name="information-circle-outline" size={17} color="#999999" />
+                  {!sidebarCollapsed || compact ? <Text style={styles.sidebarQuickLinkText}>About Baybble</Text> : null}
+                </Pressable>
 
                 <Pressable
                   style={[styles.sidebarNewButton, sidebarCollapsed && !compact && styles.sidebarNewButtonCollapsed]}
