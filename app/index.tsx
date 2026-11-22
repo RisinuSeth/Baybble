@@ -11,7 +11,7 @@ const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6
 
 type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
 type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
-type BaybbleMessage = { role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
+type BaybbleMessage = { id?: string; role: 'user' | 'assistant'; content: string; attachments?: ChatFileBadge[] };
 type ChatSession = { id: string; title: string; messages: BaybbleMessage[]; updatedAt: number; pinned?: boolean };
 
 const avatarColours = ['#315B83', '#7652A3', '#A05252', '#34796F', '#8A6737', '#536A9B'];
@@ -280,6 +280,7 @@ export default function Home() {
           id: conversation.id,
           title: conversation.title,
           messages: (rows ?? []).map((row: any) => ({
+            id: row.id,
             role: row.role,
             content: row.content,
             ...(filesByMessage.has(row.id) ? { attachments: filesByMessage.get(row.id) } : {})
@@ -555,8 +556,10 @@ export default function Home() {
     if ((!message && pendingAttachments.length === 0) || isSending) return;
     const filesToSend = [...pendingAttachments];
     const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
-    const baseMessages = editingMessageIndex !== null ? messages.slice(0, editingMessageIndex) : messages;
-    const history = [...baseMessages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
+    const isEditingMessage = editingMessageIndex !== null;
+    const editedMessage = isEditingMessage ? messages[editingMessageIndex!] : undefined;
+    const baseMessages = isEditingMessage ? messages.slice(0, editingMessageIndex!) : messages;
+    const history = [...baseMessages, { ...(editedMessage?.id ? { id: editedMessage.id } : {}), role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : editedMessage?.attachments?.length ? { attachments: editedMessage.attachments } : {}) }].slice(-20);
     if (editingMessageIndex !== null) { setEditingMessageIndex(null); setEditingMessageDraft(''); }
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
@@ -582,12 +585,25 @@ export default function Home() {
     let messageId: string | null = null;
     const uploadedPaths: string[] = [];
     if (authUser?.id && conversationId) {
-      const { data: savedMessage, error } = await supabase.from('baybble_messages')
-        .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
-        .select('id')
-        .single();
-      if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
-      messageId = savedMessage.id;
+      if (isEditingMessage && editedMessage?.id) {
+        const { error: updateError } = await supabase.from('baybble_messages')
+          .update({ content: message }).eq('id', editedMessage.id).eq('user_id', authUser.id);
+        if (updateError) { setChatError('Your edited message could not be saved. Please try again.'); return; }
+        const laterIds = messages.slice(editingMessageIndex! + 1).map((item) => item.id).filter(Boolean) as string[];
+        if (laterIds.length) {
+          const { error: deleteError } = await supabase.from('baybble_messages').delete().in('id', laterIds).eq('user_id', authUser.id);
+          if (deleteError) { setChatError('The edited message was saved, but later replies could not be reset. Please refresh and try again.'); return; }
+        }
+        messageId = editedMessage.id;
+      } else {
+        const { data: savedMessage, error } = await supabase.from('baybble_messages')
+          .insert({ conversation_id: conversationId, user_id: authUser.id, role: 'user', content: message })
+          .select('id')
+          .single();
+        if (error || !savedMessage) { setChatError('Your message could not be saved. Please try again.'); return; }
+        messageId = savedMessage.id;
+        history[history.length - 1] = { ...history[history.length - 1], id: messageId };
+      }
 
       try {
         for (const attachment of filesToSend) {
@@ -688,10 +704,11 @@ export default function Home() {
         }
       }
       if (authUser?.id && conversationId && assistantReply) {
-        const { error: saveError } = await supabase.from('baybble_messages').insert({
+        const { data: savedReply, error: saveError } = await supabase.from('baybble_messages').insert({
           conversation_id: conversationId, user_id: authUser.id, role: 'assistant', content: assistantReply
-        });
+        }).select('id').single();
         if (saveError) setChatError('Reply received, but it could not be saved to your account.');
+        else if (savedReply?.id) setMessages((current) => current.map((item, index) => index === current.length - 1 && item.role === 'assistant' ? { ...item, id: savedReply.id } : item));
         await supabase.from('baybble_conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).eq('user_id', authUser.id);
       }
 
