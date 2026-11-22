@@ -61,6 +61,14 @@ const megaMenuContent: Record<string, { eyebrow: string; title: string; descript
   }
 };
 
+function shouldSearchWebInClient(query: string): boolean {
+  const text = query.toLowerCase();
+  return /\b(latest|currently|current|today|tonight|this week|this month|recent|newest|breaking|news|as of now|right now|202[5-9]|2030)\b/.test(text)
+    || /\b(search the web|search online|look up|find sources|find references|provide citations|cite sources|research online|on the internet|web search|latest developments|current events|scientific evidence|academic research|peer reviewed|studies show|research suggests)\b/.test(text)
+    || /\b(price|pricing|exchange rate|weather|opening hours|available now|release date|version)\b/.test(text)
+    || /\b(human origins|origin of (?:humans|humanity|life)|human evolution|evolution of (?:humans|humanity)|formation of (?:humans|humanity)|fossil record|genetic evidence)\b/.test(text);
+}
+
 function profileInitials(name?: string, email?: string) {
   const source = name?.trim() || email?.split('@')[0] || 'B';
   const parts = source.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
@@ -120,6 +128,10 @@ export default function Home() {
   const [renameDraft, setRenameDraft] = useState('');
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [forceWebSearch, setForceWebSearch] = useState(false);
+  const [composerMenuOpen, setComposerMenuOpen] = useState(false);
+  const [hoveredComposerAction, setHoveredComposerAction] = useState<string | null>(null);
+  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
   const [chatError, setChatError] = useState('');
@@ -656,6 +668,7 @@ export default function Home() {
     setDraft('');
     setChatError('');
     setIsSending(true);
+    setIsSearchingWeb(forceWebSearch || shouldSearchWebInClient(message));
 
     const controller = new AbortController();
     abortController.current = controller;
@@ -663,9 +676,10 @@ export default function Home() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, attachments: attachmentContexts }),
+        body: JSON.stringify({ messages: history, attachments: attachmentContexts, forceSearchWeb: forceWebSearch }),
         signal: controller.signal
       });
+      setIsSearchingWeb(false);
       if (!response.ok) {
         let reason = 'Baybble could not respond. Please try again.';
         try {
@@ -791,6 +805,7 @@ export default function Home() {
       }
     } finally {
       if (abortController.current === controller) abortController.current = null;
+      setIsSearchingWeb(false);
       setIsSending(false);
     }
   };
@@ -1457,7 +1472,7 @@ export default function Home() {
                           )
                         ) : (
                           <View style={styles.assistantMessage}>
-                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
+                            {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>{isSearchingWeb ? 'Searching the web…' : 'Baybble is thinking...'}</Text> : null}
                           </View>
                         )}
                         <View
@@ -1538,6 +1553,33 @@ export default function Home() {
                     ))}
                   </View>
                 ) : null}
+                {composerMenuOpen ? (
+                  <View style={styles.composerActionMenu}>
+                    <Pressable
+                      style={[styles.composerActionItem, hoveredComposerAction === 'files' && styles.composerActionItemHovered]}
+                      onHoverIn={() => setHoveredComposerAction('files')}
+                      onHoverOut={() => setHoveredComposerAction(null)}
+                      onPress={() => { setComposerMenuOpen(false); setHoveredComposerAction(null); pickFiles(); }}
+                      disabled={isSending || isPreparingFiles}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="attach-outline" size={17} color="#c9c9c9" />
+                      <Text style={styles.composerActionText}>Add files</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.composerActionItem, hoveredComposerAction === 'web' && styles.composerActionItemHovered]}
+                      onHoverIn={() => setHoveredComposerAction('web')}
+                      onHoverOut={() => setHoveredComposerAction(null)}
+                      onPress={() => setForceWebSearch((enabled) => !enabled)}
+                      disabled={isSending}
+                      accessibilityRole="switch"
+                      accessibilityState={{ checked: forceWebSearch }}
+                    >
+                      <Ionicons name="globe-outline" size={17} color={forceWebSearch ? "#4f9cff" : "#bdbdbd"} />
+                      <Text style={[styles.composerActionText, forceWebSearch && styles.composerActionTextActive]}>Search the web</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
@@ -1559,7 +1601,7 @@ export default function Home() {
                       }}
                       onSubmitEditing={sendMessage}
                     />
-                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Add files">
+                    <Pressable style={styles.attachButton} onPress={() => setComposerMenuOpen((open) => !open)} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Open composer tools" accessibilityState={{ expanded: composerMenuOpen }}>
                       <Ionicons name="add" size={25} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
                     </Pressable>
                     <Pressable style={[styles.micButton, isListening && styles.micButtonActive]} onPress={toggleVoiceInput} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel={isListening ? "Stop voice input" : "Start voice input"}>
@@ -1770,9 +1812,14 @@ const styles = StyleSheet.create({
   assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
   thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
   chatError: { color: '#ff9b9b', fontFamily: 'Manrope', fontSize: 12, lineHeight: 19, textAlign: 'center', marginTop: 8 },
-  composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
+  composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center', position: 'relative' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
   composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
+  composerActionMenu: { position: 'absolute' as any, right: 132, bottom: 92, zIndex: 40, minWidth: 174, padding: 5, borderRadius: 14, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#383838', shadowColor: '#000000', shadowOpacity: 0.28, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: 12 },
+  composerActionItem: { minHeight: 39, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, borderRadius: 9 },
+  composerActionItemHovered: { backgroundColor: '#292929' },
+  composerActionText: { flex: 1, color: '#c4c4c4', fontFamily: 'Manrope', fontSize: 11, fontWeight: '600' },
+  composerActionTextActive: { color: '#4f9cff' },
   attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 2 },
   micButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
   micButtonActive: { backgroundColor: '#8b3434', borderRadius: 19 },
@@ -1785,6 +1832,14 @@ const styles = StyleSheet.create({
   composerInput: { flex: 1, minWidth: 0, maxHeight: 150, color: '#ffffff', fontFamily: 'Manrope', fontSize: 15, paddingVertical: 17, outlineStyle: 'none' as any },
   sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 7 },
   sendButtonDisabled: { opacity: 0.55 },
+  webSearchToggleRow: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 5, marginTop: 9 },
+  webSearchToggle: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#383838', borderRadius: 999, paddingVertical: 6, paddingHorizontal: 10, opacity: 1 },
+  webSearchToggleActive: { backgroundColor: '#292929', borderColor: '#5a5a5a' },
+  webSearchToggleText: { color: '#a0a0a0', fontFamily: 'Manrope', fontSize: 10, fontWeight: '700' },
+  webSearchToggleTextActive: { color: '#f2f2f2' },
+  webSearchToggleIndicator: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#666666' },
+  webSearchToggleIndicatorActive: { backgroundColor: '#f2f2f2' },
+  webSearchAutoNote: { color: '#707070', fontFamily: 'Manrope', fontSize: 9 },
   composerDisclaimer: { color: '#777777', fontFamily: 'Manrope', fontSize: 9, textAlign: 'center', marginTop: 11 },
   filePreparingText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, textAlign: 'center', marginTop: 8 },
   divider: { width: '100%', height: 1, backgroundColor: '#292929' },
