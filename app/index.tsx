@@ -1702,7 +1702,7 @@ const styles = StyleSheet.create({
   historyFootnote: { color: '#666666', fontFamily: 'Manrope', fontSize: 9, paddingTop: 10, paddingHorizontal: 5 },
   chatMain: { flex: 1, minWidth: 0, minHeight: 0, alignItems: 'center' },
   conversationScroll: { width: '100%', flex: 1 },
-  scrollFollowControl: { position: 'absolute' as any, left: '50%' as any, bottom: 104, transform: [{ translateX: -16 }], zIndex: 30, width: 32, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.2, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 6, cursor: 'pointer' as any },
+  scrollFollowControl: { position: 'absolute' as any, left: '50%' as any, bottom: 124, transform: [{ translateX: -16 }], zIndex: 30, width: 32, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#242424', borderWidth: 1, borderColor: '#414141', shadowColor: '#000000', shadowOpacity: 0.2, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 6, cursor: 'pointer' as any },
   thinkingDots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
   thinkingDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#f2f2f2' },
   conversationContent: { flexGrow: 1, width: '100%', maxWidth: 850, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 42, paddingBottom: 30 },
