@@ -304,6 +304,15 @@ export default function Home() {
     }
   }, [sessions, historyReady]);
 
+  useEffect(() => {
+    if (!historyReady || !activeSessionId || messages.length === 0) return;
+    setSessions((current) => current.map((session) =>
+      session.id === activeSessionId
+        ? { ...session, messages }
+        : session
+    ));
+  }, [messages, activeSessionId, historyReady]);
+
   const handleFileSelection = async (event: any) => {
     const selected = Array.from(event?.target?.files || []) as any[];
     if (event?.target) event.target.value = '';
