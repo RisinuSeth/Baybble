@@ -127,6 +127,7 @@ export default function Home() {
   const [hoveredMessageAction, setHoveredMessageAction] = useState<string | null>(null);
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
+  const [editingMessageDraft, setEditingMessageDraft] = useState('');
   const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
@@ -549,14 +550,14 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    const message = draft.trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
+    const message = (editingMessageIndex !== null ? editingMessageDraft : draft).trim() || (pendingAttachments.length ? 'Please analyse the attached file(s).' : '');
     if (isPreparingFiles) { setChatError('Please wait while Baybble reads your files.'); return; }
     if ((!message && pendingAttachments.length === 0) || isSending) return;
     const filesToSend = [...pendingAttachments];
     const fileBadges: ChatFileBadge[] = filesToSend.map(({ id, name, mimeType, size }) => ({ id, name, mimeType, size }));
     const baseMessages = editingMessageIndex !== null ? messages.slice(0, editingMessageIndex) : messages;
     const history = [...baseMessages, { role: 'user' as const, content: message, ...(fileBadges.length ? { attachments: fileBadges } : {}) }].slice(-20);
-    if (editingMessageIndex !== null) setEditingMessageIndex(null);
+    if (editingMessageIndex !== null) { setEditingMessageIndex(null); setEditingMessageDraft(''); }
     let conversationId = activeSessionId;
     const isNewConversation = !conversationId;
     const title = message.length > 42 ? `${message.slice(0, 42).trim()}…` : message;
@@ -1381,7 +1382,7 @@ export default function Home() {
                           </View>
                           {message.role === 'user' ? (
                             <View style={styles.messageActionWrap}>
-                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setDraft(message.content); setEditingMessageIndex(index); }} accessibilityRole="button" accessibilityLabel="Edit message">
+                              <Pressable style={styles.messageActionButton} onHoverIn={() => setHoveredMessageAction(`${index}-edit`)} onHoverOut={() => setHoveredMessageAction(null)} onPress={() => { setEditingMessageDraft(message.content); setEditingMessageIndex(index); setHoveredMessageIndex(null); }} accessibilityRole="button" accessibilityLabel="Edit message">
                                 <Ionicons name="create-outline" size={14} color="#a0a0a0" />
                               </Pressable>
                               {hoveredMessageAction === `${index}-edit` ? <Text style={styles.messageActionTooltip}>Edit</Text> : null}
@@ -1616,6 +1617,13 @@ const styles = StyleSheet.create({
   messageActionTooltip: { position: 'absolute', bottom: 34, left: '50%' as any, transform: [{ translateX: -42 }], minWidth: 84, textAlign: 'center', color: '#f0f0f0', backgroundColor: '#292929', borderWidth: 1, borderColor: '#414141', borderRadius: 7, paddingHorizontal: 9, paddingVertical: 6, fontFamily: 'Manrope', fontSize: 10, fontWeight: '600', zIndex: 20, overflow: 'hidden' },
   userMessage: { alignSelf: 'flex-end', maxWidth: '82%', backgroundColor: '#242424', borderRadius: 22, paddingHorizontal: 18, paddingVertical: 13 },
   userMessageText: { color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22 },
+  inlineEditCard: { width: '100%', maxWidth: 620, alignSelf: 'flex-end', backgroundColor: '#202020', borderWidth: 1, borderColor: '#454545', borderRadius: 18, padding: 13, gap: 12 },
+  inlineEditInput: { width: '100%', minHeight: 74, maxHeight: 220, color: '#f5f5f5', fontFamily: 'Manrope', fontSize: 14, lineHeight: 22, padding: 4, outlineStyle: 'none' as any },
+  inlineEditActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 9 },
+  inlineEditCancel: { minHeight: 34, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 9 },
+  inlineEditCancelText: { color: '#bdbdbd', fontFamily: 'Manrope', fontSize: 11, fontWeight: '700' },
+  inlineEditSave: { minHeight: 34, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 13, borderRadius: 9, backgroundColor: '#ffffff' },
+  inlineEditSaveText: { color: '#080808', fontFamily: 'Manrope', fontSize: 11, fontWeight: '800' },
   assistantMessage: { width: '100%', alignSelf: 'stretch', paddingVertical: 0 },
   assistantMessageText: { color: '#e8e8e8', fontFamily: 'Manrope', fontSize: 14, lineHeight: 25 },
   thinkingText: { color: '#929292', fontFamily: 'Manrope', fontSize: 13, fontStyle: 'italic' },
