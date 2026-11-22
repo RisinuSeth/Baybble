@@ -1,6 +1,6 @@
 import React from 'react';
 import Markdown from 'react-native-markdown-display';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Image, Linking, Pressable, Text, View } from 'react-native';
 
 type MarkdownMessageProps = {
   content: string;
@@ -124,8 +124,7 @@ const sourceStyles = {
     alignSelf: 'flex-start' as const,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 7,
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     marginTop: 2,
     marginBottom: 12,
@@ -139,25 +138,30 @@ const sourceStyles = {
     fontFamily: 'Manrope',
     fontSize: 10,
     fontWeight: '700' as const,
-    marginRight: 2,
+    marginRight: 7,
   },
-  circle: {
-    width: 23,
-    height: 23,
-    borderRadius: 12,
+  sourceIcon: {
+    width: 21,
+    height: 21,
+    borderRadius: 6,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    overflow: 'hidden' as const,
+    backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#454545',
-    backgroundColor: '#242424',
   },
-  number: {
-    color: '#dedede',
-    fontFamily: 'Manrope',
-    fontSize: 10,
-    fontWeight: '700' as const,
-  },
+  sourceIconOverlap: { marginLeft: -5 },
 };
+
+function faviconUrl(url: string) {
+  try {
+    const hostname = new URL(url).hostname;
+    return 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(hostname) + '&sz=64';
+  } catch {
+    return '';
+  }
+}
 
 function splitSources(content: string) {
   const section = content.match(/(?:^|\n)\s*(?:#{1,3}\s*)?Sources\s*:?\s*([\s\S]*)$/i);
@@ -178,7 +182,9 @@ function splitSources(content: string) {
       const bracketLabel = line.match(/\[\d+\]\s*\[([^\]]+)\]/);
       sources.push({
         url,
-        title: markdownLabel?.[1] || bracketLabel?.[1] || ('Source ' + (sources.length + 1)),
+        title: markdownLabel?.[1] || bracketLabel?.[1] || (() => {
+          try { return new URL(url).hostname.replace(/^www\\./, ''); } catch { return 'Source ' + (sources.length + 1); }
+        })(),
       });
     }
   }
@@ -197,12 +203,12 @@ export default function MarkdownMessage({ content }: MarkdownMessageProps) {
           {sources.map((source, index) => (
             <Pressable
               key={source.url}
-              style={sourceStyles.circle}
+              style={[sourceStyles.sourceIcon, index > 0 && sourceStyles.sourceIconOverlap]}
               onPress={() => { void Linking.openURL(source.url); }}
               accessibilityRole="link"
               accessibilityLabel={source.title}
             >
-              <Text style={sourceStyles.number}>{index + 1}</Text>
+              <Image source={{ uri: faviconUrl(source.url) }} style={{ width: 16, height: 16 }} resizeMode="contain" />
             </Pressable>
           ))}
         </View>
