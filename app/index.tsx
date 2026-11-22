@@ -128,6 +128,7 @@ export default function Home() {
   const [historyReady, setHistoryReady] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [forceWebSearch, setForceWebSearch] = useState(false);
+  const [composerMenuOpen, setComposerMenuOpen] = useState(false);
   const [isSearchingWeb, setIsSearchingWeb] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
@@ -1550,19 +1551,23 @@ export default function Home() {
                     ))}
                   </View>
                 ) : null}
+                {composerMenuOpen ? (
+                  <View style={styles.composerActionMenu}>
+                    <Pressable style={styles.composerActionItem} onPress={() => { setComposerMenuOpen(false); pickFiles(); }} disabled={isSending || isPreparingFiles} accessibilityRole="button">
+                      <Ionicons name="attach-outline" size={17} color="#c9c9c9" />
+                      <Text style={styles.composerActionText}>Add files</Text>
+                    </Pressable>
+                    <View style={styles.composerActionDivider} />
+                    <Pressable style={styles.composerActionItem} onPress={() => { setForceWebSearch((enabled) => !enabled); setComposerMenuOpen(false); }} disabled={isSending} accessibilityRole="switch" accessibilityState={{ checked: forceWebSearch }}>
+                      <Ionicons name="globe-outline" size={17} color={forceWebSearch ? "#ffffff" : "#bdbdbd"} />
+                      <Text style={[styles.composerActionText, forceWebSearch && styles.composerActionTextActive]}>Search the web</Text>
+                      {forceWebSearch ? <Ionicons name="checkmark" size={15} color="#ffffff" /> : null}
+                    </Pressable>
+                  </View>
+                ) : null}
                 <View style={styles.composerFrame}>
                   <Animated.View pointerEvents="none" style={[styles.searchGradient, { transform: [{ rotate: gradientAngle }] }]} />
                   <View style={styles.composerInner}>
-                    <Pressable
-                      style={[styles.webSearchIconButton, forceWebSearch && styles.webSearchIconButtonActive]}
-                      onPress={() => setForceWebSearch((enabled) => !enabled)}
-                      disabled={isSending}
-                      accessibilityRole="switch"
-                      accessibilityState={{ checked: forceWebSearch }}
-                      accessibilityLabel="Force web search for messages"
-                    >
-                      <Ionicons name="globe-outline" size={17} color={forceWebSearch ? '#f0f0f0' : '#999999'} />
-                    </Pressable>
                     <TextInput
                       value={draft}
                       onChangeText={setDraft}
@@ -1581,7 +1586,7 @@ export default function Home() {
                       }}
                       onSubmitEditing={sendMessage}
                     />
-                    <Pressable style={styles.attachButton} onPress={pickFiles} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Add files">
+                    <Pressable style={styles.attachButton} onPress={() => setComposerMenuOpen((open) => !open)} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel="Open composer tools" accessibilityState={{ expanded: composerMenuOpen }}>
                       <Ionicons name="add" size={25} color={isSending || isPreparingFiles ? "#666666" : "#bcbcbc"} />
                     </Pressable>
                     <Pressable style={[styles.micButton, isListening && styles.micButtonActive]} onPress={toggleVoiceInput} disabled={isSending || isPreparingFiles} accessibilityRole="button" accessibilityLabel={isListening ? "Stop voice input" : "Start voice input"}>
@@ -1795,8 +1800,11 @@ const styles = StyleSheet.create({
   composerArea: { width: '100%', maxWidth: 850, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, alignSelf: 'center' },
   composerFrame: { width: '100%', minHeight: 72, borderRadius: 28, overflow: 'hidden', position: 'relative', padding: 2, justifyContent: 'center', backgroundColor: '#080808' },
   composerInner: { width: '100%', minHeight: 68, flexDirection: 'row', alignItems: 'center', borderRadius: 26, backgroundColor: '#151515', paddingLeft: 12, paddingRight: 10, zIndex: 1 },
-  webSearchIconButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 7, backgroundColor: '#202020', borderWidth: 1, borderColor: '#333333' },
-  webSearchIconButtonActive: { backgroundColor: '#303030', borderColor: '#777777' },
+  composerActionMenu: { alignSelf: 'flex-end', minWidth: 174, paddingVertical: 5, marginBottom: 8, borderRadius: 12, backgroundColor: '#1b1b1b', borderWidth: 1, borderColor: '#383838' },
+  composerActionItem: { minHeight: 39, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12 },
+  composerActionText: { flex: 1, color: '#c4c4c4', fontFamily: 'Manrope', fontSize: 11, fontWeight: '600' },
+  composerActionTextActive: { color: '#ffffff' },
+  composerActionDivider: { height: 1, backgroundColor: '#333333', marginHorizontal: 9 },
   attachButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginRight: 2 },
   micButton: { width: 34, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
   micButtonActive: { backgroundColor: '#8b3434', borderRadius: 19 },
