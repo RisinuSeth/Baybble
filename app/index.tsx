@@ -1319,6 +1319,33 @@ export default function Home() {
                         {...({ onMouseEnter: () => setHoveredMessageIndex(index), onMouseLeave: () => setHoveredMessageIndex((current) => current === index ? null : current) } as any)}
                       >
                         {message.role === 'user' ? (
+                          editingMessageIndex === index ? (
+                            <View style={styles.inlineEditCard}>
+                              <TextInput
+                                value={editingMessageDraft}
+                                onChangeText={setEditingMessageDraft}
+                                style={styles.inlineEditInput}
+                                multiline
+                                autoFocus
+                                accessibilityLabel="Edit your message"
+                                onKeyPress={(event: any) => {
+                                  const key = event?.nativeEvent?.key ?? event?.key;
+                                  const shift = event?.shiftKey ?? event?.nativeEvent?.shiftKey;
+                                  if (key === 'Enter' && !shift && editingMessageDraft.trim() && !isSending) { event?.preventDefault?.(); sendMessage(); }
+                                  if (key === 'Escape') { setEditingMessageIndex(null); setEditingMessageDraft(''); }
+                                }}
+                              />
+                              <View style={styles.inlineEditActions}>
+                                <Pressable style={styles.inlineEditCancel} onPress={() => { setEditingMessageIndex(null); setEditingMessageDraft(''); }} accessibilityRole="button">
+                                  <Text style={styles.inlineEditCancelText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable style={[styles.inlineEditSave, (!editingMessageDraft.trim() || isSending) && styles.sendButtonDisabled]} onPress={sendMessage} disabled={!editingMessageDraft.trim() || isSending} accessibilityRole="button">
+                                  <Ionicons name="arrow-up" size={15} color="#080808" />
+                                  <Text style={styles.inlineEditSaveText}>Save</Text>
+                                </Pressable>
+                              </View>
+                            </View>
+                          ) : (
                           <View style={styles.userMessage}>
                             {message.attachments?.length ? (
                               <View style={styles.messageFileList}>
@@ -1332,6 +1359,7 @@ export default function Home() {
                             ) : null}
                             <Text style={styles.userMessageText}>{message.content}</Text>
                           </View>
+                          )
                         ) : (
                           <View style={styles.assistantMessage}>
                             {message.content ? <MarkdownMessage content={message.content} /> : isSending ? <Text style={styles.thinkingText}>Baybble is thinking...</Text> : null}
