@@ -951,7 +951,6 @@ export default function Home() {
         'aria-hidden': true
       } as any)}
     </View>
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
@@ -1013,6 +1012,7 @@ export default function Home() {
         </View>
       )}
 
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
       {activeMegaMenu && !compact && !chatMode ? (
         <>
           <Pressable
