@@ -144,6 +144,7 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [loginHovered, setLoginHovered] = useState(false);
   const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const megaMenuAnimation = useRef(new Animated.Value(0)).current;
@@ -982,7 +983,8 @@ export default function Home() {
           <View style={styles.headerActions}>
             <Pressable
               style={({ hovered, pressed }: any) => authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }, hovered && styles.headerTextHovered, pressed && styles.headerTextPressed]}
-              onHoverIn={scheduleCloseMegaMenu}
+              onHoverIn={() => { scheduleCloseMegaMenu(); setLoginHovered(true); }}
+              onHoverOut={() => setLoginHovered(false)}
               onPress={() => setAuthOpen(true)}
               accessibilityRole="button"
               accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
@@ -997,8 +999,8 @@ export default function Home() {
                 </View>
               ) : (
                 <>
-                  <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
-                  <Text style={[styles.loginText, styles.loginTextHovered]}>Log In</Text>
+                  <Ionicons name="person-circle-outline" size={19} color={loginHovered ? '#c9cdd2' : '#eeeeee'} />
+                  <Text style={[styles.loginText, loginHovered && styles.loginTextHovered]}>Log In</Text>
                 </>
               )}
             </Pressable>
