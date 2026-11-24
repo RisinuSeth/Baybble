@@ -1004,7 +1004,7 @@ export default function Home() {
               )}
             </Pressable>
             {!authUser && (
-              <Pressable style={styles.startButton} onHoverIn={scheduleCloseMegaMenu} onPress={() => setAuthOpen(true)}>
+              <Pressable style={({ hovered, pressed }: any) => [styles.startButton, hovered && styles.startButtonHovered, pressed && styles.startButtonPressed]} onHoverIn={scheduleCloseMegaMenu} onPress={() => setAuthOpen(true)}>
                 <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
               </Pressable>
             )}
@@ -1672,8 +1672,10 @@ const styles = StyleSheet.create({
   headerAvatarImage: { width: '100%', height: '100%' },
   headerAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
   loginText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
-  startButton: { backgroundColor: '#ffffff', borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, shadowColor: '#7c72a8', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
-  startText: { color: '#080808', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
+  startButton: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#8a8a8a', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 15, cursor: 'pointer' as any },
+  startButtonHovered: { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: '#ffffff', shadowColor: '#ffffff', shadowOpacity: 0.12, shadowRadius: 9, shadowOffset: { width: 0, height: 2 } },
+  startButtonPressed: { backgroundColor: 'rgba(255,255,255,0.16)', transform: [{ scale: 0.98 }] },
+  startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
   hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
   heroTagline: { color: '#f0ede7', fontFamily: 'Georgia', fontWeight: '400', fontSize: 38, lineHeight: 46, letterSpacing: -0.8, textAlign: 'center', maxWidth: 900, marginBottom: 25 },
