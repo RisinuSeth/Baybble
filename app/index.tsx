@@ -1623,16 +1623,204 @@ export default function Home() {
       )}
 
       {!chatMode ? (
-        <View style={styles.quoteSection}>
-          <View pointerEvents="none" style={styles.quoteCurve} />
-          <View style={[styles.quoteContent, { paddingHorizontal: compact ? 26 : 90 }]}>
-            <Text style={[styles.quoteHeading, compact && styles.quoteHeadingCompact]}>Where Possibilities Begin.</Text>
-            <Text style={[styles.quoteBody, compact && styles.quoteBodyCompact]}>
-              There is more to every question than its first answer, more to every challenge than its apparent limits, and more to every idea than what we initially imagine. The moment we look beyond what is obvious, we begin to discover possibilities we never knew existed.
-            </Text>
-            <Text style={styles.quoteSignature}>— The Baybble Team</Text>
+        <>
+          <View style={styles.quoteSection}>
+            <View style={[styles.quoteContent, { paddingHorizontal: compact ? 26 : 90 }]}>
+              <Text style={[styles.quoteHeading, compact && styles.quoteHeadingCompact]}>Where Possibilities Begin.</Text>
+              <Text style={[styles.quoteBody, compact && styles.quoteBodyCompact]}>
+                There is more to every question than its first answer, more to every challenge than its apparent limits, and more to every idea than what we initially imagine. The moment we look beyond what is obvious, we begin to discover possibilities we never knew existed.
+              </Text>
+              <Text style={styles.quoteSignature}>— The Baybble Team</Text>
+            </View>
           </View>
-        </View>
+
+          <View style={styles.longformPage}>
+            <View style={styles.productOverview}>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>One place to research, build, and ship</Text>
+              <View style={[styles.productGrid, compact && styles.productGridCompact]}>
+                <View style={styles.productColumn}>
+                  <Text style={styles.productName}>Answer Engine</Text>
+                  <Text style={styles.productDescription}>Get accurate, cited answers; then go deeper with analysis to turn information into real insight.</Text>
+                </View>
+                <View style={styles.productColumn}>
+                  <Text style={styles.productName}>Computer</Text>
+                  <Text style={styles.productDescription}>Research, analyze, create, and code; then run it all as a multi-step workflow, start to finish.</Text>
+                </View>
+                <View style={styles.productColumn}>
+                  <Text style={styles.productName}>Comet</Text>
+                  <Text style={styles.productDescription}>Ask, navigate, and act in the flow of the work, without ever leaving the browser.</Text>
+                </View>
+                <View style={styles.productColumn}>
+                  <Text style={styles.productName}>API Platform</Text>
+                  <Text style={styles.productDescription}>The same accurate AI that powers Perplexity is available as an API for whatever you're building.</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.workflowSection}>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>From first question to finished work</Text>
+              <Text style={styles.sectionSubheading}>Go deep on any company, market, or topic, with sources.</Text>
+              <View style={styles.workflowTabs}>
+                {['Research', 'Analyze', 'Build', 'Automate'].map((tab, index) => (
+                  <View key={tab} style={[styles.workflowTab, index === 0 && styles.workflowTabActive]}>
+                    <Text style={[styles.workflowTabText, index === 0 && styles.workflowTabTextActive]}>{tab}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={[styles.researchShowcase, compact && styles.researchShowcaseCompact]}>
+                <View style={styles.researchCopy}>
+                  <Text style={styles.showcaseEyebrow}>CRISPR Therapeutics (CRSP) Diligence</Text>
+                  <Text style={styles.showcaseTitle}>Research, analyze, and understand the full picture.</Text>
+                  <Text style={styles.showcaseDescription}>Explore a company, compare the evidence, and bring the important details together.</Text>
+                  <View style={styles.sourcePills}>
+                    <Text style={styles.sourcePill}>Research</Text>
+                    <Text style={styles.sourcePill}>Sources</Text>
+                    <Text style={styles.sourcePill}>Analysis</Text>
+                  </View>
+                </View>
+                <Image
+                  source={{ uri: 'https://images.pexels.com/photos/29457406/pexels-photo-29457406.jpeg?auto=compress&cs=tinysrgb&w=1600' }}
+                  style={styles.researchImage}
+                  resizeMode="cover"
+                />
+              </View>
+            </View>
+
+            <View style={styles.marketSection}>
+              <View style={[styles.marketIntro, compact && styles.marketIntroCompact]}>
+                <View style={styles.marketIntroCopy}>
+                  <Text style={styles.showcaseEyebrow}>COMPETITIVE INTELLIGENCE</Text>
+                  <Text style={styles.sectionHeading}>SANTA CRUZ SKATE MAP</Text>
+                  <Text style={styles.sectionSubheading}>Competitive intel for your new shop</Text>
+                  <View style={styles.budgetLegend}>
+                    <Text style={styles.budgetItem}>Budget</Text>
+                    <Text style={styles.budgetItem}>Mid</Text>
+                    <Text style={styles.budgetItem}>Premium</Text>
+                  </View>
+                </View>
+                <Image
+                  source={{ uri: 'https://images.pexels.com/photos/4050393/pexels-photo-4050393.jpeg?auto=compress&cs=tinysrgb&w=1400' }}
+                  style={styles.marketImage}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={[styles.shopGrid, compact && styles.shopGridCompact]}>
+                {[
+                  ['1', "Bill's Wheels", 'locals · families · tourists', 'Budget-Mid', 'est. 1977', '49'],
+                  ['2', 'SC Boardroom', 'mid-market core shoppers', 'Mid-Range', 'est. 2008', '18'],
+                  ['3', "O'Neill", 'surf + skate crossover', 'Premium', 'est. 1952', '74'],
+                  ['4', 'Consolidated', 'pro / competitive skaters', 'Mid-Range', 'est. 1991', '35'],
+                  ['5', 'Pacific Wave', 'surf · skate · snow', 'Budget', 'est. 1993', '33']
+                ].map((shop) => (
+                  <View key={shop[0]} style={styles.shopRow}>
+                    <Text style={styles.shopNumber}>{shop[0]}</Text>
+                    <View style={styles.shopDetails}>
+                      <Text style={styles.shopName}>{shop[1]}</Text>
+                      <Text style={styles.shopMeta}>{shop[2]}</Text>
+                    </View>
+                    <Text style={styles.shopTier}>{shop[3]}</Text>
+                    <Text style={styles.shopYear}>{shop[4]}</Text>
+                    <Text style={styles.shopMetric}>{shop[5]}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.analyticsSection}>
+              <Text style={styles.showcaseEyebrow}>COMPETITIVE INTELLIGENCE</Text>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Channel Contribution</Text>
+              <View style={styles.analyticsSummary}>
+                <Text style={styles.analyticsAmount}>$1.56M</Text>
+                <Text style={styles.analyticsCaption}>Total Spend</Text>
+              </View>
+              <View style={styles.analyticsTable}>
+                <View style={styles.analyticsTableHeader}>
+                  {['Platform', 'Spend', '% of Total', 'CAC', 'Subs', 'ROAS'].map((label) => <Text key={label} style={styles.analyticsHeaderCell}>{label}</Text>)}
+                </View>
+                {[
+                  ['Meta', '$599.9K', '38.5%', '$22.26', '26.9K', '2.25x'],
+                  ['Google', '$437.3K', '28.1%', '$17.31', '25.3K', '2.89x'],
+                  ['TikTok', '$270.2K', '17.4%', '$32.34', '8.4K', '1.55x'],
+                  ['ASA', '$140.6K', '9%', '$14.53', '9.7K', '3.44x'],
+                  ['MOLOCO', '$108.7K', '7%', '$26.08', '4.2K', '1.92x']
+                ].map((row) => (
+                  <View key={row[0]} style={styles.analyticsTableRow}>
+                    {row.map((cell, index) => <Text key={index} style={[styles.analyticsCell, index === 0 && styles.analyticsPlatform]}>{cell}</Text>)}
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.audienceSection}>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Used daily by individuals, trusted by organizations</Text>
+              <View style={[styles.audienceGrid, compact && styles.audienceGridCompact]}>
+                <View style={styles.audienceColumn}>
+                  <Text style={styles.audienceLabel}>For individuals</Text>
+                  <Text style={styles.audienceDescription}>The full power of Perplexity, free to start.</Text>
+                  <Text style={styles.audienceLink}>Start free ↗</Text>
+                </View>
+                <View style={styles.audienceColumn}>
+                  <Text style={styles.audienceLabel}>For teams</Text>
+                  <Text style={styles.audienceDescription}>Secure, compliant, and ready to scale.</Text>
+                  <Text style={styles.audienceLink}>Explore Enterprise ↗</Text>
+                </View>
+                <View style={styles.audienceColumn}>
+                  <Text style={styles.audienceLabel}>For developers</Text>
+                  <Text style={styles.audienceDescription}>Add trusted, cited search and research to builds.</Text>
+                  <Text style={styles.audienceLink}>Start building ↗</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.faqSection}>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Frequently asked questions</Text>
+              {[
+                'What is Perplexity?',
+                'How can I use Perplexity?',
+                'How is Perplexity different from other platforms?',
+                'How does Perplexity protect my information?',
+                'How much does it cost?',
+                'What are the benefits of upgrading to Perplexity Pro or Max?',
+                'How do I get started?'
+              ].map((question) => (
+                <View key={question} style={styles.faqRow}>
+                  <Text style={styles.faqQuestion}>{question}</Text>
+                  <Ionicons name="add" size={20} color="#333333" />
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.footerSection}>
+              <View style={[styles.footerColumns, compact && styles.footerColumnsCompact]}>
+                <View style={styles.footerColumn}>
+                  <Text style={styles.footerHeading}>Products</Text>
+                  {['Search', 'Computer', 'Teammates', 'Comet', 'API', 'Deep Research'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                </View>
+                <View style={styles.footerColumn}>
+                  <Text style={styles.footerHeading}>Solutions</Text>
+                  {['By Size', 'Enterprise', 'By Industry', 'Finance', 'Legal', 'Consulting', 'Healthcare', 'Tech', 'Government', 'Education', 'E-commerce', 'Advertising', 'By Team', 'Marketing', 'Sales', 'Product', 'IT'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                </View>
+                <View style={styles.footerColumn}>
+                  <Text style={styles.footerHeading}>Pricing</Text>
+                  {['Pro', 'Max', 'Enterprise', 'API'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                </View>
+                <View style={styles.footerColumn}>
+                  <Text style={styles.footerHeading}>Resources</Text>
+                  {['Blog', 'Resource Hub', 'Guides', 'Customers', 'Academy', 'Workshops', 'Docs', 'Help center', 'Research blog', 'Security', 'Trust center'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                </View>
+                <View style={styles.footerColumn}>
+                  <Text style={styles.footerHeading}>Company</Text>
+                  {['Careers', 'Brand Guidelines', 'Supply Store', 'Privacy Policy', 'Terms & Conditions'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                </View>
+              </View>
+              <View style={styles.footerBottom}>
+                <Text style={styles.footerBrand}>Baybble</Text>
+                <Text style={styles.footerCopyright}>©2026</Text>
+              </View>
+            </View>
+          </View>
+        </>
       ) : null}
 
     </ScrollView>
@@ -1699,14 +1887,84 @@ const styles = StyleSheet.create({
   input: { flex: 1, minWidth: 0, color: '#292929', fontFamily: 'Manrope', fontWeight: '500', fontSize: 15, paddingVertical: 14, outlineStyle: 'none' as any },
   searchCaption: { color: '#ffffff', fontFamily: 'Manrope', fontSize: 12, fontWeight: '500', marginTop: 15 },
   heroFootnote: { color: '#858585', fontFamily: 'Manrope', fontSize: 10, marginTop: 15, textAlign: 'center' },
-  quoteSection: { width: '100%', position: 'relative' as any, marginTop: 240, paddingTop: 0, backgroundColor: 'transparent', overflow: 'visible' as any, zIndex: 2 },
-  quoteCurve: { position: 'absolute' as any, top: 0, left: '-15%' as any, width: '130%' as any, height: 220, borderRadius: 999, backgroundColor: '#000000' },
-  quoteContent: { width: '100%', alignItems: 'center', paddingTop: 220, paddingBottom: 145, backgroundColor: '#000000' },
-  quoteHeading: { color: '#e6e6e6', fontFamily: 'Georgia', fontWeight: '400', fontSize: 48, lineHeight: 58, letterSpacing: -1.2, textAlign: 'center', marginBottom: 36 },
-  quoteHeadingCompact: { fontSize: 34, lineHeight: 42, marginBottom: 26 },
-  quoteBody: { color: '#e0e0e0', fontFamily: 'Georgia', fontWeight: '400', fontSize: 25, lineHeight: 41, letterSpacing: -0.25, textAlign: 'center', maxWidth: 1040 },
-  quoteBodyCompact: { fontSize: 19, lineHeight: 31 },
-  quoteSignature: { color: '#b0b0b0', fontFamily: 'Manrope', fontSize: 13, fontWeight: '600', letterSpacing: 0.2, marginTop: 42 },
+  quoteSection: { width: '100%', marginTop: 105, backgroundColor: '#ffffff', zIndex: 2 },
+  quoteContent: { width: '100%', alignItems: 'center', paddingTop: 82, paddingBottom: 94, backgroundColor: '#ffffff' },
+  quoteHeading: { color: '#111111', fontFamily: 'Georgia', fontWeight: '400', fontSize: 39, lineHeight: 47, letterSpacing: -0.9, textAlign: 'center', marginBottom: 24 },
+  quoteHeadingCompact: { fontSize: 31, lineHeight: 38, marginBottom: 20 },
+  quoteBody: { color: '#303030', fontFamily: 'Georgia', fontWeight: '400', fontSize: 19, lineHeight: 32, letterSpacing: -0.12, textAlign: 'center', maxWidth: 900 },
+  quoteBodyCompact: { fontSize: 16, lineHeight: 27 },
+  quoteSignature: { color: '#666666', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600', letterSpacing: 0.15, marginTop: 26 },
+  longformPage: { width: '100%', backgroundColor: '#ffffff', alignItems: 'center' },
+  productOverview: { width: '100%', paddingHorizontal: 64, paddingTop: 66, paddingBottom: 104, backgroundColor: '#ffffff' },
+  sectionHeading: { color: '#101010', fontFamily: 'Manrope', fontWeight: '600', fontSize: 36, lineHeight: 44, letterSpacing: -1.3, maxWidth: 850 },
+  sectionHeadingCompact: { fontSize: 28, lineHeight: 35, letterSpacing: -0.8 },
+  sectionSubheading: { color: '#555555', fontFamily: 'Manrope', fontSize: 15, lineHeight: 24, marginTop: 12 },
+  productGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 36, marginTop: 55 },
+  productGridCompact: { flexDirection: 'column', gap: 28, marginTop: 36 },
+  productColumn: { flex: 1, minWidth: 190, maxWidth: 280, gap: 12 },
+  productName: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 18, letterSpacing: -0.3 },
+  productDescription: { color: '#555555', fontFamily: 'Manrope', fontSize: 14, lineHeight: 23 },
+  workflowSection: { width: '100%', paddingHorizontal: 64, paddingTop: 70, paddingBottom: 95, backgroundColor: '#f7f7f7' },
+  workflowTabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 28, marginTop: 34, marginBottom: 26 },
+  workflowTab: { paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: 'transparent' },
+  workflowTabActive: { borderBottomColor: '#111111' },
+  workflowTabText: { color: '#777777', fontFamily: 'Manrope', fontSize: 13, fontWeight: '600' },
+  workflowTabTextActive: { color: '#111111' },
+  researchShowcase: { width: '100%', flexDirection: 'row', alignItems: 'stretch', backgroundColor: '#ffffff', minHeight: 320 },
+  researchShowcaseCompact: { flexDirection: 'column' },
+  researchCopy: { flex: 1, justifyContent: 'center', padding: 34, gap: 14 },
+  showcaseEyebrow: { color: '#777777', fontFamily: 'Manrope', fontWeight: '700', fontSize: 9, letterSpacing: 1.5 },
+  showcaseTitle: { color: '#111111', fontFamily: 'Manrope', fontWeight: '600', fontSize: 24, lineHeight: 32, letterSpacing: -0.7 },
+  showcaseDescription: { color: '#555555', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22 },
+  sourcePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  sourcePill: { color: '#444444', fontFamily: 'Manrope', fontSize: 10, paddingVertical: 7, paddingHorizontal: 10, backgroundColor: '#f2f2f2', borderRadius: 999 },
+  researchImage: { flex: 1, minWidth: 0, height: 320, backgroundColor: '#eeeeee' },
+  marketSection: { width: '100%', paddingHorizontal: 64, paddingTop: 95, paddingBottom: 95, backgroundColor: '#ffffff' },
+  marketIntro: { flexDirection: 'row', alignItems: 'center', gap: 40, marginBottom: 38 },
+  marketIntroCompact: { flexDirection: 'column', alignItems: 'stretch' },
+  marketIntroCopy: { flex: 1, gap: 12 },
+  budgetLegend: { flexDirection: 'row', gap: 18, marginTop: 12 },
+  budgetItem: { color: '#555555', fontFamily: 'Manrope', fontSize: 11 },
+  marketImage: { flex: 1, minWidth: 0, height: 260, backgroundColor: '#eeeeee' },
+  shopGrid: { width: '100%', borderTopWidth: 1, borderTopColor: '#e5e5e5' },
+  shopGridCompact: { width: '100%' },
+  shopRow: { minHeight: 66, flexDirection: 'row', alignItems: 'center', gap: 15, borderBottomWidth: 1, borderBottomColor: '#e5e5e5', paddingVertical: 12 },
+  shopNumber: { color: '#999999', fontFamily: 'Manrope', fontSize: 11, width: 20 },
+  shopDetails: { flex: 1, gap: 4 },
+  shopName: { color: '#151515', fontFamily: 'Manrope', fontSize: 13, fontWeight: '700' },
+  shopMeta: { color: '#777777', fontFamily: 'Manrope', fontSize: 10 },
+  shopTier: { color: '#333333', fontFamily: 'Manrope', fontSize: 10, width: 85 },
+  shopYear: { color: '#777777', fontFamily: 'Manrope', fontSize: 10, width: 75 },
+  shopMetric: { color: '#222222', fontFamily: 'Manrope', fontSize: 11, width: 28, textAlign: 'right' },
+  analyticsSection: { width: '100%', paddingHorizontal: 64, paddingTop: 82, paddingBottom: 105, backgroundColor: '#f7f7f7' },
+  analyticsSummary: { flexDirection: 'row', alignItems: 'baseline', gap: 12, marginTop: 35, marginBottom: 25 },
+  analyticsAmount: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 34, letterSpacing: -1.2 },
+  analyticsCaption: { color: '#777777', fontFamily: 'Manrope', fontSize: 12 },
+  analyticsTable: { width: '100%' },
+  analyticsTableHeader: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#cccccc', paddingVertical: 13 },
+  analyticsTableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e2e2e2', paddingVertical: 15 },
+  analyticsHeaderCell: { flex: 1, minWidth: 0, color: '#777777', fontFamily: 'Manrope', fontSize: 9, fontWeight: '700' },
+  analyticsCell: { flex: 1, minWidth: 0, color: '#555555', fontFamily: 'Manrope', fontSize: 10 },
+  analyticsPlatform: { color: '#111111', fontWeight: '700' },
+  audienceSection: { width: '100%', paddingHorizontal: 64, paddingTop: 95, paddingBottom: 105, backgroundColor: '#ffffff' },
+  audienceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 42, marginTop: 52 },
+  audienceGridCompact: { flexDirection: 'column', gap: 30 },
+  audienceColumn: { flex: 1, minWidth: 180, gap: 12 },
+  audienceLabel: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 16 },
+  audienceDescription: { color: '#555555', fontFamily: 'Manrope', fontSize: 13, lineHeight: 22 },
+  audienceLink: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12, marginTop: 6 },
+  faqSection: { width: '100%', paddingHorizontal: 64, paddingTop: 90, paddingBottom: 100, backgroundColor: '#f7f7f7' },
+  faqRow: { minHeight: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#dedede', gap: 20 },
+  faqQuestion: { color: '#191919', fontFamily: 'Manrope', fontWeight: '600', fontSize: 14 },
+  footerSection: { width: '100%', paddingHorizontal: 64, paddingTop: 72, paddingBottom: 25, backgroundColor: '#ffffff' },
+  footerColumns: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 35, paddingBottom: 60 },
+  footerColumnsCompact: { flexDirection: 'column', gap: 30 },
+  footerColumn: { minWidth: 110, gap: 12 },
+  footerHeading: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12, marginBottom: 6 },
+  footerLink: { color: '#666666', fontFamily: 'Manrope', fontSize: 11, lineHeight: 17 },
+  footerBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#e5e5e5', paddingTop: 20 },
+  footerBrand: { color: '#111111', fontFamily: 'Manrope', fontWeight: '700', fontSize: 17 },
+  footerCopyright: { color: '#777777', fontFamily: 'Manrope', fontSize: 10 },
   chatWorkspace: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 10, width: '100%', height: '100vh' as any, minHeight: '100vh' as any, flex: 1, backgroundColor: '#080808' },
   chatBody: { width: '100%', height: '100%' as any, flex: 1, minHeight: '100vh' as any, flexDirection: 'row', position: 'relative' },
   mobileSidebarTrigger: { position: 'absolute', zIndex: 6, top: 15, left: 16, width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171717', borderWidth: 1, borderColor: '#303030' },
