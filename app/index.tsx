@@ -998,7 +998,7 @@ export default function Home() {
               ) : (
                 <>
                   <Ionicons name="person-circle-outline" size={19} color="#eeeeee" />
-                  <Text style={styles.loginText}>Log In</Text>
+                  <Text style={[styles.loginText, styles.loginTextHovered]}>Log In</Text>
                 </>
               )}
             </Pressable>
@@ -1662,9 +1662,10 @@ const styles = StyleSheet.create({
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
-  navTextHovered: { color: '#d0d0d0', textDecorationLine: 'underline' },
-  headerTextHovered: { opacity: 0.72 },
-  headerTextPressed: { opacity: 0.55 },
+  navTextHovered: { color: '#c9cdd2' },
+  headerTextHovered: { opacity: 1 },
+  headerTextPressed: { opacity: 0.7 },
+  loginTextHovered: { color: '#c9cdd2' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
   profileButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 19, overflow: 'hidden' },
