@@ -979,7 +979,7 @@ export default function Home() {
       } as any)}
     </View>
       {!chatMode && (
-        <Animated.View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(25,25,25,0)", "#191919"] }), borderBottomColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(48,48,48,0)", "#303030"] }) }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <Animated.View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(25,25,25,0.28)", "#191919"] }), borderBottomColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(255,255,255,0.12)", "#303030"] }), ...({ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } as any) }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
