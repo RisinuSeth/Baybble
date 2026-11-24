@@ -958,7 +958,6 @@ export default function Home() {
 
           {!compact && (
             <View style={[styles.nav, styles.navCentered]} onHoverOut={scheduleCloseMegaMenu}>
-              <Animated.View pointerEvents="none" style={[styles.navActiveCapsule, { opacity: navCapsuleOpacity, width: navCapsuleWidth, transform: [{ translateX: navCapsuleX }] }]} />
               {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
                 <Pressable
                   key={item}
@@ -974,7 +973,7 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityState={{ expanded: activeMegaMenu === item }}
                 >
-                  <Text style={[styles.navText, activeMegaMenu === item && styles.navTextMenuOpen]}>{item}</Text>
+                  <Text style={[styles.navText, activeMegaMenu === item && styles.navTextHovered]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
@@ -982,7 +981,7 @@ export default function Home() {
 
           <View style={styles.headerActions}>
             <Pressable
-              style={authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }]}
+              style={({ hovered, pressed }: any) => authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }, hovered && styles.headerTextHovered, pressed && styles.headerTextPressed]}
               onHoverIn={scheduleCloseMegaMenu}
               onPress={() => setAuthOpen(true)}
               accessibilityRole="button"
@@ -1644,8 +1643,6 @@ const styles = StyleSheet.create({
   videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#191919', borderBottomWidth: 1, borderBottomColor: '#303030' },
-  navTextMenuOpen: { color: '#080808' },
-  navActiveCapsule: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, backgroundColor: '#ffffff', zIndex: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
   megaMenuPanel: { position: 'absolute' as any, top: 58, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
@@ -1663,8 +1660,11 @@ const styles = StyleSheet.create({
   wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
-  navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1 },
+  navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
+  navTextHovered: { color: '#d0d0d0', textDecorationLine: 'underline' },
+  headerTextHovered: { opacity: 0.72 },
+  headerTextPressed: { opacity: 0.55 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 17 },
   loginButton: { paddingVertical: 11, paddingHorizontal: 4 },
   profileButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 19, overflow: 'hidden' },
