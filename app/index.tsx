@@ -1678,7 +1678,7 @@ const styles = StyleSheet.create({
   headerAvatarInitial: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '800', fontSize: 14 },
   loginText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   startButton: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#8a8a8a', borderRadius: 999, paddingVertical: 9, paddingHorizontal: 15, cursor: 'pointer' as any },
-  startButtonHovered: { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: '#ffffff', shadowColor: '#ffffff', shadowOpacity: 0.12, shadowRadius: 9, shadowOffset: { width: 0, height: 2 } },
+  startButtonHovered: { backgroundColor: 'rgba(255,255,255,0.025)', borderColor: '#a0a0a0' },
   startButtonPressed: { backgroundColor: 'rgba(255,255,255,0.16)', transform: [{ scale: 0.98 }] },
   startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
