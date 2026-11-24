@@ -1847,7 +1847,7 @@ const styles = StyleSheet.create({
   logoMark: { width: 32, height: 32, position: 'relative' },
   logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#F1F1F1', top: 0, left: 0 },
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
-  wordmark: { color: '#F5F5F5', fontFamily: 'Manrope', fontWeight: '700', fontSize: 24, lineHeight: 32, letterSpacing: -1.05, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', userSelect: 'all' } as any,
+  wordmark: { color: '#EEEEEE', fontFamily: 'Manrope', fontWeight: '700', fontSize: 24, lineHeight: 32, letterSpacing: -1.05, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', userSelect: 'all' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
