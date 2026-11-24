@@ -156,7 +156,8 @@ export default function Home() {
   const abortController = useRef<AbortController | null>(null);
   const conversationScrollRef = useRef<ScrollView | null>(null);
   const headerMotionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [headerMoving, setHeaderMoving] = useState(false);
+  const headerBackgroundProgress = useRef(new Animated.Value(0)).current;
+  const headerMotionActive = useRef(false);
   const isNearConversationBottomRef = useRef(true);
   const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
@@ -170,9 +171,23 @@ export default function Home() {
   }, []);
 
   const handleHomepageScroll = () => {
-    setHeaderMoving(true);
+    if (!headerMotionActive.current) {
+      headerMotionActive.current = true;
+      Animated.timing(headerBackgroundProgress, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: false
+      }).start();
+    }
     if (headerMotionTimer.current) clearTimeout(headerMotionTimer.current);
-    headerMotionTimer.current = setTimeout(() => setHeaderMoving(false), 180);
+    headerMotionTimer.current = setTimeout(() => {
+      headerMotionActive.current = false;
+      Animated.timing(headerBackgroundProgress, {
+        toValue: 0,
+        duration: 650,
+        useNativeDriver: false
+      }).start();
+    }, 1200);
   };
 
   useEffect(() => {
@@ -964,7 +979,7 @@ export default function Home() {
       } as any)}
     </View>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerMoving ? "#191919" : "transparent", borderBottomColor: headerMoving ? "#303030" : "transparent" }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <Animated.View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(25,25,25,0)", "#191919"] }), borderBottomColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(48,48,48,0)", "#303030"] }) }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1021,7 +1036,7 @@ export default function Home() {
               </Pressable>
             )}
           </View>
-        </View>
+        </Animated.View>
       )}
 
       {activeMegaMenu && !compact && !chatMode ? (
