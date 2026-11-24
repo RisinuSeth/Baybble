@@ -974,7 +974,7 @@ export default function Home() {
                   accessibilityRole="button"
                   accessibilityState={{ expanded: activeMegaMenu === item }}
                 >
-                  <Text style={[styles.navText, activeMegaMenu === item && styles.navTextHovered]}>{item}</Text>
+                  <Text style={[styles.navText, activeMegaMenu ? (activeMegaMenu === item ? styles.navTextHovered : styles.navTextDimmed) : null]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
@@ -1664,7 +1664,8 @@ const styles = StyleSheet.create({
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
   navText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '600', fontSize: 13 },
-  navTextHovered: { color: '#c9cdd2' },
+  navTextHovered: { color: '#ffffff' },
+  navTextDimmed: { color: '#555555' },
   headerTextHovered: { opacity: 1 },
   headerTextPressed: { opacity: 0.7 },
   loginTextHovered: { color: '#c9cdd2' },
