@@ -144,7 +144,6 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
-  const [isPageScrolled, setIsPageScrolled] = useState(false);
   const [loginHovered, setLoginHovered] = useState(false);
   const [hoveredMegaLink, setHoveredMegaLink] = useState<string | null>(null);
   const megaMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -952,9 +951,9 @@ export default function Home() {
         'aria-hidden': true
       } as any)}
     </View>
-    <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator stickyHeaderIndices={!chatMode ? [0] : []} onScroll={(event) => setIsPageScrolled(event.nativeEvent.contentOffset.y > 0)} scrollEventThrottle={16}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.page} showsVerticalScrollIndicator>
       {!chatMode && (
-        <View style={[styles.header, isPageScrolled && styles.headerScrolled, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1646,7 +1645,6 @@ const styles = StyleSheet.create({
   videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   header: { width: '100%', minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#191919', borderBottomWidth: 1, borderBottomColor: '#303030' },
-  headerScrolled: { backgroundColor: 'transparent', borderBottomWidth: 0 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
   megaMenuPanel: { position: 'absolute' as any, top: 58, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
