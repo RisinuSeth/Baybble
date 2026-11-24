@@ -1009,7 +1009,7 @@ export default function Home() {
               </Pressable>
             )}
           </View>
-        </Animated.View>
+        </View>
       )}
 
       {activeMegaMenu && !compact && !chatMode ? (
@@ -1060,7 +1060,7 @@ export default function Home() {
                 </Pressable>
               ))}
             </View>
-          </View>
+          </Animated.View>
         </>
       ) : null}
     <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
