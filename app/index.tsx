@@ -1636,32 +1636,32 @@ export default function Home() {
 
           <View style={styles.longformPage}>
             <View style={styles.productOverview}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>One place to research, build, and ship</Text>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>One place to ask, explore, and understand</Text>
               <View style={[styles.productGrid, compact && styles.productGridCompact]}>
                 <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Answer Engine</Text>
-                  <Text style={styles.productDescription}>Get accurate, cited answers; then go deeper with analysis to turn information into real insight.</Text>
+                  <Text style={styles.productName}>Answers</Text>
+                  <Text style={styles.productDescription}>Get clear answers to your questions, with sources when web research is needed.</Text>
                 </View>
                 <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Computer</Text>
-                  <Text style={styles.productDescription}>Research, analyze, create, and code; then run it all as a multi-step workflow, start to finish.</Text>
+                  <Text style={styles.productName}>Research</Text>
+                  <Text style={styles.productDescription}>Explore topics, discover useful information, and bring relevant sources together.</Text>
                 </View>
                 <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Comet</Text>
-                  <Text style={styles.productDescription}>Ask, navigate, and act in the flow of the work, without ever leaving the browser.</Text>
+                  <Text style={styles.productName}>Analysis</Text>
+                  <Text style={styles.productDescription}>Work through complex ideas, compare possibilities, and understand the details.</Text>
                 </View>
                 <View style={styles.productColumn}>
-                  <Text style={styles.productName}>API Platform</Text>
-                  <Text style={styles.productDescription}>The same accurate AI that powers Perplexity is available as an API for whatever you're building.</Text>
+                  <Text style={styles.productName}>Workspace</Text>
+                  <Text style={styles.productDescription}>Keep conversations and files together as you develop an idea from first thought to next step.</Text>
                 </View>
               </View>
             </View>
 
             <View style={styles.workflowSection}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>From first question to finished work</Text>
-              <Text style={styles.sectionSubheading}>Go deep on any company, market, or topic, with sources.</Text>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>From a question to a clearer perspective</Text>
+              <Text style={styles.sectionSubheading}>Explore a subject, examine the details, and bring your thinking together.</Text>
               <View style={styles.workflowTabs}>
-                {['Research', 'Analyze', 'Build', 'Automate'].map((tab, index) => (
+                {['Explore', 'Research', 'Understand', 'Create'].map((tab, index) => (
                   <View key={tab} style={[styles.workflowTab, index === 0 && styles.workflowTabActive]}>
                     <Text style={[styles.workflowTabText, index === 0 && styles.workflowTabTextActive]}>{tab}</Text>
                   </View>
@@ -1670,13 +1670,13 @@ export default function Home() {
 
               <View style={[styles.researchShowcase, compact && styles.researchShowcaseCompact]}>
                 <View style={styles.researchCopy}>
-                  <Text style={styles.showcaseEyebrow}>CRISPR Therapeutics (CRSP) Diligence</Text>
-                  <Text style={styles.showcaseTitle}>Research, analyze, and understand the full picture.</Text>
-                  <Text style={styles.showcaseDescription}>Explore a company, compare the evidence, and bring the important details together.</Text>
+                  <Text style={styles.showcaseEyebrow}>A QUESTION WORTH EXPLORING</Text>
+                  <Text style={styles.showcaseTitle}>Go beyond the first answer.</Text>
+                  <Text style={styles.showcaseDescription}>Start with a question, explore different perspectives, and use reliable sources to build a deeper understanding.</Text>
                   <View style={styles.sourcePills}>
-                    <Text style={styles.sourcePill}>Research</Text>
+                    <Text style={styles.sourcePill}>Questions</Text>
                     <Text style={styles.sourcePill}>Sources</Text>
-                    <Text style={styles.sourcePill}>Analysis</Text>
+                    <Text style={styles.sourcePill}>Insights</Text>
                   </View>
                 </View>
                 <Image
@@ -1690,13 +1690,13 @@ export default function Home() {
             <View style={styles.marketSection}>
               <View style={[styles.marketIntro, compact && styles.marketIntroCompact]}>
                 <View style={styles.marketIntroCopy}>
-                  <Text style={styles.showcaseEyebrow}>COMPETITIVE INTELLIGENCE</Text>
-                  <Text style={styles.sectionHeading}>SANTA CRUZ SKATE MAP</Text>
-                  <Text style={styles.sectionSubheading}>Competitive intel for your new shop</Text>
+                  <Text style={styles.showcaseEyebrow}>EXPLORE A TOPIC</Text>
+                  <Text style={styles.sectionHeading}>A WORLD OF QUESTIONS</Text>
+                  <Text style={styles.sectionSubheading}>Follow an idea and discover the connections around it.</Text>
                   <View style={styles.budgetLegend}>
-                    <Text style={styles.budgetItem}>Budget</Text>
-                    <Text style={styles.budgetItem}>Mid</Text>
-                    <Text style={styles.budgetItem}>Premium</Text>
+                    <Text style={styles.budgetItem}>Discover</Text>
+                    <Text style={styles.budgetItem}>Compare</Text>
+                    <Text style={styles.budgetItem}>Understand</Text>
                   </View>
                 </View>
                 <Image
@@ -1707,11 +1707,11 @@ export default function Home() {
               </View>
               <View style={[styles.shopGrid, compact && styles.shopGridCompact]}>
                 {[
-                  ['1', "Bill's Wheels", 'locals · families · tourists', 'Budget-Mid', 'est. 1977', '49'],
-                  ['2', 'SC Boardroom', 'mid-market core shoppers', 'Mid-Range', 'est. 2008', '18'],
-                  ['3', "O'Neill", 'surf + skate crossover', 'Premium', 'est. 1952', '74'],
-                  ['4', 'Consolidated', 'pro / competitive skaters', 'Mid-Range', 'est. 1991', '35'],
-                  ['5', 'Pacific Wave', 'surf · skate · snow', 'Budget', 'est. 1993', '33']
+                  ['1', 'The big picture', 'Understand the topic and its context', 'Overview', 'Start here', '01'],
+                  ['2', 'Key questions', 'Identify what matters most', 'Explore', 'Go deeper', '02'],
+                  ['3', 'Different views', 'Consider more than one perspective', 'Compare', 'Look closer', '03'],
+                  ['4', 'Useful evidence', 'Find information worth examining', 'Sources', 'Check facts', '04'],
+                  ['5', 'What comes next', 'Turn what you learn into next steps', 'Action', 'Move forward', '05']
                 ].map((shop) => (
                   <View key={shop[0]} style={styles.shopRow}>
                     <Text style={styles.shopNumber}>{shop[0]}</Text>
@@ -1728,22 +1728,22 @@ export default function Home() {
             </View>
 
             <View style={styles.analyticsSection}>
-              <Text style={styles.showcaseEyebrow}>COMPETITIVE INTELLIGENCE</Text>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Channel Contribution</Text>
+              <Text style={styles.showcaseEyebrow}>MAKE SENSE OF THE DETAILS</Text>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Bring the important pieces together</Text>
               <View style={styles.analyticsSummary}>
-                <Text style={styles.analyticsAmount}>$1.56M</Text>
-                <Text style={styles.analyticsCaption}>Total Spend</Text>
+                <Text style={styles.analyticsAmount}>One idea</Text>
+                <Text style={styles.analyticsCaption}>Many ways to explore it</Text>
               </View>
               <View style={styles.analyticsTable}>
                 <View style={styles.analyticsTableHeader}>
-                  {['Platform', 'Spend', '% of Total', 'CAC', 'Subs', 'ROAS'].map((label) => <Text key={label} style={styles.analyticsHeaderCell}>{label}</Text>)}
+                  {['Perspective', 'What to explore', 'Why it matters', 'Next step'].map((label) => <Text key={label} style={styles.analyticsHeaderCell}>{label}</Text>)}
                 </View>
                 {[
-                  ['Meta', '$599.9K', '38.5%', '$22.26', '26.9K', '2.25x'],
-                  ['Google', '$437.3K', '28.1%', '$17.31', '25.3K', '2.89x'],
-                  ['TikTok', '$270.2K', '17.4%', '$32.34', '8.4K', '1.55x'],
-                  ['ASA', '$140.6K', '9%', '$14.53', '9.7K', '3.44x'],
-                  ['MOLOCO', '$108.7K', '7%', '$26.08', '4.2K', '1.92x']
+                  ['Context', 'The background', 'See the bigger picture', 'Learn'],
+                  ['Evidence', 'Facts and sources', 'Check what is known', 'Verify'],
+                  ['Alternatives', 'Other viewpoints', 'Consider possibilities', 'Compare'],
+                  ['Questions', 'What is still unclear', 'Find what is missing', 'Explore'],
+                  ['Takeaways', 'Key ideas', 'Make it useful', 'Apply']
                 ].map((row) => (
                   <View key={row[0]} style={styles.analyticsTableRow}>
                     {row.map((cell, index) => <Text key={index} style={[styles.analyticsCell, index === 0 && styles.analyticsPlatform]}>{cell}</Text>)}
@@ -1753,22 +1753,22 @@ export default function Home() {
             </View>
 
             <View style={styles.audienceSection}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Used daily by individuals, trusted by organizations</Text>
+              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Made for curious minds and ambitious ideas</Text>
               <View style={[styles.audienceGrid, compact && styles.audienceGridCompact]}>
                 <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For individuals</Text>
-                  <Text style={styles.audienceDescription}>The full power of Perplexity, free to start.</Text>
-                  <Text style={styles.audienceLink}>Start free ↗</Text>
+                  <Text style={styles.audienceLabel}>For curious minds</Text>
+                  <Text style={styles.audienceDescription}>Explore questions, learn something new, and look beyond the obvious.</Text>
+                  <Text style={styles.audienceLink}>Start exploring ↗</Text>
                 </View>
                 <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For teams</Text>
-                  <Text style={styles.audienceDescription}>Secure, compliant, and ready to scale.</Text>
-                  <Text style={styles.audienceLink}>Explore Enterprise ↗</Text>
+                  <Text style={styles.audienceLabel}>For students and learners</Text>
+                  <Text style={styles.audienceDescription}>Understand difficult topics and bring useful information together.</Text>
+                  <Text style={styles.audienceLink}>Learn with Baybble ↗</Text>
                 </View>
                 <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For developers</Text>
-                  <Text style={styles.audienceDescription}>Add trusted, cited search and research to builds.</Text>
-                  <Text style={styles.audienceLink}>Start building ↗</Text>
+                  <Text style={styles.audienceLabel}>For creators and thinkers</Text>
+                  <Text style={styles.audienceDescription}>Develop ideas, consider new perspectives, and plan what comes next.</Text>
+                  <Text style={styles.audienceLink}>Explore ideas ↗</Text>
                 </View>
               </View>
             </View>
@@ -1776,12 +1776,12 @@ export default function Home() {
             <View style={styles.faqSection}>
               <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Frequently asked questions</Text>
               {[
-                'What is Perplexity?',
-                'How can I use Perplexity?',
-                'How is Perplexity different from other platforms?',
-                'How does Perplexity protect my information?',
-                'How much does it cost?',
-                'What are the benefits of upgrading to Perplexity Pro or Max?',
+                'What is Baybble?',
+                'What can I use Baybble for?',
+                'Can Baybble search the web and provide sources?',
+                'Can I upload files to a conversation?',
+                'Can I return to my previous conversations?',
+                'Is Baybble free to use?',
                 'How do I get started?'
               ].map((question) => (
                 <View key={question} style={styles.faqRow}>
@@ -1794,24 +1794,24 @@ export default function Home() {
             <View style={styles.footerSection}>
               <View style={[styles.footerColumns, compact && styles.footerColumnsCompact]}>
                 <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Products</Text>
-                  {['Search', 'Computer', 'Teammates', 'Comet', 'API', 'Deep Research'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                  <Text style={styles.footerHeading}>Workspace</Text>
+                  {['Ask a question', 'Web research', 'File analysis', 'Conversations'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
                 </View>
                 <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Solutions</Text>
-                  {['By Size', 'Enterprise', 'By Industry', 'Finance', 'Legal', 'Consulting', 'Healthcare', 'Tech', 'Government', 'Education', 'E-commerce', 'Advertising', 'By Team', 'Marketing', 'Sales', 'Product', 'IT'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                  <Text style={styles.footerHeading}>Explore</Text>
+                  {['Learning', 'Research', 'Understanding', 'Ideas', 'Planning'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
                 </View>
                 <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Pricing</Text>
-                  {['Pro', 'Max', 'Enterprise', 'API'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                  <Text style={styles.footerHeading}>Access</Text>
+                  {['Get started', 'Your workspace', 'Plans & access'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
                 </View>
                 <View style={styles.footerColumn}>
                   <Text style={styles.footerHeading}>Resources</Text>
-                  {['Blog', 'Resource Hub', 'Guides', 'Customers', 'Academy', 'Workshops', 'Docs', 'Help center', 'Research blog', 'Security', 'Trust center'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                  {['Getting started', 'Help & support', 'Updates', 'Privacy'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
                 </View>
                 <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Company</Text>
-                  {['Careers', 'Brand Guidelines', 'Supply Store', 'Privacy Policy', 'Terms & Conditions'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
+                  <Text style={styles.footerHeading}>Baybble</Text>
+                  {['About', 'Contact', 'Privacy policy', 'Terms & conditions'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
                 </View>
               </View>
               <View style={styles.footerBottom}>
@@ -1819,8 +1819,7 @@ export default function Home() {
                 <Text style={styles.footerCopyright}>©2026</Text>
               </View>
             </View>
-          </View>
-        </>
+          </View>        </>
       ) : null}
 
     </ScrollView>
