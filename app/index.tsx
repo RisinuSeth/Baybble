@@ -1012,7 +1012,6 @@ export default function Home() {
         </View>
       )}
 
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
       {activeMegaMenu && !compact && !chatMode ? (
         <>
           <Pressable
@@ -1064,6 +1063,8 @@ export default function Home() {
           </Animated.View>
         </>
       ) : null}
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
+
 
       {compact && !chatMode && (
         <View style={styles.mobileNav}>
