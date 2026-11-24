@@ -155,6 +155,8 @@ export default function Home() {
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const conversationScrollRef = useRef<ScrollView | null>(null);
+  const headerMotionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [headerMoving, setHeaderMoving] = useState(false);
   const isNearConversationBottomRef = useRef(true);
   const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
@@ -162,6 +164,16 @@ export default function Home() {
   const [isScrollControlHovered, setIsScrollControlHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => () => {
+    if (headerMotionTimer.current) clearTimeout(headerMotionTimer.current);
+  }, []);
+
+  const handleHomepageScroll = () => {
+    setHeaderMoving(true);
+    if (headerMotionTimer.current) clearTimeout(headerMotionTimer.current);
+    headerMotionTimer.current = setTimeout(() => setHeaderMoving(false), 180);
+  };
 
   useEffect(() => {
     if (!chatMode || draft || messages.length > 0) {
@@ -952,7 +964,7 @@ export default function Home() {
       } as any)}
     </View>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52 }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerMoving ? "#191919" : "transparent", borderBottomColor: headerMoving ? "#303030" : "transparent" }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1063,7 +1075,7 @@ export default function Home() {
           </Animated.View>
         </>
       ) : null}
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator onScroll={!chatMode ? handleHomepageScroll : undefined} scrollEventThrottle={16}>
 
 
       {compact && !chatMode && (
