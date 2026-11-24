@@ -155,9 +155,6 @@ export default function Home() {
   const [authUser, setAuthUser] = useState<{ id: string; email?: string; fullName?: string; avatarUrl?: string } | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const conversationScrollRef = useRef<ScrollView | null>(null);
-  const headerMotionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const headerBackgroundProgress = useRef(new Animated.Value(0)).current;
-  const headerMotionActive = useRef(false);
   const isNearConversationBottomRef = useRef(true);
   const conversationScrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isNearConversationBottom, setIsNearConversationBottom] = useState(true);
@@ -165,30 +162,6 @@ export default function Home() {
   const [isScrollControlHovered, setIsScrollControlHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transition = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => () => {
-    if (headerMotionTimer.current) clearTimeout(headerMotionTimer.current);
-  }, []);
-
-  const handleHomepageScroll = () => {
-    if (!headerMotionActive.current) {
-      headerMotionActive.current = true;
-      Animated.timing(headerBackgroundProgress, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: false
-      }).start();
-    }
-    if (headerMotionTimer.current) clearTimeout(headerMotionTimer.current);
-    headerMotionTimer.current = setTimeout(() => {
-      headerMotionActive.current = false;
-      Animated.timing(headerBackgroundProgress, {
-        toValue: 0,
-        duration: 650,
-        useNativeDriver: false
-      }).start();
-    }, 1200);
-  };
 
   useEffect(() => {
     if (!chatMode || draft || messages.length > 0) {
@@ -979,7 +952,7 @@ export default function Home() {
       } as any)}
     </View>
       {!chatMode && (
-        <Animated.View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(25,25,25,0.28)", "#191919"] }), borderBottomColor: headerBackgroundProgress.interpolate({ inputRange: [0, 1], outputRange: ["rgba(255,255,255,0.12)", "#303030"] }), ...({ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" } as any) }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#000000', borderBottomColor: '#303030' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1087,10 +1060,10 @@ export default function Home() {
                 </Pressable>
               ))}
             </View>
-          </Animated.View>
+          </View>
         </>
       ) : null}
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator onScroll={!chatMode ? handleHomepageScroll : undefined} scrollEventThrottle={16}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
 
 
       {compact && !chatMode && (
