@@ -8,6 +8,7 @@ import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#F1F1F1"/><circle cx="43" cy="43" r="17" fill="#F1F1F1"/></g></svg>';
+const BAYBBLE_WORDMARK_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="112" height="34" viewBox="0 0 112 34"><text x="1" y="25" fill="#EEEEEE" font-family="Manrope, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="-1.05" text-rendering="optimizeLegibility">Baybble</text></svg>');
 
 type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
 type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
@@ -953,7 +954,7 @@ export default function Home() {
     </View>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#050505' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
-            <Text style={styles.wordmark}>Baybble</Text>
+            <Image source={{ uri: BAYBBLE_WORDMARK_IMAGE }} accessibilityLabel="Baybble" resizeMode="contain" style={{ width: 112, height: 34 }} />
           </Pressable>
 
           {!compact && (
