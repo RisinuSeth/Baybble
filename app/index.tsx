@@ -952,7 +952,7 @@ export default function Home() {
       } as any)}
     </View>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#000000', borderBottomColor: '#303030' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#050505' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
@@ -1832,7 +1832,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
   videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { position: 'fixed' as any, top: 0, left: 0, right: 15, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#191919', borderBottomWidth: 1, borderBottomColor: '#303030' },
+  header: { position: 'fixed' as any, top: 0, left: 0, right: 15, minHeight: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#050505', borderBottomWidth: 0, shadowColor: '#000000', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
   megaMenuPanel: { position: 'absolute' as any, top: 58, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
@@ -1843,11 +1843,11 @@ const styles = StyleSheet.create({
   chatHeader: { borderBottomWidth: 1, borderBottomColor: '#242424' },
   newChatButton: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: '#343434', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 15 },
   newChatText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 12 },
-  brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36, gap: 9 },
+  brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36, gap: 9, userSelect: 'all' as any },
   logoMark: { width: 32, height: 32, position: 'relative' },
   logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#F1F1F1', top: 0, left: 0 },
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
-  wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
+  wordmark: { color: '#F5F5F5', fontFamily: 'Manrope', fontWeight: '700', fontSize: 24, lineHeight: 32, letterSpacing: -1.05, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', userSelect: 'all' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
