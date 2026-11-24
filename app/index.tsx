@@ -8,7 +8,7 @@ import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#F1F1F1"/><circle cx="43" cy="43" r="17" fill="#F1F1F1"/></g></svg>';
-const BAYBBLE_WORDMARK_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="88" height="27" viewBox="0 0 88 27"><text x="1" y="20" fill="#EEEEEE" font-family="Manrope, Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="-0.8" text-rendering="optimizeLegibility">Baybble</text></svg>');
+const BAYBBLE_WORDMARK_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="176" height="54" viewBox="0 0 88 27"><text x="1" y="20" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="0.12" stroke-linejoin="round" paint-order="stroke fill" font-family="Manrope, Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="-0.8" text-rendering="geometricPrecision">Baybble</text></svg>');
 
 type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
 type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
