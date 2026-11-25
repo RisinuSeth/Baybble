@@ -1036,7 +1036,7 @@ export default function Home() {
             accessibilityRole="button"
             accessibilityLabel="Ask Baybble"
             onPress={openChat}
-            style={({ hovered, pressed }: any) => [styles.askBaybbleLink, (hovered || pressed) && styles.askBaybbleLinkHovered]}
+            style={({ hovered }: any) => [styles.askBaybbleLink, hovered && styles.askBaybbleLinkHovered]}
           >
             <Text style={styles.askBaybbleText}>Ask Baybble</Text>
             <Text style={styles.askBaybbleArrow}>↗</Text>
@@ -1565,16 +1565,6 @@ export default function Home() {
       )}
 
     </ScrollView>
-    {!chatMode ? (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Open Baybble chat"
-        onPress={openChat}
-        style={styles.floatingChatButton}
-      >
-        <Ionicons name="chatbubble-ellipses-outline" size={21} color="#ffffff" />
-      </Pressable>
-    ) : null}
     <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setPendingAttachments([]); setConversationAttachments([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
   );
@@ -1585,10 +1575,10 @@ const styles = StyleSheet.create({
   visualBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
   landingMinimal: { width: '100%', minHeight: '100vh' as any, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' },
-  askBaybbleLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 10, cursor: 'pointer' as any },
-  askBaybbleLinkHovered: { opacity: 0.68 },
-  askBaybbleText: { color: '#e8e8e8', fontFamily: 'Inter', fontSize: 14, fontWeight: '500', letterSpacing: -0.15 },
-  askBaybbleArrow: { color: '#e8e8e8', fontFamily: 'Inter', fontSize: 15, fontWeight: '400', marginTop: -2 },
+  askBaybbleLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 8, paddingHorizontal: 10, cursor: 'pointer' as any },
+  askBaybbleLinkHovered: { borderBottomWidth: 1, borderBottomColor: '#e8e8e8' },
+  askBaybbleText: { color: '#e8e8e8', fontFamily: 'Inter', fontSize: 16, fontWeight: '500', letterSpacing: -0.15 },
+  askBaybbleArrow: { color: '#ffffff', fontFamily: 'Inter', fontSize: 20, fontWeight: '500', marginTop: -3 },
   header: { position: 'fixed' as any, top: 16, left: 16, right: 16, maxWidth: 1040, alignSelf: 'center', minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', borderRadius: 18, shadowColor: '#000000', shadowOpacity: 0.34, shadowRadius: 28, shadowOffset: { width: 0, height: 9 }, elevation: 12, backdropFilter: 'blur(22px)' as any, WebkitBackdropFilter: 'blur(22px)' as any } as any,
   headerCapsuleLinks: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   capsuleNavLink: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 11 },
