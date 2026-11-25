@@ -939,22 +939,7 @@ export default function Home() {
 
   return (
     <>
-    <View pointerEvents="none" style={styles.visualBackground}>
-      {React.createElement('div', {
-        'aria-hidden': true,
-        style: {
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          backgroundColor: '#07080d',
-          backgroundImage: [
-            'radial-gradient(ellipse 58% 42% at 50% 100%, rgba(255, 76, 173, 0.30) 0%, rgba(143, 92, 255, 0.22) 28%, rgba(57, 160, 255, 0.17) 48%, rgba(7, 8, 13, 0) 78%)',
-            'radial-gradient(ellipse 42% 34% at 50% 100%, rgba(255, 173, 91, 0.12) 0%, rgba(7, 8, 13, 0) 72%)',
-            'repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 48px)',
-            'repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 48px)',
-            'linear-gradient(180deg, #090a10 0%, #080910 58%, #08080e 100%)'
-          ].join(', ')
-        }
-      })}
-    </View>
+    <View pointerEvents="none" style={styles.visualBackground} />
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 15 : 22 }]}>
           <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
@@ -1042,7 +1027,7 @@ export default function Home() {
           </Animated.View>
         </>
       ) : null}
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 82 }]} showsVerticalScrollIndicator>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 82, minHeight: '100vh' as any }]} scrollEnabled={chatMode} showsVerticalScrollIndicator={false}>
 
 
       {compact && !chatMode && (
@@ -1056,7 +1041,7 @@ export default function Home() {
       )}
 
       {!chatMode ? (
-        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
+        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 82px)' as any : 'calc(100vh - 82px)' as any }]}>
           <View style={styles.heroCopy}>
             <Text style={styles.heroEyebrow}>A NEW WAY TO EXPLORE IDEAS</Text>
             <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
@@ -1605,206 +1590,6 @@ export default function Home() {
         </Animated.View>
       )}
 
-      {!chatMode ? (
-        <>
-          <View style={styles.quoteSection}>
-            <View style={[styles.quoteContent, { paddingHorizontal: compact ? 26 : 90 }]}>
-              <Text style={[styles.quoteHeading, compact && styles.quoteHeadingCompact]}>Where Possibilities Begin.</Text>
-              <Text style={[styles.quoteBody, compact && styles.quoteBodyCompact]}>
-                There is more to every question than its first answer, more to every challenge than its apparent limits, and more to every idea than what we initially imagine. The moment we look beyond what is obvious, we begin to discover possibilities we never knew existed.
-              </Text>
-              <Text style={styles.quoteSignature}>— The Baybble Team</Text>
-            </View>
-          </View>
-
-          <View style={styles.longformPage}>
-            <View style={styles.productOverview}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>One place to ask, explore, and understand</Text>
-              <View style={[styles.productGrid, compact && styles.productGridCompact]}>
-                <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Answers</Text>
-                  <Text style={styles.productDescription}>Get clear answers to your questions, with sources when web research is needed.</Text>
-                </View>
-                <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Research</Text>
-                  <Text style={styles.productDescription}>Explore topics, discover useful information, and bring relevant sources together.</Text>
-                </View>
-                <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Analysis</Text>
-                  <Text style={styles.productDescription}>Work through complex ideas, compare possibilities, and understand the details.</Text>
-                </View>
-                <View style={styles.productColumn}>
-                  <Text style={styles.productName}>Workspace</Text>
-                  <Text style={styles.productDescription}>Keep conversations and files together as you develop an idea from first thought to next step.</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.workflowSection}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>From a question to a clearer perspective</Text>
-              <Text style={styles.sectionSubheading}>Explore a subject, examine the details, and bring your thinking together.</Text>
-              <View style={styles.workflowTabs}>
-                {['Explore', 'Research', 'Understand', 'Create'].map((tab, index) => (
-                  <View key={tab} style={[styles.workflowTab, index === 0 && styles.workflowTabActive]}>
-                    <Text style={[styles.workflowTabText, index === 0 && styles.workflowTabTextActive]}>{tab}</Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={[styles.researchShowcase, compact && styles.researchShowcaseCompact]}>
-                <View style={styles.researchCopy}>
-                  <Text style={styles.showcaseEyebrow}>A QUESTION WORTH EXPLORING</Text>
-                  <Text style={styles.showcaseTitle}>Go beyond the first answer.</Text>
-                  <Text style={styles.showcaseDescription}>Start with a question, explore different perspectives, and use reliable sources to build a deeper understanding.</Text>
-                  <View style={styles.sourcePills}>
-                    <Text style={styles.sourcePill}>Questions</Text>
-                    <Text style={styles.sourcePill}>Sources</Text>
-                    <Text style={styles.sourcePill}>Insights</Text>
-                  </View>
-                </View>
-                <Image
-                  source={{ uri: 'https://images.pexels.com/photos/29457406/pexels-photo-29457406.jpeg?auto=compress&cs=tinysrgb&w=1600' }}
-                  style={styles.researchImage}
-                  resizeMode="cover"
-                />
-              </View>
-            </View>
-
-            <View style={styles.marketSection}>
-              <View style={[styles.marketIntro, compact && styles.marketIntroCompact]}>
-                <View style={styles.marketIntroCopy}>
-                  <Text style={styles.showcaseEyebrow}>EXPLORE A TOPIC</Text>
-                  <Text style={styles.sectionHeading}>A WORLD OF QUESTIONS</Text>
-                  <Text style={styles.sectionSubheading}>Follow an idea and discover the connections around it.</Text>
-                  <View style={styles.budgetLegend}>
-                    <Text style={styles.budgetItem}>Discover</Text>
-                    <Text style={styles.budgetItem}>Compare</Text>
-                    <Text style={styles.budgetItem}>Understand</Text>
-                  </View>
-                </View>
-                <Image
-                  source={{ uri: 'https://images.pexels.com/photos/4050393/pexels-photo-4050393.jpeg?auto=compress&cs=tinysrgb&w=1400' }}
-                  style={styles.marketImage}
-                  resizeMode="cover"
-                />
-              </View>
-              <View style={[styles.shopGrid, compact && styles.shopGridCompact]}>
-                {[
-                  ['1', 'The big picture', 'Understand the topic and its context', 'Overview', 'Start here', '01'],
-                  ['2', 'Key questions', 'Identify what matters most', 'Explore', 'Go deeper', '02'],
-                  ['3', 'Different views', 'Consider more than one perspective', 'Compare', 'Look closer', '03'],
-                  ['4', 'Useful evidence', 'Find information worth examining', 'Sources', 'Check facts', '04'],
-                  ['5', 'What comes next', 'Turn what you learn into next steps', 'Action', 'Move forward', '05']
-                ].map((shop) => (
-                  <View key={shop[0]} style={styles.shopRow}>
-                    <Text style={styles.shopNumber}>{shop[0]}</Text>
-                    <View style={styles.shopDetails}>
-                      <Text style={styles.shopName}>{shop[1]}</Text>
-                      <Text style={styles.shopMeta}>{shop[2]}</Text>
-                    </View>
-                    <Text style={styles.shopTier}>{shop[3]}</Text>
-                    <Text style={styles.shopYear}>{shop[4]}</Text>
-                    <Text style={styles.shopMetric}>{shop[5]}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.analyticsSection}>
-              <Text style={styles.showcaseEyebrow}>MAKE SENSE OF THE DETAILS</Text>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Bring the important pieces together</Text>
-              <View style={styles.analyticsSummary}>
-                <Text style={styles.analyticsAmount}>One idea</Text>
-                <Text style={styles.analyticsCaption}>Many ways to explore it</Text>
-              </View>
-              <View style={styles.analyticsTable}>
-                <View style={styles.analyticsTableHeader}>
-                  {['Perspective', 'What to explore', 'Why it matters', 'Next step'].map((label) => <Text key={label} style={styles.analyticsHeaderCell}>{label}</Text>)}
-                </View>
-                {[
-                  ['Context', 'The background', 'See the bigger picture', 'Learn'],
-                  ['Evidence', 'Facts and sources', 'Check what is known', 'Verify'],
-                  ['Alternatives', 'Other viewpoints', 'Consider possibilities', 'Compare'],
-                  ['Questions', 'What is still unclear', 'Find what is missing', 'Explore'],
-                  ['Takeaways', 'Key ideas', 'Make it useful', 'Apply']
-                ].map((row) => (
-                  <View key={row[0]} style={styles.analyticsTableRow}>
-                    {row.map((cell, index) => <Text key={index} style={[styles.analyticsCell, index === 0 && styles.analyticsPlatform]}>{cell}</Text>)}
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.audienceSection}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Made for curious minds and ambitious ideas</Text>
-              <View style={[styles.audienceGrid, compact && styles.audienceGridCompact]}>
-                <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For curious minds</Text>
-                  <Text style={styles.audienceDescription}>Explore questions, learn something new, and look beyond the obvious.</Text>
-                  <Text style={styles.audienceLink}>Start exploring ↗</Text>
-                </View>
-                <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For students and learners</Text>
-                  <Text style={styles.audienceDescription}>Understand difficult topics and bring useful information together.</Text>
-                  <Text style={styles.audienceLink}>Learn with Baybble ↗</Text>
-                </View>
-                <View style={styles.audienceColumn}>
-                  <Text style={styles.audienceLabel}>For creators and thinkers</Text>
-                  <Text style={styles.audienceDescription}>Develop ideas, consider new perspectives, and plan what comes next.</Text>
-                  <Text style={styles.audienceLink}>Explore ideas ↗</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.faqSection}>
-              <Text style={[styles.sectionHeading, compact && styles.sectionHeadingCompact]}>Frequently asked questions</Text>
-              {[
-                'What is Baybble?',
-                'What can I use Baybble for?',
-                'Can Baybble search the web and provide sources?',
-                'Can I upload files to a conversation?',
-                'Can I return to my previous conversations?',
-                'Is Baybble free to use?',
-                'How do I get started?'
-              ].map((question) => (
-                <View key={question} style={styles.faqRow}>
-                  <Text style={styles.faqQuestion}>{question}</Text>
-                  <Ionicons name="add" size={20} color="#333333" />
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.footerSection}>
-              <View style={[styles.footerColumns, compact && styles.footerColumnsCompact]}>
-                <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Workspace</Text>
-                  {['Ask a question', 'Web research', 'File analysis', 'Conversations'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
-                </View>
-                <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Explore</Text>
-                  {['Learning', 'Research', 'Understanding', 'Ideas', 'Planning'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
-                </View>
-                <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Access</Text>
-                  {['Get started', 'Your workspace', 'Plans & access'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
-                </View>
-                <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Resources</Text>
-                  {['Getting started', 'Help & support', 'Updates', 'Privacy'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
-                </View>
-                <View style={styles.footerColumn}>
-                  <Text style={styles.footerHeading}>Baybble</Text>
-                  {['About', 'Contact', 'Privacy policy', 'Terms & conditions'].map((item) => <Text key={item} style={styles.footerLink}>{item}</Text>)}
-                </View>
-              </View>
-              <View style={styles.footerBottom}>
-                <Text style={styles.footerBrand}>Baybble</Text>
-                <Text style={styles.footerCopyright}>©2026</Text>
-              </View>
-            </View>
-          </View>        </>
-      ) : null}
-
     </ScrollView>
     {!chatMode ? (
       <Pressable
@@ -1823,9 +1608,9 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
-  visualBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#080910', overflow: 'hidden' },
+  visualBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { position: 'fixed' as any, top: 16, left: 16, right: 16, maxWidth: 1040, alignSelf: 'center', minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 7, backgroundColor: 'rgba(8,9,14,0.88)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', borderRadius: 18, shadowColor: '#000000', shadowOpacity: 0.34, shadowRadius: 28, shadowOffset: { width: 0, height: 9 }, elevation: 12, backdropFilter: 'blur(22px)' as any, WebkitBackdropFilter: 'blur(22px)' as any } as any,
+  header: { position: 'fixed' as any, top: 16, left: 16, right: 16, maxWidth: 1040, alignSelf: 'center', minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', borderRadius: 18, shadowColor: '#000000', shadowOpacity: 0.34, shadowRadius: 28, shadowOffset: { width: 0, height: 9 }, elevation: 12, backdropFilter: 'blur(22px)' as any, WebkitBackdropFilter: 'blur(22px)' as any } as any,
   headerCapsuleLinks: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   capsuleNavLink: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 11 },
   capsuleNavText: { color: '#d5d6dc', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
