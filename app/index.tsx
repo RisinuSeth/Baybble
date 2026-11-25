@@ -939,79 +939,58 @@ export default function Home() {
 
   return (
     <>
-    <View pointerEvents="none" style={styles.videoBackground}>
-      {React.createElement('video', {
-        src: 'https://videos.pexels.com/video-files/29848604/12817768_3840_2160_30fps.mp4',
-        autoPlay: true,
-        muted: true,
-        loop: true,
-        playsInline: true,
-        preload: 'metadata',
-        style: { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' },
-        'aria-hidden': true
-      } as any)}
+    <View pointerEvents="none" style={styles.visualBackground}>
+      {React.createElement('div', {
+        'aria-hidden': true,
+        style: {
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          backgroundColor: '#07080d',
+          backgroundImage: [
+            'radial-gradient(ellipse 58% 42% at 50% 100%, rgba(255, 76, 173, 0.30) 0%, rgba(143, 92, 255, 0.22) 28%, rgba(57, 160, 255, 0.17) 48%, rgba(7, 8, 13, 0) 78%)',
+            'radial-gradient(ellipse 42% 34% at 50% 100%, rgba(255, 173, 91, 0.12) 0%, rgba(7, 8, 13, 0) 72%)',
+            'repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 48px)',
+            'repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 48px)',
+            'linear-gradient(180deg, #090a10 0%, #080910 58%, #08080e 100%)'
+          ].join(', ')
+        }
+      })}
     </View>
       {!chatMode && (
-        <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#050505' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
+        <View style={[styles.header, { paddingHorizontal: compact ? 15 : 22 }]}>
+          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
-
-          {!compact && (
-            <View style={[styles.nav, styles.navCentered]} onHoverOut={scheduleCloseMegaMenu}>
-              {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-                <Pressable
-                  key={item}
-                  style={styles.navLink}
-                  onLayout={(event) => {
-                    const { x, width: itemWidth } = event.nativeEvent.layout;
-                    navItemLayouts.current[item] = { x, width: itemWidth };
-                    if (activeMegaMenu === item) moveNavCapsule(item);
-                  }}
-                  onHoverIn={() => openMegaMenu(item)}
-                  onHoverOut={scheduleCloseMegaMenu}
-                  onPress={() => activeMegaMenu === item ? scheduleCloseMegaMenu() : openMegaMenu(item)}
-                  accessibilityRole="button"
-                  accessibilityState={{ expanded: activeMegaMenu === item }}
-                >
-                  <Text style={[styles.navText, activeMegaMenu ? (activeMegaMenu === item ? styles.navTextHovered : styles.navTextDimmed) : null]}>{item}</Text>
+          <View style={styles.headerCapsuleLinks}>
+            {!compact ? (
+              <>
+                <Pressable style={styles.capsuleNavLink} onPress={() => openMegaMenu('Pricing')}>
+                  <Text style={styles.capsuleNavText}>Pricing</Text>
                 </Pressable>
-              ))}
-            </View>
-          )}
-
-          <View style={styles.headerActions}>
+                <Pressable style={styles.capsuleNavLink} onPress={() => openMegaMenu('Resources')}>
+                  <Text style={styles.capsuleNavText}>Docs</Text>
+                </Pressable>
+              </>
+            ) : null}
             <Pressable
-              style={({ hovered, pressed }: any) => authUser ? styles.profileButton : [styles.loginButton, { flexDirection: 'row', alignItems: 'center', gap: 7 }, hovered && styles.headerTextHovered, pressed && styles.headerTextPressed]}
-              onHoverIn={() => { scheduleCloseMegaMenu(); setLoginHovered(true); }}
-              onHoverOut={() => setLoginHovered(false)}
+              style={styles.capsuleSignIn}
               onPress={() => setAuthOpen(true)}
               accessibilityRole="button"
-              accessibilityLabel={authUser ? 'Open your account' : 'Log in'}
+              accessibilityLabel={authUser ? 'Open your account' : 'Sign in'}
             >
               {authUser ? (
                 <View style={[styles.headerAvatar, !authUser.avatarUrl && { backgroundColor: profileAvatarColour(authUser.email), borderWidth: 0 }]}>
-                  {authUser.avatarUrl ? (
-                    <Image source={{ uri: authUser.avatarUrl }} style={styles.headerAvatarImage} resizeMode="cover" />
-                  ) : (
-                    <Text style={styles.headerAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>
-                  )}
+                  {authUser.avatarUrl ? <Image source={{ uri: authUser.avatarUrl }} style={styles.headerAvatarImage} resizeMode="cover" /> : <Text style={styles.headerAvatarInitial}>{profileInitials(authUser.fullName, authUser.email)}</Text>}
                 </View>
-              ) : (
-                <>
-                  <Ionicons name="person-circle-outline" size={19} color={loginHovered ? '#c9cdd2' : '#eeeeee'} />
-                  <Text style={[styles.loginText, loginHovered && styles.loginTextHovered]}>Log In</Text>
-                </>
-              )}
+              ) : <Text style={styles.capsuleNavText}>Sign In</Text>}
             </Pressable>
-            {!authUser && (
-              <Pressable style={({ hovered, pressed }: any) => [styles.startButton, hovered && styles.startButtonHovered, pressed && styles.startButtonPressed]} onHoverIn={scheduleCloseMegaMenu} onPress={() => setAuthOpen(true)}>
-                <Text style={styles.startText}>{compact ? 'Get Started' : 'Get Started Free'}</Text>
+            {!authUser ? (
+              <Pressable style={({ hovered, pressed }: any) => [styles.capsuleGetStarted, hovered && styles.capsuleGetStartedHovered, pressed && styles.startButtonPressed]} onPress={() => setAuthOpen(true)}>
+                <Text style={styles.capsuleGetStartedText}>Get Started</Text>
               </Pressable>
-            )}
+            ) : null}
           </View>
         </View>
       )}
-
       {activeMegaMenu && !compact && !chatMode ? (
         <>
           <Pressable
@@ -1063,7 +1042,7 @@ export default function Home() {
           </Animated.View>
         </>
       ) : null}
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 58 }]} showsVerticalScrollIndicator>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 82 }]} showsVerticalScrollIndicator>
 
 
       {compact && !chatMode && (
@@ -1078,7 +1057,11 @@ export default function Home() {
 
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 140px)' as any : 'calc(100vh - 92px)' as any }]}>
-          <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroEyebrow}>A NEW WAY TO EXPLORE IDEAS</Text>
+            <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
+            <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>A place to ask better questions, explore possibilities and move forward with clarity.</Text>
+          </View>
           <Pressable style={[styles.searchFrame, { minHeight: compact ? 56 : 62, zIndex: 1 }]} onPress={openChat}>
             <View style={[styles.searchBar, { minHeight: compact ? 56 : 62, paddingHorizontal: compact ? 16 : 21 }]}>
               <TextInput
@@ -1097,7 +1080,7 @@ export default function Home() {
               </View>
             </View>
           </Pressable>
-          <Text style={styles.heroFootnote}>A clearer way to think through challenges and possibilities.</Text>
+          <Text style={styles.heroFootnote}>Start with a question. See where it takes you.</Text>
         </Animated.View>
       ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
@@ -1823,6 +1806,16 @@ export default function Home() {
       ) : null}
 
     </ScrollView>
+    {!chatMode ? (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open Baybble chat"
+        onPress={openChat}
+        style={styles.floatingChatButton}
+      >
+        <Ionicons name="chatbubble-ellipses-outline" size={21} color="#ffffff" />
+      </Pressable>
+    ) : null}
     <AuthDialog visible={authOpen} onClose={() => setAuthOpen(false)} userEmail={authUser?.email ?? null} onSignedOut={() => { setAuthUser(null); setSessions([]); setMessages([]); setPendingAttachments([]); setConversationAttachments([]); setActiveSessionId(null); setAuthOpen(false); }} />
     </>
   );
@@ -1830,11 +1823,19 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
-  videoBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
+  visualBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#080910', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
-  header: { position: 'fixed' as any, top: 0, left: 0, right: 15, minHeight: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 4, backgroundColor: '#050505', borderBottomWidth: 0, shadowColor: '#000000', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
+  header: { position: 'fixed' as any, top: 16, left: 16, right: 16, maxWidth: 1040, alignSelf: 'center', minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 7, backgroundColor: 'rgba(8,9,14,0.88)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', borderRadius: 18, shadowColor: '#000000', shadowOpacity: 0.34, shadowRadius: 28, shadowOffset: { width: 0, height: 9 }, elevation: 12, backdropFilter: 'blur(22px)' as any, WebkitBackdropFilter: 'blur(22px)' as any } as any,
+  headerCapsuleLinks: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  capsuleNavLink: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 11 },
+  capsuleNavText: { color: '#d5d6dc', fontFamily: 'Manrope', fontSize: 12, fontWeight: '600' },
+  capsuleSignIn: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 11 },
+  capsuleGetStarted: { minHeight: 39, justifyContent: 'center', paddingHorizontal: 17, borderRadius: 11, backgroundColor: '#f4f4f5', cursor: 'pointer' as any },
+  capsuleGetStartedHovered: { backgroundColor: '#ffffff', transform: [{ translateY: -1 }] },
+  capsuleGetStartedText: { color: '#101116', fontFamily: 'Manrope', fontSize: 12, fontWeight: '800' },
+  floatingChatButton: { position: 'fixed' as any, right: 25, bottom: 24, zIndex: 20, width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: '#171923', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)', shadowColor: '#000000', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 10, cursor: 'pointer' as any },
   megaMenuBackdrop: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 5, backgroundColor: 'rgba(8,8,8,0.28)', backdropFilter: 'blur(9px)' as any, WebkitBackdropFilter: 'blur(9px)' as any } as any,
-  megaMenuPanel: { position: 'absolute' as any, top: 58, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
+  megaMenuPanel: { position: 'absolute' as any, top: 88, left: 0, right: 0, zIndex: 7, borderRadius: 0, backgroundColor: '#ffffff', paddingLeft: 52, paddingRight: 24, paddingTop: 28, paddingBottom: 30, alignItems: 'flex-start', shadowColor: '#000000', shadowOpacity: 0.14, shadowRadius: 35, shadowOffset: { width: 0, height: 18 }, elevation: 18 } as any,
   megaMenuItems: { flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 18 },
   megaMenuItem: { minWidth: 0, minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, paddingVertical: 2 },
   megaMenuItemTitle: { color: '#111111', fontFamily: 'Manrope', fontSize: 14, fontWeight: '600', lineHeight: 20 },
@@ -1869,14 +1870,14 @@ const styles = StyleSheet.create({
   startButtonPressed: { backgroundColor: 'rgba(255,255,255,0.16)', transform: [{ scale: 0.98 }] },
   startText: { color: '#ffffff', fontFamily: 'Manrope', fontWeight: '700', fontSize: 13 },
   mobileNav: { width: '100%', paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, zIndex: 2 },
-  hero: { width: '100%', minHeight: 'calc(100vh - 92px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 0, backgroundColor: 'transparent', overflow: 'hidden' },
-  heroTagline: { color: '#f0ede7', fontFamily: 'Georgia', fontWeight: '400', fontSize: 38, lineHeight: 46, letterSpacing: -0.8, textAlign: 'center', maxWidth: 900, marginBottom: 25 },
-  heroTaglineCompact: { fontSize: 28, lineHeight: 35, marginBottom: 20, paddingHorizontal: 8 },
-  heroEyebrow: { color: '#a0a0a0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 10, letterSpacing: 2.1, marginBottom: 25 },
+  hero: { width: '100%', minHeight: 'calc(100vh - 82px)' as any, alignItems: 'center', justifyContent: 'center', paddingBottom: 20, backgroundColor: 'transparent', overflow: 'hidden' },\n  heroCopy: { width: '100%', alignItems: 'center', marginBottom: 4 },
+  heroTagline: { color: '#f5f5f7', fontFamily: 'Manrope', fontWeight: '800', fontSize: 58, lineHeight: 68, letterSpacing: -2.8, textAlign: 'center', maxWidth: 900, marginBottom: 0 },
+  heroTaglineCompact: { fontSize: 38, lineHeight: 45, letterSpacing: -1.7, marginBottom: 0, paddingHorizontal: 8 },
+  heroEyebrow: { color: '#aeb0c0', fontFamily: 'Manrope', fontWeight: '800', fontSize: 9, letterSpacing: 2.4, marginBottom: 21 },
   heroTitle: { color: '#f5f5f5', fontFamily: 'Manrope', fontWeight: '800', fontSize: 66, lineHeight: 73, letterSpacing: -3.4, textAlign: 'center', maxWidth: 900 },
   heroTitleCompact: { fontSize: 42, lineHeight: 47, letterSpacing: -2 },
-  heroDescription: { color: '#c8c8c8', fontFamily: 'Manrope', fontWeight: '500', fontSize: 16, lineHeight: 27, textAlign: 'center', maxWidth: 650, marginTop: 23, marginBottom: 36 },
-  heroDescriptionCompact: { fontSize: 14, lineHeight: 24 },
+  heroDescription: { color: '#aeb1bd', fontFamily: 'Manrope', fontWeight: '500', fontSize: 15, lineHeight: 25, textAlign: 'center', maxWidth: 620, marginTop: 17, marginBottom: 30 },
+  heroDescriptionCompact: { fontSize: 13, lineHeight: 22, marginTop: 13, marginBottom: 25, paddingHorizontal: 12 },
   searchFrame: { width: '100%', maxWidth: 650, borderRadius: 14, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
 
   searchBar: { width: '100%', flexDirection: 'row', alignItems: 'center', borderRadius: 14, backgroundColor: '#d5d5d5', paddingHorizontal: 21, zIndex: 1 },
