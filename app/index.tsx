@@ -940,7 +940,7 @@ export default function Home() {
   return (
     <>
     <View pointerEvents="none" style={styles.visualBackground} />
-      {!chatMode && (
+      {false && !chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 15 : 22 }]}>
           <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
             <Text style={styles.wordmark}>Baybble</Text>
@@ -1027,37 +1027,21 @@ export default function Home() {
           </Animated.View>
         </>
       ) : null}
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 82, minHeight: '100vh' as any }]} scrollEnabled={chatMode} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 0, minHeight: '100vh' as any }]} scrollEnabled={chatMode} showsVerticalScrollIndicator={false}>
 
 
       {!chatMode ? (
-        <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 82px)' as any : 'calc(100vh - 82px)' as any }]}>
-          <View style={styles.heroCopy}>
-            <Text style={styles.heroEyebrow}>A NEW WAY TO EXPLORE IDEAS</Text>
-            <Text style={[styles.heroTagline, compact && styles.heroTaglineCompact]}>Think beyond the obvious.</Text>
-            <Text style={[styles.heroDescription, compact && styles.heroDescriptionCompact]}>A place to ask better questions, explore possibilities and move forward with clarity.</Text>
-          </View>
-          <Pressable style={[styles.searchFrame, { minHeight: compact ? 56 : 62, zIndex: 1 }]} onPress={openChat}>
-            <View style={[styles.searchBar, { minHeight: compact ? 56 : 62, paddingHorizontal: compact ? 16 : 21 }]}>
-              <TextInput
-                value={draft}
-                onChangeText={setDraft}
-                onFocus={openChat}
-                placeholder="What's on your mind?"
-                placeholderTextColor="#777777"
-                style={styles.input}
-                returnKeyType="send"
-                onSubmitEditing={sendMessage}
-                accessibilityLabel="Start a conversation with Baybble"
-              />
-              <View style={styles.heroSearchArrowCircle} pointerEvents="none">
-                <Ionicons name="arrow-forward" size={18} color="#f2f2f2" />
-              </View>
-            </View>
+        <View style={styles.landingMinimal}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ask Baybble"
+            onPress={openChat}
+            style={({ hovered, pressed }: any) => [styles.askBaybbleLink, (hovered || pressed) && styles.askBaybbleLinkHovered]}
+          >
+            <Text style={styles.askBaybbleText}>Ask Baybble</Text>
+            <Text style={styles.askBaybbleArrow}>↗</Text>
           </Pressable>
-          <Text style={styles.heroFootnote}>Start with a question. See where it takes you.</Text>
-        </Animated.View>
-      ) : (
+        </View>      ) : (
         <Animated.View style={[styles.chatWorkspace, { opacity: transition, transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] }]}>
           <View style={styles.chatBody}>
             {compact && !historyOpen ? (
@@ -1600,6 +1584,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: '100vh' as any, width: '100%', backgroundColor: 'transparent', position: 'relative' as any, zIndex: 1 },
   visualBackground: { position: 'fixed' as any, top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' },
   page: { width: '100%', alignItems: 'center', paddingBottom: 0 },
+  landingMinimal: { width: '100%', minHeight: '100vh' as any, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' },
+  askBaybbleLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 10, cursor: 'pointer' as any },
+  askBaybbleLinkHovered: { opacity: 0.68 },
+  askBaybbleText: { color: '#e8e8e8', fontFamily: 'Inter', fontSize: 14, fontWeight: '500', letterSpacing: -0.15 },
+  askBaybbleArrow: { color: '#e8e8e8', fontFamily: 'Inter', fontSize: 15, fontWeight: '400', marginTop: -2 },
   header: { position: 'fixed' as any, top: 16, left: 16, right: 16, maxWidth: 1040, alignSelf: 'center', minHeight: 62, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 8, paddingVertical: 7, backgroundColor: 'rgba(0,0,0,0.94)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.11)', borderRadius: 18, shadowColor: '#000000', shadowOpacity: 0.34, shadowRadius: 28, shadowOffset: { width: 0, height: 9 }, elevation: 12, backdropFilter: 'blur(22px)' as any, WebkitBackdropFilter: 'blur(22px)' as any } as any,
   headerCapsuleLinks: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   capsuleNavLink: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 11 },
