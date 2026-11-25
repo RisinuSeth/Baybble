@@ -1030,16 +1030,6 @@ export default function Home() {
     <ScrollView style={styles.screen} contentContainerStyle={[styles.page, !chatMode && { paddingTop: 82, minHeight: '100vh' as any }]} scrollEnabled={chatMode} showsVerticalScrollIndicator={false}>
 
 
-      {compact && !chatMode && (
-        <View style={styles.mobileNav}>
-          {['Product', 'Use Cases', 'Pricing', 'Resources'].map((item) => (
-            <Pressable key={item} style={styles.navLink}>
-              <Text style={styles.navText}>{item}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
       {!chatMode ? (
         <Animated.View style={[styles.hero, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ translateY: transition.interpolate({ inputRange: [0, 1], outputRange: [0, -28] }), scale: transition.interpolate({ inputRange: [0, 1], outputRange: [1, 0.975] }) }] }, { paddingHorizontal: compact ? 22 : 56, paddingTop: 0, minHeight: compact ? 'calc(100vh - 82px)' as any : 'calc(100vh - 82px)' as any }]}>
           <View style={styles.heroCopy}>
