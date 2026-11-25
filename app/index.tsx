@@ -8,7 +8,6 @@ import { Animated } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 
 const BAYBBLE_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><mask id="transparent-gap"><rect width="64" height="64" fill="white"/><circle cx="43" cy="43" r="17" fill="none" stroke="black" stroke-width="4"/></mask></defs><g mask="url(#transparent-gap)"><circle cx="24" cy="23" r="23" fill="#F1F1F1"/><circle cx="43" cy="43" r="17" fill="#F1F1F1"/></g></svg>';
-const BAYBBLE_WORDMARK_IMAGE = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="96" viewBox="0 0 80 24"><text x="0.5" y="18" fill="#E6E6E6" stroke="#E6E6E6" stroke-width="0.08" stroke-linejoin="round" paint-order="stroke fill" font-family="Inter, Arial, sans-serif" font-size="17.5" font-weight="600" letter-spacing="-0.55" text-rendering="geometricPrecision">Baybble</text></svg>');
 
 type ChatFileBadge = { id: string; name: string; mimeType: string; size: number };
 type PendingAttachment = ChatFileBadge & { file: any; extractedText: string; pageCount?: number | null };
@@ -954,7 +953,7 @@ export default function Home() {
     </View>
       {!chatMode && (
         <View style={[styles.header, { paddingHorizontal: compact ? 20 : 52, backgroundColor: '#050505' }]}>          <Pressable accessibilityRole="link" accessibilityLabel="Baybble home" onHoverIn={scheduleCloseMegaMenu} style={styles.brand}>
-            <Image source={{ uri: BAYBBLE_WORDMARK_IMAGE }} accessibilityLabel="Baybble" resizeMode="contain" style={{ width: 80, height: 24 }} />
+            <Text style={styles.wordmark}>Baybble</Text>
           </Pressable>
 
           {!compact && (
@@ -1848,7 +1847,7 @@ const styles = StyleSheet.create({
   logoMark: { width: 32, height: 32, position: 'relative' },
   logoBubbleOne: { position: 'absolute', width: 23, height: 23, borderRadius: 12, backgroundColor: '#F1F1F1', top: 0, left: 0 },
   logoBubbleTwo: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#F1F1F1', bottom: 2, right: 2, borderWidth: 2, borderColor: '#080808' },
-  wordmark: { color: '#EEEEEE', fontFamily: 'Manrope', fontWeight: '700', fontSize: 24, lineHeight: 32, letterSpacing: -1.05, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', userSelect: 'all' } as any,
+  wordmark: { color: '#F1F1F1', fontFamily: 'Manrope', fontWeight: '500', fontSize: 23, lineHeight: 30, letterSpacing: -0.45, includeFontPadding: false, textAlignVertical: 'center', textRendering: 'optimizeLegibility', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as any,
   nav: { flexDirection: 'row', alignItems: 'center', gap: 30 },
   navCentered: { flex: 1, marginLeft: 24, justifyContent: 'flex-start', overflow: 'visible' },
   navLink: { paddingVertical: 10, paddingHorizontal: 12, zIndex: 1, cursor: 'pointer' as any },
